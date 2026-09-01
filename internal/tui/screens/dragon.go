@@ -34,16 +34,18 @@ type DragonScreen struct {
 	combatLog []string
 	width     int
 	height    int
+	dragonGen storage.DragonGenerator
 }
 
 // NewDragonScreen initializes the Dragon's Lair.
-func NewDragonScreen(db *storage.DB, player *engine.Player) *DragonScreen {
+func NewDragonScreen(db *storage.DB, player *engine.Player, dragonGen storage.DragonGenerator) *DragonScreen {
 	return &DragonScreen{
 		db:        db,
 		player:    player,
 		ce:        engine.NewCombatEngine(nil),
 		state:     dragonStateApproach,
 		combatLog: make([]string, 0),
+		dragonGen: dragonGen,
 	}
 }
 
@@ -67,21 +69,26 @@ func (s *DragonScreen) SetSize(w, h int) {
 }
 
 func (s *DragonScreen) loadDragonState() {
-	vRepo := storage.NewVillageRepository(s.db)
+	vRepo := storage.NewVillageRepository(s.db, storage.WithDragonGenerator(s.dragonGen))
 	st, err := vRepo.GetOrCreateTodayState(context.Background())
 	if err == nil {
 		s.isAlive = st.DragonAlive
 		s.slayer = st.SlayerName
+
+		// Título determinístico baseado na data (mesmo seed SHA-256 que o bestiary)
+		titleIdx := engine.DragonTitleIndex(st.DayDate, len(i18n.DragonTitlesPTBR))
+		fullName := fmt.Sprintf("%s, %s", i18n.GetMonsterName(i18n.MonsterDragon), i18n.DragonTitlesPTBR[titleIdx])
+
 		s.dragon = &engine.Monster{
 			ID:         i18n.MonsterDragon,
-			Name:       "O Dragão Ancestral de Fogo",
+			Name:       fullName,
 			Tier:       5,
 			Health:     st.DragonHP,
 			MaxHealth:  st.DragonMaxHP,
 			Attack:     st.DragonATK,
 			Defense:    st.DragonDEF,
 			XPReward:   5000,
-			GoldReward: 2500,
+			GoldReward: st.DragonGoldReward,
 			IsDragon:   true,
 		}
 	}
@@ -166,7 +173,7 @@ func (s *DragonScreen) handleAttack() (tea.Model, tea.Cmd) {
 
 	if res.MonsterDefeated {
 		s.state = dragonStateVictory
-		vRepo := storage.NewVillageRepository(s.db)
+		vRepo := storage.NewVillageRepository(s.db, storage.WithDragonGenerator(s.dragonGen))
 		_ = vRepo.RecordDragonSlayed(context.Background(), s.player.Username)
 		_ = s.db.SavePlayer(s.player.ToStorage())
 		s.appendLog("🔥 O DRAGÃO CAIU! Seus restos viraram lenda e você salvou todo o Vilarejo! 🔥")
