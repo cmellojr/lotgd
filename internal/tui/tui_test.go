@@ -20,7 +20,7 @@ func TestTUI_MainModel_Initialization(t *testing.T) {
 	}
 	defer db.Close()
 
-	model := NewMainModel(db)
+	model := NewMainModel(db, nil)
 	if model == nil {
 		t.Fatalf("expected non-nil MainModel")
 	}
