@@ -62,17 +62,6 @@ func (r *PlayerRepository) Authenticate(ctx context.Context, username, password 
 		return nil, ErrInvalidPass
 	}
 
-	// Check New Day trigger
-	today := time.Now().Format("2006-01-02")
-	if player.LastLoginDay != today {
-		player.ForestFights = 15
-		player.Health = player.MaxHealth
-		player.LastLoginDay = today
-		if err := r.Save(ctx, player); err != nil {
-			return nil, fmt.Errorf("failed to update new day player state: %w", err)
-		}
-	}
-
 	return player, nil
 }
 

@@ -22,7 +22,8 @@ func CurrentDateString() string {
 }
 
 // CheckAndApplyNewDay verifica se o aventureiro está logando em um novo dia do calendário.
-// Em caso afirmativo, restaura os 15 turnos de combate e atualiza a data de login.
+// Em caso afirmativo, restaura os 15 turnos de combate, cura completamente o herói
+// e atualiza a data de login. Esta é a ÚNICA fonte de verdade para a mecânica de Novo Dia.
 func (tm *TurnManager) CheckAndApplyNewDay(p *Player, today string) bool {
 	if today == "" {
 		today = CurrentDateString()
@@ -31,6 +32,7 @@ func (tm *TurnManager) CheckAndApplyNewDay(p *Player, today string) bool {
 	if p.LastLoginDay != today {
 		p.LastLoginDay = today
 		p.ForestFights = DailyForestFights
+		p.Health = p.MaxHealth
 		return true // Novo dia aplicado!
 	}
 	return false
