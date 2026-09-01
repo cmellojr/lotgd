@@ -56,6 +56,17 @@ var MonsterNamesPTBR = map[MonsterID]string{
 	MonsterDragon: "O Dragão",
 }
 
+// DragonTitlesPTBR lista os subtítulos temáticos diários do Dragão.
+// A seleção é determinística: o índice é derivado do hash SHA-256 da data corrente,
+// garantindo que todos os jogadores vejam o mesmo título no mesmo dia.
+var DragonTitlesPTBR = []string{
+	"O Devorador de Goroutines",
+	"O Terror dos Ponteiros",
+	"A Fúria Ancestral de Gopher",
+	"O Destruidor de Compiladores",
+	"A Chama Vermelha do Abismo",
+}
+
 // MonsterPrefixesPTBR contains adjective prefixes for procedural monsters.
 var MonsterPrefixesPTBR = []string{
 	"Feroz",

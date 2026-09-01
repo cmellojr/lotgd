@@ -28,13 +28,14 @@ type Player struct {
 
 // VillageState holds global daily data such as the Dragon of the Day and server day.
 type VillageState struct {
-	DayDate     string `json:"day_date"`
-	DragonAlive bool   `json:"dragon_alive"`
-	DragonHP    int    `json:"dragon_hp"`
-	DragonMaxHP int    `json:"dragon_max_hp"`
-	DragonATK   int    `json:"dragon_atk"`
-	DragonDEF   int    `json:"dragon_def"`
-	SlayerName  string `json:"slayer_name"`
+	DayDate          string `json:"day_date"`
+	DragonAlive      bool   `json:"dragon_alive"`
+	DragonHP         int    `json:"dragon_hp"`
+	DragonMaxHP      int    `json:"dragon_max_hp"`
+	DragonATK        int    `json:"dragon_atk"`
+	DragonDEF        int    `json:"dragon_def"`
+	DragonGoldReward int    `json:"dragon_gold_reward"`
+	SlayerName       string `json:"slayer_name"`
 }
 
 // NewsEntry represents an announcement or gossip on the town board.

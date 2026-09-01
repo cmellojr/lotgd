@@ -34,16 +34,10 @@ func GenerateDragonOfDay(dayDate string) engine.Monster {
 	atk := 45 + rng.Intn(16)
 	def := 25 + rng.Intn(11)
 
-	// Subtítulos temáticos de acordo com o humor do dia
-	titles := []string{
-		"O Devorador de Goroutines",
-		"O Terror dos Ponteiros",
-		"A Fúria Ancestral de Gopher",
-		"O Destruidor de Compiladores",
-		"A Chama Vermelha do Abismo",
-	}
-	title := titles[rng.Intn(len(titles))]
-	fullName := fmt.Sprintf("%s, %s", i18n.GetMonsterName(i18n.MonsterDragon), title)
+	// Subtítulos temáticos de acordo com o humor do dia.
+	// A seleção é determinística via DragonTitleIndex (mesmo seed SHA-256 da data).
+	titleIdx := engine.DragonTitleIndex(dayDate, len(i18n.DragonTitlesPTBR))
+	fullName := fmt.Sprintf("%s, %s", i18n.GetMonsterName(i18n.MonsterDragon), i18n.DragonTitlesPTBR[titleIdx])
 
 	return engine.Monster{
 		ID:         i18n.MonsterDragon,

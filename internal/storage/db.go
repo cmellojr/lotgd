@@ -100,6 +100,7 @@ func (d *DB) migrate() error {
 		dragon_max_hp INTEGER NOT NULL DEFAULT 250,
 		dragon_atk INTEGER NOT NULL DEFAULT 35,
 		dragon_def INTEGER NOT NULL DEFAULT 20,
+		dragon_gold_reward INTEGER NOT NULL DEFAULT 3000,
 		slayer_name TEXT NOT NULL DEFAULT ''
 	);
 
