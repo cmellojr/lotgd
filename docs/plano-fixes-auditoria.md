@@ -1,16 +1,16 @@
 # Plano de Implementação — Fixes do Relatório de Auditoria v0.0.1
 
 **Data**: 2026-08-31
-**Estado**: Activo
+**Estado**: Ativo
 **Repositório**: `develop` branch
 
-Este documento define o plano de correcção dos 27 achados restantes do relatório de auditoria de August 2026, organizado por fases atómicas com critérios de aceite verificáveis.
+Este documento define o plano de correção dos 27 achados restantes do relatório de auditoria de August 2026, organizado por fases atômicas com critérios de aceite verificáveis.
 
 ---
 
 ## Premissas
 
-1. Cada fase resulta num commit atómico no `develop`
+1. Cada fase resulta num commit atômico no `develop`
 2. Fases anteriores não quebram as posteriores (cada uma é independente e verificável)
 3. `go test ./...`, `go vet`, `gofmt -l`, `goimports -l` passam no final de cada fase
 4. Código em inglês; tudo exibido ao jogador em PT-BR
@@ -20,9 +20,9 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
 
 ## Fase 1 — C1: Penalidade de morte duplicada (Crítico)
 
-**Problema**: `syncPlayerState()` chama `GameOverScreen.SetPlayer()` em cada mudança de ecrã; `SetPlayer` executa `ProcessDeathPenalty()` + `SavePlayer`. O construtor também o faz. Navegar entre ecrãs re-aplica a penalidade.
+**Problema**: `syncPlayerState()` chama `GameOverScreen.SetPlayer()` em cada mudança de tela; `SetPlayer` executa `ProcessDeathPenalty()` + `SavePlayer`. O construtor também o faz. Navegar entre telas re-aplica a penalidade.
 
-**Ficheiros**:
+**Arquivos**:
 - `internal/tui/screens/game_over.go`
 - `internal/tui/tui.go`
 - `internal/tui/tui_test.go`
@@ -31,11 +31,11 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
 
 1. `GameOverScreen.SetPlayer()` → transformar num setter puro: `s.player = p; s.lostGold = 0; s.lostXP = 0`. Sem `ProcessDeathPenalty`, sem `Save`.
 2. `NewGameOverScreen()` → aceitar `lostGold`, `lostXP` como parâmetros em vez de calcular internamente.
-3. `tui.go` → quando o ecrã de destino é `ScreenGameOver`, calcular `ProcessDeathPenalty` no `MainModel.Update()` antes de `syncPlayerState()`, gravar uma única vez, e passar os valores ao construtor.
+3. `tui.go` → quando a tela de destino é `ScreenGameOver`, calcular `ProcessDeathPenalty` no `MainModel.Update()` antes de `syncPlayerState()`, gravar uma única vez, e passar os valores ao construtor.
 4. `syncPlayerState()` → não chamar `SetPlayer()` no `GameOverScreen` (ele já tem os dados do construtor).
-5. Teste: simular transição para `ScreenGameOver` → verificar penalidade exacta uma única vez; navegar após morte não altera Gold/XP.
+5. Teste: simular transição para `ScreenGameOver` → verificar penalidade exata uma única vez; navegar após morte não altera Gold/XP.
 
-**Critério de aceite**: `ProcessDeathPenalty` é chamado exactamente 1 vez por morte; navegar entre ecrãs após morte não altera Gold/XP.
+**Critério de aceite**: `ProcessDeathPenalty` é chamado exatamente 1 vez por morte; navegar entre telas após morte não altera Gold/XP.
 
 ---
 
@@ -43,7 +43,7 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
 
 **Estado**: já corrigido no `develop`. `dragonStateDefeat` e `forestStateDefeat` redirecionam imediatamente para `ScreenGameOver`.
 
-**Acção**: verificação de regressão. Nenhuma alteração de código necessária.
+**Ação**: verificação de regressão. Nenhuma alteração de código necessária.
 
 ---
 
@@ -51,7 +51,7 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
 
 **Problema**: `NewPlayerFromStorage` fixa `PotionsCount: 0`; `Save` não inclui a coluna; schema não tem a coluna; sem mecanismo de migração para DBs existentes.
 
-**Ficheiros**:
+**Arquivos**:
 - `internal/storage/db.go`
 - `internal/storage/models.go`
 - `internal/engine/models.go`
@@ -75,13 +75,13 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
 
 ## Fase 4 — C2+G2+G3: Persistência robusta (Crítico + 2 Graves)
 
-**Problema**: PRAGMAs aplicados a uma única ligação do pool; erros de `SavePlayer` descartados em ~36 sítios; zero transacções; `RecordDragonSlayed` sem `AND dragon_alive = 1`; `GetOrCreateTodayState` read-then-insert sem protecção.
+**Problema**: PRAGMAs aplicados a uma única conexão do pool; erros de `SavePlayer` descartados em ~36 locais; zero transacções; `RecordDragonSlayed` sem `AND dragon_alive = 1`; `GetOrCreateTodayState` read-then-insert sem proteção.
 
-**Ficheiros**:
+**Arquivos**:
 - `internal/storage/db.go`
 - `internal/storage/village_repo.go`
 - `internal/tui/tui.go`
-- Todas as telas com `_ = s.db.SavePlayer(...)` (~15 ficheiros)
+- Todas as telas com `_ = s.db.SavePlayer(...)` (~15 arquivos)
 
 **Plano**:
 
@@ -89,9 +89,9 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
    ```
    file:lotgd.db?_pragma=busy_timeout(5000)&_pragma=foreign_keys(1)&_pragma=synchronous(NORMAL)
    ```
-   O `journal_mode=WAL` mantém-se via `db.Exec` (persiste no ficheiro). Isto garante que todas as ligações do pool recebem os PRAGMAs.
+   O `journal_mode=WAL` mantém-se via `db.Exec` (persiste no arquivo). Isto garante que todas as ligações do pool recebem os PRAGMAs.
 
-2. **Transacção em `RecordDragonSlayed`** (`village_repo.go`):
+2. **Transação em `RecordDragonSlayed`** (`village_repo.go`):
    ```go
    func (r *VillageRepository) RecordDragonSlayed(ctx context.Context, slayerName string) error {
        tx, err := r.db.BeginTx(ctx, nil)
@@ -117,7 +117,7 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
    }
    ```
 
-3. **`GetOrCreateTodayState`** (`village_repo.go`): usar transacção com `INSERT OR IGNORE` + SELECT:
+3. **`GetOrCreateTodayState`** (`village_repo.go`): usar transação com `INSERT OR IGNORE` + SELECT:
    ```go
    tx, _ := r.db.BeginTx(ctx, nil)
    defer tx.Rollback()
@@ -137,7 +137,7 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
    ```
    Substituir `_ = s.db.SavePlayer(...)` em todas as telas por `savePlayer(s.db, s.player)`.
 
-5. **`SetMaxOpenConns(1)`** (`db.go`): limitar o pool a 1 ligação dado o perfil de carga (BBS de terminal).
+5. **`SetMaxOpenConns(1)`** (`db.go`): limitar o pool a 1 conexão dado o perfil de carga (BBS de terminal).
 
 **Critério de aceite**: 2 sessões SSH simultâneas; uma matando o dragão → a outra vê erro controlado; `busy_timeout` funciona em todas as ligações; erros de Save são logados.
 
@@ -147,7 +147,7 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
 
 **Problema**: `login.go:136-145` trata toda a falha de `Authenticate` como conta inexistente e tenta `CreatePlayer`; `ErrUserExists`/`ErrInvalidPass` são código morto no consumo.
 
-**Ficheiros**:
+**Arquivos**:
 - `internal/tui/screens/login.go`
 - `internal/storage/player_repo.go`
 
@@ -166,14 +166,14 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
    if err != nil {
        switch {
        case errors.Is(err, storage.ErrInvalidPass):
-           s.errMsg = "Senha incorrecta para o aventureiro."
+           s.errMsg = "Senha incorreta para o aventureiro."
            return s, nil
        case errors.Is(err, storage.ErrPlayerNotFound):
            // Criar conta nova
            newSP, createErr := s.db.CreatePlayer(user, pass)
            if createErr != nil {
                if errors.Is(createErr, storage.ErrUserExists) {
-                   s.errMsg = "Este nome de aventureiro já está registado."
+                   s.errMsg = "Este nome de aventureiro já está registrado."
                } else {
                    s.errMsg = fmt.Sprintf("Erro ao criar conta: %v", createErr)
                }
@@ -187,15 +187,15 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
    }
    ```
 
-**Critério de aceite**: senha errada → "Senha incorrecta"; nome novo → cria conta; nome existente → "já está registado".
+**Critério de aceite**: senha errada → "Senha incorreta"; nome novo → cria conta; nome existente → "já está registrado".
 
 ---
 
 ## Fase 6 — G7: Auto-save na desconexão SSH (Grave)
 
-**Problema**: `cmd/server/main.go` não regista hook de fim de sessão; o Wish faz `program.Quit()`/`Kill()` que nunca gera a tecla `ctrl+c` da única gravação de saída.
+**Problema**: `cmd/server/main.go` não registra hook de fim de sessão; o Wish faz `program.Quit()`/`Kill()` que nunca gera a tecla `ctrl+c` da única gravação de saída.
 
-**Ficheiros**:
+**Arquivos**:
 - `cmd/server/main.go`
 - `internal/tui/tui.go`
 
@@ -226,7 +226,7 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
    }
    ```
 
-**Critério de aceite**: sessão SSH morta com SIGKILL → a DB reflectia o estado da última acção do jogador.
+**Critério de aceite**: sessão SSH morta com SIGKILL → a DB refletia o estado da última ação do jogador.
 
 ---
 
@@ -234,7 +234,7 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
 
 **Problema**: `[1][2][3]` não funcionam na ferraria; `k`/`j` não funciona em telas além da praça; `k` na taverna dispara duelo.
 
-**Ficheiros**:
+**Arquivos**:
 - `internal/tui/screens/smith.go`
 - `internal/tui/screens/tavern.go`
 - `internal/tui/screens/guild.go`
@@ -253,7 +253,7 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
        s.tab = smithTabPotions; s.cursor = 0; return s, nil
    ```
 
-2. **Todas as telas** (`tavern.go`, `guild.go`, `smith.go`, `chapel.go`, `dragon.go`): adicionar `case "j":` e `case "k":` antes da normalização `strings.ToUpper`. Adoptar o padrão de `town.go`:
+2. **Todas as telas** (`tavern.go`, `guild.go`, `smith.go`, `chapel.go`, `dragon.go`): adicionar `case "j":` e `case "k":` antes da normalização `strings.ToUpper`. Adotar o padrão de `town.go`:
    ```go
    // Antes de k := strings.ToUpper(msg.String())
    switch msg.String() {
@@ -274,7 +274,7 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
 
 **Problema**: PvP é fachada; economia desequilibrada; flerte vende turnos ilimitados.
 
-**Ficheiros**:
+**Arquivos**:
 - `internal/tui/screens/tavern.go`
 
 **Plano**:
@@ -292,7 +292,7 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
 
 2. **Cavaleiro Vermelho** (`tavern.go:127`): melhorar mensagem:
    ```go
-   s.infoMsg = "O Cavaleiro Vermelho ergue a viseira: 'Você ainda não possui a têmpera necessária para cruzar lâminas comigo. Volte quando estiver mais experiente!'"
+   s.infoMsg = "O Cavaleiro Vermelho ergue a viseira: 'Você ainda não possui a tempera necessária para cruzar lâminas comigo. Volte quando estiver mais experiente!'"
    ```
 
 3. **Economia**: decisão de design pendente — subir recompensas de ouro (~20-30%) ou baixar custos de treino (~20%). Requer aprovação do autor.
@@ -305,26 +305,26 @@ Este documento define o plano de correcção dos 27 achados restantes do relató
 
 ### Documentação
 
-| ID | Acção | Ficheiro |
+| ID | Ação | Arquivo |
 |---|---|---|
 | M1 | Documentar crítico 10% no GDD §2.2 | `docs/GDD.md` |
 | M2 | Alinhar GDD §2.2 com fuga real (50% fixo, 80% Covarde, 20% Dragão) | `docs/GDD.md` |
 | M5 | Desmarcar PvP/Hall da Fama no roadmap como "não implementado" | `docs/roadmap.md` |
-| M8 | Actualizar rodapés de todas as telas com atalhos reais | `internal/tui/screens/*.go` |
+| M8 | Atualizar rodapés de todas as telas com atalhos reais | `internal/tui/screens/*.go` |
 | M9 | Alinhar praça com código: "Requer nível 5" em vez de "máximo" | `internal/tui/screens/town.go` |
 
 ### Limpeza de código
 
-| ID | Acção | Ficheiro |
+| ID | Ação | Arquivo |
 |---|---|---|
 | m1 | Remover tabela `graveyard` do schema (ou implementar API) | `internal/storage/db.go` |
-| m2 | Actualizar `UpdatedAt` no struct após `Save` | `internal/engine/models.go` |
+| m2 | Atualizar `UpdatedAt` no struct após `Save` | `internal/engine/models.go` |
 | m3 | Alinhar fusos horários: tudo em UTC ou tudo em local | `internal/storage/*.go` |
 | m4 | Remover `internal/tui/styles.go` (cópia morta de `ui/ui.go`) | `internal/tui/styles.go` |
 | m5 | Remover "Ponteiro Nulo" do catálogo de armas | `internal/engine/items.go` |
 | m6 | Remover `NPCYolanda` e `MonsterPrefixesPTBR` (não usados) | `internal/i18n/pt_br.go`, `internal/i18n/types.go` |
-| m7 | Corrigir `go mod tidy` e `gofmt -l .` | projecto inteiro |
-| m8 | Actualizar links em AGENTS.md (remover caminhos absolutos Windows) | `AGENTS.md` |
+| m7 | Corrigir `go mod tidy` e `gofmt -l .` | projeto inteiro |
+| m8 | Atualizar links em AGENTS.md (remover caminhos absolutos Windows) | `AGENTS.md` |
 
 ---
 
@@ -341,14 +341,14 @@ Fase 9          ──→ última, documentação e limpeza
 ```
 
 Fases 1, 3, 5 e 7 são independentes e podem ser feitas em paralelo.
-Fase 4 depende de Fase 1 e Fase 3 porque altera os mesmos ficheiros de persistência.
+Fase 4 depende de Fase 1 e Fase 3 porque altera os mesmos arquivos de persistência.
 Fase 6 depende de Fase 4 (já que grava na DB).
 
 ---
 
 ## Estimativas de esforço
 
-| Fase | Ficheiros | Linhas estimadas |
+| Fase | Arquivos | Linhas estimadas |
 |---|---|---|
 | Fase 1 (C1) | 3 | ~40 |
 | Fase 3 (G1+M7) | 3 | ~30 |
