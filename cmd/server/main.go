@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"lotgd/internal/bestiary"
 	"lotgd/internal/storage"
 	"lotgd/internal/tui"
 
@@ -56,6 +57,13 @@ func main() {
 	// Handler do Bubble Tea para o middleware do Wish:
 	// Para cada conexão SSH estabelecida por um cliente, essa função é executada para
 	// instanciar uma máquina de estados TUI isolada (MainModel) vinculada à sessão SSH.
+	// O DragonGenerator é criado uma única vez e compartilhado entre todas as sessões,
+	// garantindo que todos os jogadores enfrentem o mesmo Dragão do Dia (determinístico).
+	dragonGen := func(dayDate string) (int, int, int, int) {
+		d := bestiary.GenerateDragonOfDay(dayDate)
+		return d.MaxHealth, d.Attack, d.Defense, d.GoldReward
+	}
+
 	teaHandler := func(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 		// PTY (Pseudo-Terminal): O Wish aloca automaticamente um terminal virtual para a sessão.
 		_, _, active := s.Pty()
@@ -65,7 +73,7 @@ func main() {
 		}
 
 		// Instanciação de um novo modelo para a sessão do jogador conectado.
-		model := tui.NewMainModel(db)
+		model := tui.NewMainModel(db, dragonGen)
 
 		// Opções específicas da sessão Bubble Tea sobre o túnel SSH:
 		// - WithAltScreen(): Usa a tela secundária para limpar a interface ao desconectar.

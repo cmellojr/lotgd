@@ -29,7 +29,7 @@ type MainModel struct {
 }
 
 // NewMainModel instantiates the root TUI model.
-func NewMainModel(db *storage.DB) *MainModel {
+func NewMainModel(db *storage.DB, dragonGen storage.DragonGenerator) *MainModel {
 	return &MainModel{
 		db:             db,
 		currentScreen:  ScreenLogin,
@@ -40,7 +40,7 @@ func NewMainModel(db *storage.DB) *MainModel {
 		chapelScreen:   screens.NewChapelScreen(db, nil),
 		smithScreen:    screens.NewSmithScreen(db, nil),
 		guildScreen:    screens.NewGuildScreen(db, nil),
-		dragonScreen:   screens.NewDragonScreen(db, nil),
+		dragonScreen:   screens.NewDragonScreen(db, nil, dragonGen),
 		gameOverScreen: screens.NewGameOverScreen(db, nil),
 	}
 }

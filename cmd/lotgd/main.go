@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"lotgd/internal/bestiary"
 	"lotgd/internal/storage"
 	"lotgd/internal/tui"
 
@@ -37,7 +38,13 @@ func main() {
 
 	// Instanciamos o modelo raiz da arquitetura TEA (The Elm Architecture) do Bubble Tea.
 	// Esse modelo gerencia a máquina de estados, roteando entre telas (Login, Cidade, Floresta, etc.).
-	mainModel := tui.NewMainModel(db)
+	// O DragonGenerator é injetado via closure para que o storage não precise importar bestiary
+	// (evitando ciclo de dependência: storage → bestiary → engine → storage).
+	dragonGen := func(dayDate string) (int, int, int, int) {
+		d := bestiary.GenerateDragonOfDay(dayDate)
+		return d.MaxHealth, d.Attack, d.Defense, d.GoldReward
+	}
+	mainModel := tui.NewMainModel(db, dragonGen)
 
 	// Criamos o programa Bubble Tea com opções de execução:
 	// - tea.WithAltScreen(): Ativa o buffer de tela alternativo do terminal, preservando
