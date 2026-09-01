@@ -1,4 +1,4 @@
-﻿package bestiary
+package bestiary
 
 import (
 	"crypto/sha256"

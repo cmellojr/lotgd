@@ -1,4 +1,4 @@
-﻿package engine
+package engine
 
 import (
 	"time"
@@ -12,24 +12,24 @@ import (
 // Separamos o modelo de domínio (engine.Player) do modelo de banco (storage.Player)
 // para manter a lógica de negócio pura, isolada de detalhes de persistência e serialização.
 type Player struct {
-	ID           int64       `json:"id"`
-	Username     string      `json:"username"`
-	Level        int         `json:"level"`
-	Experience   int         `json:"experience"`
-	Gold         int         `json:"gold"`
-	BankGold     int         `json:"bank_gold"`
-	Health       int         `json:"health"`
-	MaxHealth    int         `json:"max_health"`
-	BaseAttack   int         `json:"base_attack"`
-	BaseDefense  int         `json:"base_defense"`
-	Weapon       Item        `json:"weapon"`
-	Armor        Item        `json:"armor"`
-	PotionsCount int         `json:"potions_count"`
-	ForestFights int         `json:"forest_fights"`
-	DragonKills  int         `json:"dragon_kills"`
-	LastLoginDay string      `json:"last_login_day"`
-	CreatedAt    time.Time   `json:"created_at"`
-	UpdatedAt    time.Time   `json:"updated_at"`
+	ID           int64     `json:"id"`
+	Username     string    `json:"username"`
+	Level        int       `json:"level"`
+	Experience   int       `json:"experience"`
+	Gold         int       `json:"gold"`
+	BankGold     int       `json:"bank_gold"`
+	Health       int       `json:"health"`
+	MaxHealth    int       `json:"max_health"`
+	BaseAttack   int       `json:"base_attack"`
+	BaseDefense  int       `json:"base_defense"`
+	Weapon       Item      `json:"weapon"`
+	Armor        Item      `json:"armor"`
+	PotionsCount int       `json:"potions_count"`
+	ForestFights int       `json:"forest_fights"`
+	DragonKills  int       `json:"dragon_kills"`
+	LastLoginDay string    `json:"last_login_day"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 // TotalAttack calcula o poder de ataque total do jogador (Base + Bônus da Arma).
@@ -50,8 +50,8 @@ func (p *Player) IsAlive() bool {
 // Monster representa um inimigo encontrado na floresta ou no covil.
 type Monster struct {
 	ID         i18n.MonsterID `json:"id"`
-	Name       string         `json:"name"`        // Nome completo formatado com prefixo (ex: "Feroz Rato-do-Esgoto")
-	Tier       int            `json:"tier"`        // Nível de ameaça (1 a 4, ou 5 para o Dragão)
+	Name       string         `json:"name"` // Nome completo formatado com prefixo (ex: "Feroz Rato-do-Esgoto")
+	Tier       int            `json:"tier"` // Nível de ameaça (1 a 4, ou 5 para o Dragão)
 	Health     int            `json:"health"`
 	MaxHealth  int            `json:"max_health"`
 	Attack     int            `json:"attack"`

@@ -26,6 +26,3 @@ type PlayerUpdatedMsg = ui.PlayerUpdatedMsg
 func RenderStatusBar(p *engine.Player, width int) string {
 	return ui.RenderStatusBar(p, width)
 }
-
-
-

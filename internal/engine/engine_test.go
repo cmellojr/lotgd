@@ -1,4 +1,4 @@
-﻿package engine_test
+package engine_test
 
 import (
 	"math/rand"

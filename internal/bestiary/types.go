@@ -6,23 +6,23 @@ import (
 
 // MonsterTemplate define os atributos base de uma espécie de criatura.
 type MonsterTemplate struct {
-	ID        i18n.MonsterID `json:"id"`
-	Tier      int            `json:"tier"`
-	BaseHP    int            `json:"base_hp"`
-	BaseATK   int            `json:"base_atk"`
-	BaseDEF   int            `json:"base_def"`
-	BaseXP    int            `json:"base_xp"`
-	BaseGold  int            `json:"base_gold"`
+	ID       i18n.MonsterID `json:"id"`
+	Tier     int            `json:"tier"`
+	BaseHP   int            `json:"base_hp"`
+	BaseATK  int            `json:"base_atk"`
+	BaseDEF  int            `json:"base_def"`
+	BaseXP   int            `json:"base_xp"`
+	BaseGold int            `json:"base_gold"`
 }
 
 // AffixModifier define alterações estocásticas em atributos e recompensas.
 type AffixModifier struct {
-	NamePTBR   string  `json:"name_pt_br"`
-	HPMult     float64 `json:"hp_mult"`
-	ATKMult    float64 `json:"atk_mult"`
-	DEFMult    float64 `json:"def_mult"`
-	XPMult     float64 `json:"xp_mult"`
-	GoldMult   float64 `json:"gold_mult"`
+	NamePTBR string  `json:"name_pt_br"`
+	HPMult   float64 `json:"hp_mult"`
+	ATKMult  float64 `json:"atk_mult"`
+	DEFMult  float64 `json:"def_mult"`
+	XPMult   float64 `json:"xp_mult"`
+	GoldMult float64 `json:"gold_mult"`
 }
 
 // AvailableAffixes lista os modificadores procedurais de monstros.

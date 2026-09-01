@@ -4,9 +4,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"lotgd/internal/storage"
 	"lotgd/internal/ui"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func TestTUI_MainModel_Initialization(t *testing.T) {

@@ -179,9 +179,9 @@ func (s *TownScreen) View() string {
 		line := fmt.Sprintf("%s %s — %s", shortcut, item.label, ui.HelpFooterStyle.Render(item.description))
 
 		if i == s.cursor {
-			menuContent.WriteString(ui.SelectedMenuItemStyle.Render("> " + line) + "\n")
+			menuContent.WriteString(ui.SelectedMenuItemStyle.Render("> "+line) + "\n")
 		} else {
-			menuContent.WriteString(ui.MenuItemStyle.Render("  " + line) + "\n")
+			menuContent.WriteString(ui.MenuItemStyle.Render("  "+line) + "\n")
 		}
 	}
 

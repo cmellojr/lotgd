@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"lotgd/internal/engine"
 	"lotgd/internal/i18n"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Color palette constants for the retro BBS ANSI theme.

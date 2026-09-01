@@ -31,32 +31,32 @@ type MonsterID string
 
 const (
 	// Tier 1 - Beginner
-	MonsterSewerRat   MonsterID = "sewer_rat"
-	MonsterMossSpider MonsterID = "moss_spider"
+	MonsterSewerRat     MonsterID = "sewer_rat"
+	MonsterMossSpider   MonsterID = "moss_spider"
 	MonsterClumsyKobold MonsterID = "clumsy_kobold"
-	MonsterGreenSlime MonsterID = "green_slime"
+	MonsterGreenSlime   MonsterID = "green_slime"
 	MonsterSinisterCrow MonsterID = "sinister_crow"
 
 	// Tier 2 - Apprentice
-	MonsterGoblinScout  MonsterID = "goblin_scout"
-	MonsterOrcRecruit   MonsterID = "orc_recruit"
-	MonsterShadowWolf   MonsterID = "shadow_wolf"
-	MonsterRoadBandit   MonsterID = "road_bandit"
+	MonsterGoblinScout   MonsterID = "goblin_scout"
+	MonsterOrcRecruit    MonsterID = "orc_recruit"
+	MonsterShadowWolf    MonsterID = "shadow_wolf"
+	MonsterRoadBandit    MonsterID = "road_bandit"
 	MonsterRustySkeleton MonsterID = "rusty_skeleton"
 
 	// Tier 3 - Veteran
-	MonsterBridgeTroll     MonsterID = "bridge_troll"
-	MonsterRudeOgre        MonsterID = "rude_ogre"
+	MonsterBridgeTroll       MonsterID = "bridge_troll"
+	MonsterRudeOgre          MonsterID = "rude_ogre"
 	MonsterNoviceNecromancer MonsterID = "novice_necromancer"
-	MonsterSingingHarpy    MonsterID = "singing_harpy"
+	MonsterSingingHarpy      MonsterID = "singing_harpy"
 	MonsterCrackedStoneGolem MonsterID = "cracked_stone_golem"
 
 	// Tier 4 - Legendary
-	MonsterFallenKnight    MonsterID = "fallen_knight"
-	MonsterMountainWyvern  MonsterID = "mountain_wyvern"
-	MonsterLesserLich      MonsterID = "lesser_lich"
+	MonsterFallenKnight     MonsterID = "fallen_knight"
+	MonsterMountainWyvern   MonsterID = "mountain_wyvern"
+	MonsterLesserLich       MonsterID = "lesser_lich"
 	MonsterColdGazeBasilisk MonsterID = "cold_gaze_basilisk"
-	MonsterSwampSpecter    MonsterID = "swamp_specter"
+	MonsterSwampSpecter     MonsterID = "swamp_specter"
 
 	// Special Boss
 	MonsterDragon MonsterID = "the_dragon"
@@ -67,10 +67,10 @@ type ItemID string
 
 const (
 	// Weapons
-	WeaponStick       ItemID = "stick"
-	WeaponDagger      ItemID = "dagger"
-	WeaponShortSword  ItemID = "short_sword"
-	WeaponBroadsword  ItemID = "broadsword"
+	WeaponStick        ItemID = "stick"
+	WeaponDagger       ItemID = "dagger"
+	WeaponShortSword   ItemID = "short_sword"
+	WeaponBroadsword   ItemID = "broadsword"
 	WeaponDragonSlayer ItemID = "dragon_slayer"
 
 	// Armors
@@ -81,7 +81,7 @@ const (
 	ArmorDragonScale ItemID = "dragon_scale"
 
 	// Consumables & Easter Eggs
-	PotionHealth          ItemID = "potion_health"
+	PotionHealth           ItemID = "potion_health"
 	PotionGarbageCollector ItemID = "potion_gc"
-	WeaponNullPointer     ItemID = "null_pointer"
+	WeaponNullPointer      ItemID = "null_pointer"
 )

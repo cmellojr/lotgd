@@ -26,16 +26,16 @@ func NewCombatEngine(rng *rand.Rand) *CombatEngine {
 
 // TurnResult detalha o desfecho de uma rodada de combate (ação do jogador e contra-ataque).
 type TurnResult struct {
-	PlayerDamageDealt int    `json:"player_damage_dealt"`
-	PlayerCritical    bool   `json:"player_critical"`
-	MonsterDamageDealt int   `json:"monster_damage_dealt"`
-	MonsterCritical   bool   `json:"monster_critical"`
-	MonsterDefeated   bool   `json:"monster_defeated"`
-	PlayerDefeated    bool   `json:"player_defeated"`
-	FledSuccessfully  bool   `json:"fled_successfully"`
-	XPBonus           int    `json:"xp_bonus"`
-	GoldBonus         int    `json:"gold_bonus"`
-	Message           string `json:"message"`
+	PlayerDamageDealt  int    `json:"player_damage_dealt"`
+	PlayerCritical     bool   `json:"player_critical"`
+	MonsterDamageDealt int    `json:"monster_damage_dealt"`
+	MonsterCritical    bool   `json:"monster_critical"`
+	MonsterDefeated    bool   `json:"monster_defeated"`
+	PlayerDefeated     bool   `json:"player_defeated"`
+	FledSuccessfully   bool   `json:"fled_successfully"`
+	XPBonus            int    `json:"xp_bonus"`
+	GoldBonus          int    `json:"gold_bonus"`
+	Message            string `json:"message"`
 }
 
 // CalculateDamage aplica a fórmula canônica do GDD:

@@ -22,14 +22,14 @@ const (
 
 // LoginScreen handles authentication and player account creation.
 type LoginScreen struct {
-	db          *storage.DB
-	usernameIn  textinput.Model
-	passwordIn  textinput.Model
-	focus       loginFocus
-	errMsg      string
-	infoMsg     string
-	width       int
-	height      int
+	db         *storage.DB
+	usernameIn textinput.Model
+	passwordIn textinput.Model
+	focus      loginFocus
+	errMsg     string
+	infoMsg    string
+	width      int
+	height     int
 }
 
 // NewLoginScreen initializes the login interface.

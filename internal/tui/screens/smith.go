@@ -22,13 +22,13 @@ const (
 
 // SmithScreen handles weapons, armors, and potions trading with Master Torin.
 type SmithScreen struct {
-	db       *storage.DB
-	player   *engine.Player
-	tab      smithTab
-	cursor   int
-	infoMsg  string
-	width    int
-	height   int
+	db      *storage.DB
+	player  *engine.Player
+	tab     smithTab
+	cursor  int
+	infoMsg string
+	width   int
+	height  int
 }
 
 // NewSmithScreen initializes the blacksmith forge.

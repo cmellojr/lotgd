@@ -1,4 +1,4 @@
-﻿package bestiary_test
+package bestiary_test
 
 import (
 	"math/rand"
