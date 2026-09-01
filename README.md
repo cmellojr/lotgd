@@ -4,7 +4,28 @@
   <img src="docs/assets/lotgd_logo.jpg" alt="The Legend of the Go Dragon" width="700"/>
 </p>
 
+<p align="center">
+  <a href="../../releases/tag/v0.0.1"><img src="https://img.shields.io/badge/version-0.0.1-blue.svg" alt="Versão 0.0.1"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg" alt="Licença GPL-3.0"/></a>
+  <a href="https://goreportcard.com/report/github.com/cmellojr/lotgd"><img src="https://goreportcard.com/badge/github.com/cmellojr/lotgd" alt="Go Report Card"/></a>
+  <a href="../../commits/develop"><img src="https://img.shields.io/badge/branch-develop-blue.svg" alt="Branch develop"/></a>
+</p>
+
 Um RPG clássico em modo texto retrô (BBS / Roguelike), construído 100% em **Go** com arquitetura em camadas, interface terminal com **Bubble Tea** & **Lip Gloss**, persistência ACID em **SQLite** (CGO-free) e suporte a servidor **SSH multi-usuário** via **Wish**.
+
+---
+
+## 📌 Versionamento e Branches
+
+Este projeto segue [**Semantic Versioning 2.0.0**](https://semver.org/lang/pt-BR/) e mantém um histórico de mudanças curado por humanos no arquivo [`CHANGELOG.md`](CHANGELOG.md). As versões são marcadas como **tags anotadas** no Git (por exemplo, `v0.0.1`) e o número da versão é sempre derivado da tag, nunca editado manualmente em arquivos espalhados.
+
+Adotamos um **GitFlow simplificado** com duas branches de longa duração:
+
+- **`main`** — recebe apenas *releases* finalizadas. Está sempre em estado *deployable* e cada merge gera uma nova tag SemVer.
+- **`develop`** — branch padrão para integração contínua. É o destino de todos os *pull requests* de novas funcionalidades.
+- **`feature/*`**, **`fix/*`**, **`chore/*`** — branches efêmeras (vida útil de 1 a 3 dias) que nascem de `develop` e retornam via PR.
+
+A versão atual estável é a **0.0.1**. Para detalhes sobre o fluxo completo, consulte o [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ---
 
