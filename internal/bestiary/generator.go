@@ -29,7 +29,7 @@ func NewMonsterGenerator(rng *rand.Rand) *MonsterGenerator {
 // - Nível 5 a 7 -> Tier 3 (com 15% de chance de Tier 4)
 // - Nível 8 a 10 -> Tier 4
 func (mg *MonsterGenerator) GenerateForPlayer(playerLevel int) engine.Monster {
-	tier := 1
+	var tier int
 	roll := mg.rng.Float64()
 
 	switch {
