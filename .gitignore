@@ -1,32 +1,90 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
+# =============================================================================
+# .gitignore do projeto lotgd
+# -----------------------------------------------------------------------------
+# Este arquivo impede que artefatos locais e dependências sejam versionados.
+# Os comentários estão em PT-BR conforme as diretrizes do AGENTS.md do projeto.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Artefatos de tempo de execução do Go
+# -----------------------------------------------------------------------------
+# Binários compilados manualmente (fora do go build padrão).
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
 
-# Test binary, built with `go test -c`
+# Binário de teste gerado por `go test -c`.
 *.test
 
-# Code coverage profiles and other test artifacts
+# Perfis de cobertura e artefatos correlatos.
 *.out
 coverage.*
 *.coverprofile
 profile.cov
 
-# Dependency directories (remove the comment below to include it)
+
+# -----------------------------------------------------------------------------
+# Banco de dados SQLite e seus arquivos auxiliares de WAL
+# -----------------------------------------------------------------------------
+# O arquivo principal de save (lotgd.db) e seus artefatos de Write-Ahead Log
+# são gerados dinamicamente em tempo de execução e NUNCA devem ser commitados.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+
+# -----------------------------------------------------------------------------
+# Chave privada do servidor SSH (Wish)
+# -----------------------------------------------------------------------------
+# A chave de host (.wish_host_key) é material criptográfico sensível. Jamais
+# deve ser versionada — em caso de comprometimento, regenere e distribua por
+# canal seguro.
+.wish_host_key
+*.wish_host_key
+
+
+# -----------------------------------------------------------------------------
+# Diretórios de dependências
+# -----------------------------------------------------------------------------
+# vendor/ é comentado por padrão: habilite apenas se usar explicitamente.
 # vendor/
 
-# Go workspace file
+# Arquivos de workspace do Go (multi-module).
 go.work
 go.work.sum
 
-# env file
-.env
 
-# Editor/IDE
-# .idea/
-# .vscode/
+# -----------------------------------------------------------------------------
+# Arquivos de ambiente
+# -----------------------------------------------------------------------------
+.env
+.env.local
+
+
+# -----------------------------------------------------------------------------
+# Editores e IDEs
+# -----------------------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*~
+*.swo
+
+
+# -----------------------------------------------------------------------------
+# Metadados do sistema operacional
+# -----------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+# -----------------------------------------------------------------------------
+# Logs e dumps locais
+# -----------------------------------------------------------------------------
+*.log
+*.dump
