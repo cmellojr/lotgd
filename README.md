@@ -5,179 +5,92 @@
 </p>
 
 <p align="center">
-  <a href="../../releases/tag/v0.0.1"><img src="https://img.shields.io/badge/version-0.0.1-blue.svg" alt="Versão 0.0.1"/></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.0.1-blue.svg" alt="Versão 0.0.1"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg" alt="Licença GPL-3.0"/></a>
   <a href="https://goreportcard.com/report/github.com/cmellojr/lotgd"><img src="https://goreportcard.com/badge/github.com/cmellojr/lotgd" alt="Go Report Card"/></a>
-  <a href="../../commits/develop"><img src="https://img.shields.io/badge/branch-develop-blue.svg" alt="Branch develop"/></a>
 </p>
 
-Um RPG clássico em modo texto retrô (BBS / Roguelike), construído 100% em **Go** com arquitetura em camadas, interface terminal com **Bubble Tea** & **Lip Gloss**, persistência ACID em **SQLite** (CGO-free) e suporte a servidor **SSH multi-usuário** via **Wish**.
+RPG em modo texto retrô (BBS / Roguelike) construído em **Go** com **Bubble Tea**, **Lip Gloss**, **SQLite** (CGO-free) e suporte a servidor **SSH multi-usuário** via **Wish**.
 
 ---
 
-## 📌 Versionamento e Branches
+## 🚀 Início Rápido
 
-Este projeto segue [**Semantic Versioning 2.0.0**](https://semver.org/lang/pt-BR/) e mantém um histórico de mudanças curado por humanos no arquivo [`CHANGELOG.md`](CHANGELOG.md). As versões são marcadas como **tags anotadas** no Git (por exemplo, `v0.0.1`) e o número da versão é sempre derivado da tag, nunca editado manualmente em arquivos espalhados.
+### Requisitos
+- **Go 1.22+**
+- Terminal com suporte a cores ANSI
+- Cliente `ssh` (para conexões ao servidor BBS)
 
-Adotamos um **GitFlow simplificado** com duas branches de longa duração:
+### 🎮 Executar Offline (CLI Single-player)
+```bash
+go run ./cmd/lotgd
+```
+> **Dica:** É possível especificar um banco customizado com `-db=meu_save.db`.
 
-- **`main`** — recebe apenas *releases* finalizadas. Está sempre em estado *deployable* e cada merge gera uma nova tag SemVer.
-- **`develop`** — branch padrão para integração contínua. É o destino de todos os *pull requests* de novas funcionalidades.
-- **`feature/*`**, **`fix/*`**, **`chore/*`** — branches efêmeras (vida útil de 1 a 3 dias) que nascem de `develop` e retornam via PR.
+### 🌐 Executar e Conectar ao Servidor SSH (BBS Multi-usuário)
+```bash
+# Iniciar o servidor
+go run ./cmd/server
 
-A versão atual estável é a **0.0.1**. Para detalhes sobre o fluxo completo, consulte o [`CONTRIBUTING.md`](CONTRIBUTING.md).
-
----
-
-## 🎯 Sumário
-
-1. [Requisitos](#-requisitos)
-2. [Estrutura do Projeto](#-estrutura-do-projeto)
-3. [Como Jogar Localmente (CLI Standalone)](#-como-jogar-localmente-cli-standalone)
-4. [Como Executar e Conectar ao Servidor SSH BBS](#-como-executar-e-conectar-ao-servidor-ssh-bbs)
-5. [Controles e Navegação](#-controles-e-navega%C3%A7%C3%A3o)
-6. [Executando Testes](#-executando-testes)
-7. [Arquitetura & Engenharia](#-arquitetura--engenharia)
+# Conectar via SSH (em outro terminal)
+ssh localhost -p 2222
+```
 
 ---
 
-## 📦 Requisitos
+## 🕹️ Controles Principais
 
-- **Go 1.22+** (desenvolvido e testado em Go 1.25)
-- Terminal com suporte a cores ANSI (Windows Terminal, iTerm2, Alacritty, Kitty, Bash, etc.)
-- Cliente SSH padrão (`ssh`) para conexões remotas ao servidor BBS.
+- **Navegação:** Setas `[↑ / ↓]` + `[Enter]` ou teclas vi (`k` / `j`).
+- **Atalhos do Vilarejo:**
+  - `[F]` Floresta Sombria
+  - `[T]` Taverna
+  - `[C]` Capela
+  - `[M]` Ferraria
+  - `[G]` Guilda
+  - `[D]` Covil do Dragão
+  - `[S]` Status
+- **Combate:** `[A]` Atacar | `[P]` Usar Poção | `[F]` Fugir
 
 ---
 
 ## 🗺️ Estrutura do Projeto
 
 ```text
-lotgd/
-├── cmd/
-│   ├── lotgd/                 # Executável CLI standalone (single-player offline)
-│   │   └── main.go
-│   └── server/                # Servidor SSH BBS multi-usuário (Charmbracelet Wish)
-│       └── main.go
-├── docs/                      # Documentação de design, arquitetura e roadmap
-│   ├── GDD.md
-│   ├── architecture.md
-│   ├── roadmap.md
-│   └── universo-e-prompt.md
-├── internal/
-│   ├── bestiary/              # Bestiário procedural (Tiers 1..4, Afixos e Dragão Diário)
-│   ├── engine/                # Regras de negócio, combate por turnos e progressão de RPG
-│   ├── i18n/                  # Dicionário de localização PT-BR
-│   ├── storage/               # Camada de banco de dados SQLite puro (modernc.org/sqlite)
-│   ├── tui/                   # Modelos e máquina de estados Bubble Tea (The Elm Architecture)
-│   │   └── screens/           # Telas do vilarejo, floresta, taverna, capela, ferreiro, etc.
-│   └── ui/                    # Design system ANSI e componentes de renderização (Lip Gloss)
-├── AGENTS.md                  # Diretrizes pedagógicas e guia de estilo de código
-├── go.mod
-├── go.sum
-└── README.md
+cmd/
+├── lotgd/                 # Executável CLI offline
+└── server/                # Servidor SSH BBS
+docs/                      # Documentação de Design, Arquitetura e Lore
+internal/
+├── bestiary/              # Gerador de monstros e Dragão do Dia
+├── engine/                # Regras de jogo, combate por turnos e progressão
+├── i18n/                  # Dicionário de localização (PT-BR)
+├── storage/               # Persistência SQLite CGO-free (modernc.org/sqlite)
+├── tui/                   # Interface TUI e telas em Bubble Tea
+└── ui/                    # Design System ANSI em Lip Gloss
 ```
 
 ---
 
-## 🎮 Como Jogar Localmente (CLI Standalone)
+## 📚 Documentação & Contribuição
 
-Para iniciar o jogo diretamente no seu terminal:
-
-```bash
-# A partir da pasta lotgd/
-go run ./cmd/lotgd
-```
-
-### Flags Disponíveis
-
-| Flag | Padrão | Descrição |
-|---|---|---|
-| `-db` | `lotgd.db` | Caminho personalizado para o arquivo de banco de dados SQLite. |
-
-Exemplo com banco customizado:
-```bash
-go run ./cmd/lotgd -db=meu_save.db
-```
+- **[Game Design Document (GDD)](docs/GDD.md)**: Regras de jogo, fórmulas e balanceamento.
+- **[Arquitetura & Engenharia](docs/architecture.md)**: Visão técnica das camadas e concorrência.
+- **[Universo e Lore](docs/universo-e-prompt.md)**: Nomenclatura canônica, NPCs e tom narrativo.
+- **[Guia de Agentes de IA](AGENTS.md)**: Diretrizes e convenções para agentes de IA.
+- **[Guia de Contribuição](CONTRIBUTING.md)**: Workflow Git, estilo de código e testes.
+- **[Changelog](CHANGELOG.md)**: Histórico de lançamentos e alterações.
 
 ---
 
-## 🌐 Como Executar e Conectar ao Servidor SSH BBS
-
-O servidor permite que múltiplos jogadores se conectem simultaneamente pela rede usando qualquer cliente SSH padrão, compartilhando o mesmo mundo persistente do vilarejo.
-
-### 1. Iniciar o Servidor
-
-```bash
-# A partir da pasta lotgd/
-go run ./cmd/server
-```
-
-### Flags do Servidor
-
-| Flag | Padrão | Descrição |
-|---|---|---|
-| `-host` | `0.0.0.0` | Endereço IP de escuta da interface de rede. |
-| `-port` | `2222` | Porta TCP do serviço SSH BBS. |
-| `-host-key` | `.wish_host_key` | Caminho para armazenar/ler a chave privada do host SSH. |
-| `-db` | `lotgd.db` | Caminho para o banco de dados compartilhado. |
-
-Exemplo de inicialização customizada:
-```bash
-go run ./cmd/server -host=127.0.0.1 -port=2222 -db=lotgd.db
-```
-
-### 2. Conectar via SSH
-
-Em outro terminal (ou de outra máquina na rede):
-
-```bash
-ssh localhost -p 2222
-```
-
-> **Nota:** Não é necessária chave pública SSH de cliente para autenticação inicial; o login e a criação do aventureiro são realizados diretamente na interface TUI do jogo.
-
----
-
-## 🕹️ Controles e Navegação
-
-A interface utiliza um sistema híbrido intuitivo:
-
-- **Navegação por Listas:** Use as setas `[↑]` e `[↓]` (ou `k`/`j`) para selecionar opções e pressione `[Enter]`.
-- **Atalhos Rápidos de Menu (Estilo BBS Clássico):** Pressione a tecla destacada entre colchetes para ação instantânea:
-  - `[F]` — Floresta Sombria
-  - `[T]` — Taverna da Dona Rosalinda
-  - `[C]` — Capela do Frei Anselmo
-  - `[M]` — Ferraria do Mestre Torin
-  - `[G]` — Guilda do Mestre Tobias
-  - `[D]` — Covil do Dragão
-  - `[S]` — Salvar e Sair
-- **Combate na Floresta:**
-  - `[A]` — Atacar o monstro
-  - `[P]` — Tomar poção de cura
-  - `[F]` — Tentar fugir para o vilarejo
-- **Sair do Jogo:** `[Ctrl+C]` salva o progresso e finaliza a sessão.
-
----
-
-## 🧪 Executando Testes
-
-Para rodar toda a suíte de testes unitários do motor de RPG, banco de dados e geradores:
+## 🧪 Testes
 
 ```bash
 go test ./... -v
-```
-
-Para verificar análise estática e padronização:
-
-```bash
 go vet ./...
 ```
 
 ---
 
-## 🏛️ Arquitetura & Engenharia
+## 📄 Licença
 
-- **The Elm Architecture (TEA):** Cada tela é um componente desacoplado que implementa `Init()`, `Update(msg)` e `View()`.
-- **Persistência Concorrente:** SQLite configurado com `PRAGMA journal_mode=WAL;` e `PRAGMA busy_timeout=5000;`, permitindo acesso multi-thread e multi-sessão seguro.
-- **Isolamento de Efeitos Colaterais:** O motor de combate (`CombatEngine`) opera como uma função de transição de estado pura e testável.
-- **Didática de Código:** Conforme estabelecido no [AGENTS.md](file:///c:/GitHub/go/lotgd/AGENTS.md), todo o código-fonte contém comentários conceituais profundos para estudantes e desenvolvedores Go.
+Distribuído sob a licença [GPL-3.0](LICENSE).

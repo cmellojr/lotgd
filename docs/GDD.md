@@ -3,7 +3,7 @@
 > **Documento Vivo de Design de Jogo**  
 > **Gênero:** RPG em Modo Texto / BBS Door Game / TUI Multi-usuário  
 > **Plataforma:** Terminal CLI / Servidor SSH (Go + Bubble Tea + Lip Gloss + Wish + SQLite)  
-> **Referência Narrativa:** [universo-e-prompt.md](file:///c:/GitHub/go/lotgd/docs/universo-e-prompt.md)
+> **Referência Narrativa:** [universo-e-prompt.md](universo-e-prompt.md)
 
 ---
 

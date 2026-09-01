@@ -1,8 +1,8 @@
 # Roadmap de Desenvolvimento — The Legend of the Go Dragon
 
 > **Documento Estratégico de Fases & Entregas**  
-> **Status:** Aprovado via Entrevista Interativa (`/grill-me`)  
-> **Alinhamento:** [GDD.md](file:///c:/GitHub/go/lotgd/docs/GDD.md) · [universo-e-prompt.md](file:///c:/GitHub/go/lotgd/docs/universo-e-prompt.md) · [architecture.md](file:///c:/GitHub/go/lotgd/docs/architecture.md)
+> **Status:** Aprovado
+> **Alinhamento:** [GDD.md](GDD.md) · [universo-e-prompt.md](universo-e-prompt.md) · [architecture.md](architecture.md)
 
 ---
 
