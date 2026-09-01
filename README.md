@@ -10,7 +10,19 @@
   <a href="https://goreportcard.com/report/github.com/cmellojr/lotgd"><img src="https://goreportcard.com/badge/github.com/cmellojr/lotgd" alt="Go Report Card"/></a>
 </p>
 
-RPG em modo texto retrô (BBS / Roguelike) construído em **Go** com **Bubble Tea**, **Lip Gloss**, **SQLite** (CGO-free) e suporte a servidor **SSH multi-usuário** via **Wish**.
+**The Legend of the Go Dragon** é uma homenagem moderna aos clássicos *door games* de **BBS dos anos 1990** (como *Legend of the Red Dragon / LORD*).
+
+Um RPG multiplayer e persistente em modo texto (TUI), situado em um vilarejo envolto em mistérios sob a constante ameaça de um terrível Dragão. A cada amanhecer, o "Novo Dia" renova a energia dos aventureiros, resgata feras na Floresta Sombria e reacende a disputa pelo topo do ranking local.
+
+Construído 100% em **Go**, o projeto utiliza **Bubble Tea** & **Lip Gloss** para a interface ANSI no terminal, **SQLite** (CGO-free) para persistência ACID e **Wish** para permitir conexões remotas de múltiplos jogadores via **SSH**.
+
+---
+
+## 🏰 O Universo do Jogo
+
+Nas profundezas de uma floresta densa e sombria, um pacato vilarejo vive em alerta constante. A cada amanhecer, o poderoso Dragão do Dia reaparece no alto da montanha.
+
+Os aventureiros devem explorar a floresta, enfrentar bestas bizarras, aprimorar espadas e armaduras na ferraria do Mestre Torin, buscar bênçãos com o Frei Anselmo e compartilhar fofocas e cerveja na taverna da Dona Rosalinda — tudo antes que seus turnos diários se esgotem ou que o Dragão os reduza a cinzas.
 
 ---
 
@@ -42,13 +54,13 @@ ssh localhost -p 2222
 
 - **Navegação:** Setas `[↑ / ↓]` + `[Enter]` ou teclas vi (`k` / `j`).
 - **Atalhos do Vilarejo:**
-  - `[F]` Floresta Sombria
-  - `[T]` Taverna
-  - `[C]` Capela
-  - `[M]` Ferraria
-  - `[G]` Guilda
-  - `[D]` Covil do Dragão
-  - `[S]` Status
+  - `[F]` Floresta Sombria (combates e exploração)
+  - `[T]` Taverna da Dona Rosalinda (fofocas e encontros)
+  - `[C]` Capela do Frei Anselmo (cura e bênçãos)
+  - `[M]` Ferraria do Mestre Torin (armas e armaduras)
+  - `[G]` Guilda do Mestre Tobias (treino e promoção)
+  - `[D]` Covil do Dragão (o grande confronto)
+  - `[S]` Status do Aventureiro
 - **Combate:** `[A]` Atacar | `[P]` Usar Poção | `[F]` Fugir
 
 ---
