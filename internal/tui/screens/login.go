@@ -1,6 +1,7 @@
 package screens
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -135,13 +136,25 @@ func (s *LoginScreen) handleLogin() (tea.Model, tea.Cmd) {
 	// Tenta autenticar
 	sp, err := s.db.AuthenticatePlayer(user, pass)
 	if err != nil {
-		// Se não existe, cria
-		newSP, createErr := s.db.CreatePlayer(user, pass)
-		if createErr != nil {
-			s.errMsg = fmt.Sprintf("Erro ao autenticar/criar conta: %v", createErr)
+		if errors.Is(err, storage.ErrInvalidPass) {
+			s.errMsg = "Senha incorreta para o aventureiro."
+			return s, nil
+		} else if errors.Is(err, storage.ErrPlayerNotFound) {
+			// Se não existe, cria
+			newSP, createErr := s.db.CreatePlayer(user, pass)
+			if createErr != nil {
+				if errors.Is(createErr, storage.ErrUserExists) {
+					s.errMsg = "Este nome de aventureiro já está registrado."
+					return s, nil
+				}
+				s.errMsg = fmt.Sprintf("Erro ao criar conta: %v", createErr)
+				return s, nil
+			}
+			sp = newSP
+		} else {
+			s.errMsg = fmt.Sprintf("Erro ao autenticar: %v", err)
 			return s, nil
 		}
-		sp = newSP
 	}
 
 	// Converte para modelo de domínio

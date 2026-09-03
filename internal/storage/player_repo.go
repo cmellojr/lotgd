@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -40,6 +41,9 @@ func (r *PlayerRepository) Register(ctx context.Context, username, password stri
 	`
 	res, err := r.db.ExecContext(ctx, query, username, string(hash), today)
 	if err != nil {
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			return nil, ErrUserExists
+		}
 		return nil, fmt.Errorf("failed to register player: %w", err)
 	}
 
