@@ -19,6 +19,7 @@ type Player struct {
 	Defense      int       `json:"defense"`
 	WeaponID     string    `json:"weapon_id"`
 	ArmorID      string    `json:"armor_id"`
+	PotionsCount int       `json:"potions_count"`
 	ForestFights int       `json:"forest_fights"`
 	DragonKills  int       `json:"dragon_kills"`
 	LastLoginDay string    `json:"last_login_day"`
