@@ -41,7 +41,7 @@ func NewMainModel(db *storage.DB, dragonGen storage.DragonGenerator) *MainModel 
 		smithScreen:    screens.NewSmithScreen(db, nil),
 		guildScreen:    screens.NewGuildScreen(db, nil),
 		dragonScreen:   screens.NewDragonScreen(db, nil, dragonGen),
-		gameOverScreen: screens.NewGameOverScreen(db, nil),
+		gameOverScreen: screens.NewGameOverScreen(db, nil, 0, 0),
 	}
 }
 
@@ -74,6 +74,15 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case ChangeScreenMsg:
+		if msg.Screen == ScreenGameOver && m.player != nil {
+			econ := engine.NewEconomyService()
+			lostGold, lostXP := econ.ProcessDeathPenalty(m.player)
+			if m.db != nil {
+				_ = m.db.SavePlayer(m.player.ToStorage())
+			}
+			m.gameOverScreen = screens.NewGameOverScreen(m.db, m.player, lostGold, lostXP)
+			m.gameOverScreen.SetSize(m.width, m.height)
+		}
 		m.currentScreen = msg.Screen
 		m.syncPlayerState()
 		return m, nil
@@ -153,7 +162,6 @@ func (m *MainModel) syncPlayerState() {
 	m.smithScreen.SetPlayer(m.player)
 	m.guildScreen.SetPlayer(m.player)
 	m.dragonScreen.SetPlayer(m.player)
-	m.gameOverScreen.SetPlayer(m.player)
 }
 
 // View delegates rendering to the active screen.
