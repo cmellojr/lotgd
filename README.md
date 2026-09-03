@@ -87,7 +87,7 @@ internal/
 
 - **[Game Design Document (GDD)](docs/GDD.md)**: Regras de jogo, fórmulas e balanceamento.
 - **[Arquitetura & Engenharia](docs/architecture.md)**: Visão técnica das camadas e concorrência.
-- **[Universo e Lore](docs/universo-e-prompt.md)**: Nomenclatura canônica, NPCs e tom narrativo.
+- **[Universo e Lore](docs/universo-e-lore.md)**: Nomenclatura canônica, NPCs e tom narrativo.
 - **[Guia de Agentes de IA](AGENTS.md)**: Diretrizes e convenções para agentes de IA.
 - **[Guia de Contribuição](CONTRIBUTING.md)**: Workflow Git, estilo de código e testes.
 - **[Changelog](CHANGELOG.md)**: Histórico de lançamentos e alterações.

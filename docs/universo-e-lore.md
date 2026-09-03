@@ -1,7 +1,7 @@
-# The Legend of the Go Dragon — Universo e Prompt de Contexto
+# The Legend of the Go Dragon — Universo e Lore
 
 > **Nota de uso:** este arquivo é a fonte da verdade sobre o *universo narrativo* do jogo.
-> Referencie-o a partir do `AGENTS.md` (ex: `@docs/universo-e-prompt.md`) para que qualquer
+> Referencie-o a partir do `AGENTS.md` (ex: `@docs/universo-e-lore.md`) para que qualquer
 > agente de IA — Copilot, OpenCode, Antigravity/Gemini, Jules — tenha o mesmo contexto de
 > lore ao gerar diálogos, textos de evento, nomes de itens ou telas do jogo.
 > O `AGENTS.md` continua sendo o lugar certo para comandos de build, convenções de código

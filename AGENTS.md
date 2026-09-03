@@ -8,7 +8,7 @@ Diretrizes de desenvolvimento e contexto de atuação para agentes de IA no proj
 
 Antes de gerar código ou conteúdo, consulte os documentos especializados:
 
-- **Universo e Lore**: [`docs/universo-e-prompt.md`](docs/universo-e-prompt.md) — Tom de voz, NPCs, bestiário e nomenclatura.
+- **Universo e Lore**: [`docs/universo-e-lore.md`](docs/universo-e-lore.md) — Tom de voz, NPCs, bestiário e nomenclatura.
 - **Game Design Document**: [`docs/GDD.md`](docs/GDD.md) — Core loop, combate, economia de turnos e fluxo TUI.
 - **Arquitetura & Engenharia**: [`docs/architecture.md`](docs/architecture.md) — Camadas, SQLite (CGO-free), Bubble Tea e Wish (SSH).
 

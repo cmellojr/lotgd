@@ -1,7 +1,7 @@
 # Architecture & Engineering Document — The Legend of the Go Dragon
 
 > **Documento Técnico de Arquitetura de Software**  
-> **Referência Narrativa:** [universo-e-prompt.md](universo-e-prompt.md)
+> **Referência Narrativa:** [universo-e-lore.md](universo-e-lore.md)
 > **Documento de Game Design:** [GDD.md](GDD.md)
 > **Diretrizes para Agentes:** [AGENTS.md](../AGENTS.md)
 

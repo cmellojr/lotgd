@@ -2,7 +2,7 @@
 
 > **Documento Estratégico de Fases & Entregas**  
 > **Status:** Aprovado
-> **Alinhamento:** [GDD.md](GDD.md) · [universo-e-prompt.md](universo-e-prompt.md) · [architecture.md](architecture.md)
+> **Alinhamento:** [GDD.md](GDD.md) · [universo-e-lore.md](universo-e-lore.md) · [architecture.md](architecture.md)
 
 ---
 
