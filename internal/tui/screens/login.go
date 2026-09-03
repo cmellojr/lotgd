@@ -136,22 +136,23 @@ func (s *LoginScreen) handleLogin() (tea.Model, tea.Cmd) {
 	// Tenta autenticar
 	sp, err := s.db.AuthenticatePlayer(user, pass)
 	if err != nil {
-		if errors.Is(err, storage.ErrInvalidPass) {
+		switch {
+		case errors.Is(err, storage.ErrInvalidPass):
 			s.errMsg = "Senha incorreta para o aventureiro."
 			return s, nil
-		} else if errors.Is(err, storage.ErrPlayerNotFound) {
+		case errors.Is(err, storage.ErrPlayerNotFound):
 			// Se não existe, cria
 			newSP, createErr := s.db.CreatePlayer(user, pass)
 			if createErr != nil {
 				if errors.Is(createErr, storage.ErrUserExists) {
 					s.errMsg = "Este nome de aventureiro já está registrado."
-					return s, nil
+				} else {
+					s.errMsg = fmt.Sprintf("Erro ao criar conta: %v", createErr)
 				}
-				s.errMsg = fmt.Sprintf("Erro ao criar conta: %v", createErr)
 				return s, nil
 			}
 			sp = newSP
-		} else {
+		default:
 			s.errMsg = fmt.Sprintf("Erro ao autenticar: %v", err)
 			return s, nil
 		}
