@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"path/filepath"
 	"testing"
 )
@@ -38,9 +39,21 @@ func TestStorageWorkflow(t *testing.T) {
 		t.Errorf("expected ID %d, got %d", p.ID, authPlayer.ID)
 	}
 
-	// 3. Test Invalid Password
-	if _, err := playerRepo.Authenticate(ctx, "GopherHero", "wrongpass"); err != ErrInvalidPass {
+	// 3. Test Invalid Password and Non-existent User
+	if _, err := playerRepo.Authenticate(ctx, "GopherHero", "wrongpass"); !errors.Is(err, ErrInvalidPass) {
 		t.Errorf("expected ErrInvalidPass, got %v", err)
+	}
+	if _, err := playerRepo.Authenticate(ctx, "NonExistentUser", "secret123"); !errors.Is(err, ErrPlayerNotFound) {
+		t.Errorf("expected ErrPlayerNotFound, got %v", err)
+	}
+
+	// 3.1 Test Duplicate Registration
+	if _, err := playerRepo.Register(ctx, "GopherHero", "anotherpass"); !errors.Is(err, ErrUserExists) {
+		t.Errorf("expected ErrUserExists when registering existing username, got %v", err)
+	}
+	// Test case-insensitive duplicate username registration (due to COLLATE NOCASE)
+	if _, err := playerRepo.Register(ctx, "gopherhero", "anotherpass"); !errors.Is(err, ErrUserExists) {
+		t.Errorf("expected ErrUserExists for case-insensitive duplicate username, got %v", err)
 	}
 
 	// 4. Test Player Save & Ranking & Potions
