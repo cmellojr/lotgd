@@ -66,7 +66,7 @@ func (s *SmithScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch k {
 		case "V", "ESC":
-			_ = s.db.SavePlayer(s.player.ToStorage())
+			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 			}
@@ -128,7 +128,7 @@ func (s *SmithScreen) handlePurchase() (tea.Model, tea.Cmd) {
 
 		s.player.Gold -= weapon.Value
 		s.player.Weapon = weapon
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		s.infoMsg = fmt.Sprintf("Você comprou e equipou: %s (+%d ATK)!", i18n.GetItemName(weapon.ID), weapon.PowerBonus)
 
 	case smithTabArmors:
@@ -144,7 +144,7 @@ func (s *SmithScreen) handlePurchase() (tea.Model, tea.Cmd) {
 
 		s.player.Gold -= armor.Value
 		s.player.Armor = armor
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		s.infoMsg = fmt.Sprintf("Você comprou e equipou: %s (+%d DEF)!", i18n.GetItemName(armor.ID), armor.PowerBonus)
 
 	case smithTabPotions:
@@ -156,7 +156,7 @@ func (s *SmithScreen) handlePurchase() (tea.Model, tea.Cmd) {
 
 		s.player.Gold -= potion.Value
 		s.player.PotionsCount++
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		s.infoMsg = fmt.Sprintf("Você comprou uma %s! (Total na bolsa: %d)", i18n.GetItemName(potion.ID), s.player.PotionsCount)
 	}
 

@@ -105,7 +105,7 @@ func (s *DragonScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s.appendLog("Não há como recuar agora! O calor sufocante e a fúria do Dragão bloqueiam a saída!")
 				return s, nil
 			}
-			_ = s.db.SavePlayer(s.player.ToStorage())
+			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 			}
@@ -135,7 +135,7 @@ func (s *DragonScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case dragonStateDefeat:
-			_ = s.db.SavePlayer(s.player.ToStorage())
+			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenGameOver}
 			}
@@ -175,13 +175,13 @@ func (s *DragonScreen) handleAttack() (tea.Model, tea.Cmd) {
 		s.state = dragonStateVictory
 		vRepo := storage.NewVillageRepository(s.db, storage.WithDragonGenerator(s.dragonGen))
 		_ = vRepo.RecordDragonSlayed(context.Background(), s.player.Username)
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		s.appendLog("🔥 O DRAGÃO CAIU! Seus restos viraram lenda e você salvou todo o Vilarejo! 🔥")
 		s.appendLog("Pressione [Enter] para retornar triunfante à Praça do Vilarejo!")
 	} else if res.PlayerDefeated {
 		s.state = dragonStateDefeat
 		s.appendLog("Pressione [Enter] para sucumbir...")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	}
 
 	return s, nil
@@ -195,7 +195,7 @@ func (s *DragonScreen) handlePotion() (tea.Model, tea.Cmd) {
 	}
 
 	s.appendLog(fmt.Sprintf("Você usou uma Poção de Vida (+%d HP)! Poções restantes: %d", healed, s.player.PotionsCount))
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, nil
 }
 
@@ -206,11 +206,11 @@ func (s *DragonScreen) handleFlee() (tea.Model, tea.Cmd) {
 	if res.FledSuccessfully {
 		s.state = dragonStateApproach
 		s.appendLog("Você escapou milagrosamente do sopro abrasador do Dragão e voltou à entrada do covil.")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	} else if res.PlayerDefeated {
 		s.state = dragonStateDefeat
 		s.appendLog("Pressione [Enter] para sucumbir...")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	}
 
 	return s, nil
@@ -224,7 +224,7 @@ func (s *DragonScreen) appendLog(msg string) {
 }
 
 func (s *DragonScreen) backToTown() (tea.Model, tea.Cmd) {
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, func() tea.Msg {
 		return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 	}

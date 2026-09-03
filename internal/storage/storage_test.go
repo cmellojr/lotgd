@@ -91,6 +91,52 @@ func TestStorageWorkflow(t *testing.T) {
 	}
 }
 
+func TestRecordDragonSlayedDoubleSlay(t *testing.T) {
+	ctx := context.Background()
+	tmpDir := t.TempDir()
+	dbPath := filepath.Join(tmpDir, "test_double_slay.db")
+
+	db, err := OpenDB(dbPath)
+	if err != nil {
+		t.Fatalf("OpenDB failed: %v", err)
+	}
+	defer db.Close()
+
+	villageRepo := NewVillageRepository(db)
+
+	// Initialize today's state
+	state, err := villageRepo.GetOrCreateTodayState(ctx)
+	if err != nil {
+		t.Fatalf("GetOrCreateTodayState failed: %v", err)
+	}
+	if !state.DragonAlive {
+		t.Fatalf("expected dragon to be alive initially")
+	}
+
+	// First slayer succeeds
+	if err := villageRepo.RecordDragonSlayed(ctx, "HeroOne"); err != nil {
+		t.Fatalf("First RecordDragonSlayed failed: %v", err)
+	}
+
+	// Second slayer attempting to slay the same dragon must fail with error
+	err = villageRepo.RecordDragonSlayed(ctx, "HeroTwo")
+	if err == nil {
+		t.Fatalf("expected error on second RecordDragonSlayed, got nil")
+	}
+
+	// Verify state in DB retains HeroOne as slayer
+	stateAfter, err := villageRepo.GetOrCreateTodayState(ctx)
+	if err != nil {
+		t.Fatalf("GetOrCreateTodayState failed after double slay attempt: %v", err)
+	}
+	if stateAfter.DragonAlive {
+		t.Errorf("expected dragon to be dead")
+	}
+	if stateAfter.SlayerName != "HeroOne" {
+		t.Errorf("expected slayer name 'HeroOne', got %q", stateAfter.SlayerName)
+	}
+}
+
 func TestLegacySchemaMigration(t *testing.T) {
 	ctx := context.Background()
 	tmpDir := t.TempDir()

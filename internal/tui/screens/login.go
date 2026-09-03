@@ -151,7 +151,7 @@ func (s *LoginScreen) handleLogin() (tea.Model, tea.Cmd) {
 	tm := engine.NewTurnManager()
 	today := engine.CurrentDateString()
 	if tm.CheckAndApplyNewDay(player, today) {
-		_ = s.db.SavePlayer(player.ToStorage())
+		SavePlayer(s.db, player)
 	}
 
 	return s, func() tea.Msg {

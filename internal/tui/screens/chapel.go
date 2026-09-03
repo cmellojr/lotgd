@@ -116,7 +116,7 @@ func (s *ChapelScreen) selectCurrent() (tea.Model, tea.Cmd) {
 
 		s.player.Gold -= cost
 		s.player.Health = s.player.MaxHealth
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		s.infoMsg = fmt.Sprintf("Frei Anselmo unge seus ferimentos com óleos sagrados. Vida restaurada completamente por %d moedas de ouro!", cost)
 
 	case 1: // Doação
@@ -126,7 +126,7 @@ func (s *ChapelScreen) selectCurrent() (tea.Model, tea.Cmd) {
 		}
 
 		s.player.Gold -= 10
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		s.infoMsg = "Você coloca 10 moedas na caixa de esmolas. Uma sensação de paz e leveza espiritual aquece sua alma."
 
 	case 2: // Meditação
@@ -140,7 +140,7 @@ func (s *ChapelScreen) selectCurrent() (tea.Model, tea.Cmd) {
 }
 
 func (s *ChapelScreen) backToTown() (tea.Model, tea.Cmd) {
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, func() tea.Msg {
 		return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 	}

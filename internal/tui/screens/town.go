@@ -85,7 +85,7 @@ func (s *TownScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					econ := engine.NewEconomyService()
 					deposited := s.player.Gold
 					_ = econ.Deposit(s.player, deposited)
-					_ = s.db.SavePlayer(s.player.ToStorage())
+					SavePlayer(s.db, s.player)
 					s.infoMsg = fmt.Sprintf("Você depositou %d moedas de ouro no cofre com segurança!", deposited)
 				}
 				s.bankMode = false
@@ -97,7 +97,7 @@ func (s *TownScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					econ := engine.NewEconomyService()
 					withdrawn := s.player.BankGold
 					_ = econ.Withdraw(s.player, withdrawn)
-					_ = s.db.SavePlayer(s.player.ToStorage())
+					SavePlayer(s.db, s.player)
 					s.infoMsg = fmt.Sprintf("Você retirou %d moedas de ouro do seu cofre.", withdrawn)
 				}
 				s.bankMode = false
@@ -149,7 +149,7 @@ func (s *TownScreen) selectItem(item townMenuItem) (tea.Model, tea.Cmd) {
 	}
 
 	if item.target == ui.ScreenLogin {
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		return s, func() tea.Msg {
 			return ui.ChangeScreenMsg{Screen: ui.ScreenLogin}
 		}

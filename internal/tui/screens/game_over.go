@@ -55,9 +55,7 @@ func (s *GameOverScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "enter", " ", "v", "c":
-			if s.player != nil && s.db != nil {
-				_ = s.db.SavePlayer(s.player.ToStorage())
-			}
+			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenChapel}
 			}
