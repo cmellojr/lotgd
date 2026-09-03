@@ -21,22 +21,13 @@ type GameOverScreen struct {
 	height   int
 }
 
-// NewGameOverScreen initializes the death screen.
-func NewGameOverScreen(db *storage.DB, player *engine.Player) *GameOverScreen {
-	econ := engine.NewEconomyService()
-	var lGold, lXP int
-	if player != nil {
-		lGold, lXP = econ.ProcessDeathPenalty(player)
-		if db != nil {
-			_ = db.SavePlayer(player.ToStorage())
-		}
-	}
-
+// NewGameOverScreen initializes the death screen with the calculated penalty losses.
+func NewGameOverScreen(db *storage.DB, player *engine.Player, lostGold, lostXP int) *GameOverScreen {
 	return &GameOverScreen{
 		db:       db,
 		player:   player,
-		lostGold: lGold,
-		lostXP:   lXP,
+		lostGold: lostGold,
+		lostXP:   lostXP,
 	}
 }
 
@@ -45,16 +36,11 @@ func (s *GameOverScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer sets the player and applies death penalties.
+// SetPlayer sets the player state.
 func (s *GameOverScreen) SetPlayer(p *engine.Player) {
 	s.player = p
-	econ := engine.NewEconomyService()
-	if p != nil {
-		s.lostGold, s.lostXP = econ.ProcessDeathPenalty(p)
-		if s.db != nil {
-			_ = s.db.SavePlayer(p.ToStorage())
-		}
-	}
+	s.lostGold = 0
+	s.lostXP = 0
 }
 
 // SetSize updates screen size.
