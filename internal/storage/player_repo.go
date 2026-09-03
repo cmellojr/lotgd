@@ -69,7 +69,7 @@ func (r *PlayerRepository) Authenticate(ctx context.Context, username, password 
 func (r *PlayerRepository) GetByID(ctx context.Context, id int64) (*Player, error) {
 	query := `
 	SELECT id, username, password_hash, level, experience, gold, bank_gold, health, max_health,
-	       attack, defense, weapon_id, armor_id, forest_fights, dragon_kills, last_login_day,
+	       attack, defense, weapon_id, armor_id, potions_count, forest_fights, dragon_kills, last_login_day,
 	       created_at, updated_at
 	FROM players WHERE id = ?
 	`
@@ -81,7 +81,7 @@ func (r *PlayerRepository) GetByID(ctx context.Context, id int64) (*Player, erro
 func (r *PlayerRepository) GetByUsername(ctx context.Context, username string) (*Player, error) {
 	query := `
 	SELECT id, username, password_hash, level, experience, gold, bank_gold, health, max_health,
-	       attack, defense, weapon_id, armor_id, forest_fights, dragon_kills, last_login_day,
+	       attack, defense, weapon_id, armor_id, potions_count, forest_fights, dragon_kills, last_login_day,
 	       created_at, updated_at
 	FROM players WHERE username = ?
 	`
@@ -94,13 +94,13 @@ func (r *PlayerRepository) Save(ctx context.Context, p *Player) error {
 	query := `
 	UPDATE players SET
 		level = ?, experience = ?, gold = ?, bank_gold = ?, health = ?, max_health = ?,
-		attack = ?, defense = ?, weapon_id = ?, armor_id = ?, forest_fights = ?,
+		attack = ?, defense = ?, weapon_id = ?, armor_id = ?, potions_count = ?, forest_fights = ?,
 		dragon_kills = ?, last_login_day = ?, updated_at = CURRENT_TIMESTAMP
 	WHERE id = ?
 	`
 	_, err := r.db.ExecContext(ctx, query,
 		p.Level, p.Experience, p.Gold, p.BankGold, p.Health, p.MaxHealth,
-		p.Attack, p.Defense, p.WeaponID, p.ArmorID, p.ForestFights,
+		p.Attack, p.Defense, p.WeaponID, p.ArmorID, p.PotionsCount, p.ForestFights,
 		p.DragonKills, p.LastLoginDay, p.ID,
 	)
 	return err
@@ -110,7 +110,7 @@ func (r *PlayerRepository) Save(ctx context.Context, p *Player) error {
 func (r *PlayerRepository) ListRankings(ctx context.Context, limit int) ([]*Player, error) {
 	query := `
 	SELECT id, username, password_hash, level, experience, gold, bank_gold, health, max_health,
-	       attack, defense, weapon_id, armor_id, forest_fights, dragon_kills, last_login_day,
+	       attack, defense, weapon_id, armor_id, potions_count, forest_fights, dragon_kills, last_login_day,
 	       created_at, updated_at
 	FROM players
 	ORDER BY dragon_kills DESC, level DESC, experience DESC
@@ -141,7 +141,7 @@ func scanPlayer(scanner rowScanner) (*Player, error) {
 	var p Player
 	err := scanner.Scan(
 		&p.ID, &p.Username, &p.PasswordHash, &p.Level, &p.Experience, &p.Gold, &p.BankGold,
-		&p.Health, &p.MaxHealth, &p.Attack, &p.Defense, &p.WeaponID, &p.ArmorID,
+		&p.Health, &p.MaxHealth, &p.Attack, &p.Defense, &p.WeaponID, &p.ArmorID, &p.PotionsCount,
 		&p.ForestFights, &p.DragonKills, &p.LastLoginDay, &p.CreatedAt, &p.UpdatedAt,
 	)
 	if err != nil {

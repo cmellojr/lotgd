@@ -71,6 +71,36 @@ func (d *DB) CreatePlayer(username, password string) (Player, error) {
 }
 
 func (d *DB) migrate() error {
+	var userVersion int
+	if err := d.QueryRow("PRAGMA user_version;").Scan(&userVersion); err != nil {
+		return fmt.Errorf("failed to read user_version: %w", err)
+	}
+
+	if userVersion < 2 {
+		var tableExists int
+		err := d.QueryRow("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='players'").Scan(&tableExists)
+		if err != nil {
+			return fmt.Errorf("failed to check players table existence: %w", err)
+		}
+
+		if tableExists > 0 {
+			var columnExists int
+			err := d.QueryRow("SELECT COUNT(*) FROM pragma_table_info('players') WHERE name='potions_count'").Scan(&columnExists)
+			if err != nil {
+				return fmt.Errorf("failed to check potions_count column: %w", err)
+			}
+			if columnExists == 0 {
+				if _, err := d.Exec("ALTER TABLE players ADD COLUMN potions_count INTEGER NOT NULL DEFAULT 0;"); err != nil {
+					return fmt.Errorf("failed to add potions_count column: %w", err)
+				}
+			}
+		}
+
+		if _, err := d.Exec("PRAGMA user_version = 2;"); err != nil {
+			return fmt.Errorf("failed to set user_version: %w", err)
+		}
+	}
+
 	schema := `
 	CREATE TABLE IF NOT EXISTS players (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -86,6 +116,7 @@ func (d *DB) migrate() error {
 		defense INTEGER NOT NULL DEFAULT 2,
 		weapon_id TEXT NOT NULL DEFAULT 'stick',
 		armor_id TEXT NOT NULL DEFAULT 'clothes',
+		potions_count INTEGER NOT NULL DEFAULT 0,
 		forest_fights INTEGER NOT NULL DEFAULT 15,
 		dragon_kills INTEGER NOT NULL DEFAULT 0,
 		last_login_day TEXT NOT NULL DEFAULT '',
