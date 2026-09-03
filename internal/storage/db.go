@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -15,24 +16,27 @@ type DB struct {
 
 // OpenDB opens a connection to SQLite database and applies schemas.
 func OpenDB(dsn string) (*DB, error) {
-	db, err := sql.Open("sqlite", dsn)
+	pragmaParams := "_pragma=busy_timeout(5000)&_pragma=foreign_keys(1)&_pragma=synchronous(NORMAL)"
+	formattedDSN := dsn
+	if strings.Contains(dsn, "?") {
+		formattedDSN += "&" + pragmaParams
+	} else {
+		formattedDSN += "?" + pragmaParams
+	}
+
+	db, err := sql.Open("sqlite", formattedDSN)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open sqlite database: %w", err)
 	}
 
-	// Performance and WAL configuration
-	pragmas := []string{
-		"PRAGMA journal_mode=WAL;",
-		"PRAGMA busy_timeout=5000;",
-		"PRAGMA foreign_keys=ON;",
-		"PRAGMA synchronous=NORMAL;",
-	}
+	// BBS terminal load profile: limit connection pool to 1
+	db.SetMaxOpenConns(1)
+	db.SetMaxIdleConns(1)
 
-	for _, p := range pragmas {
-		if _, err := db.Exec(p); err != nil {
-			db.Close()
-			return nil, fmt.Errorf("failed to set pragma %q: %w", p, err)
-		}
+	// Enable WAL mode (persisted in DB header)
+	if _, err := db.Exec("PRAGMA journal_mode=WAL;"); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("failed to set WAL journal mode: %w", err)
 	}
 
 	lotgdDB := &DB{DB: db}

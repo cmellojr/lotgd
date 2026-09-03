@@ -110,7 +110,7 @@ func (s *GuildScreen) selectCurrent() (tea.Model, tea.Cmd) {
 			return s, nil
 		}
 
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		s.infoMsg = fmt.Sprintf("PARABÉNS! Você foi promovido com sucesso para o NÍVEL %d! Seus atributos e vida foram aprimorados!", s.player.Level)
 
 	case 1: // Consultar tabela de níveis
@@ -133,7 +133,7 @@ func (s *GuildScreen) selectCurrent() (tea.Model, tea.Cmd) {
 }
 
 func (s *GuildScreen) backToTown() (tea.Model, tea.Cmd) {
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, func() tea.Msg {
 		return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 	}

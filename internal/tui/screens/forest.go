@@ -81,7 +81,7 @@ func (s *ForestScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s.appendLog("Você não pode fugir sem tentar uma retirada estratégica! [F]ugir")
 				return s, nil
 			}
-			_ = s.db.SavePlayer(s.player.ToStorage())
+			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 			}
@@ -111,7 +111,7 @@ func (s *ForestScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case forestStateDefeat:
-			_ = s.db.SavePlayer(s.player.ToStorage())
+			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenGameOver}
 			}
@@ -142,7 +142,7 @@ func (s *ForestScreen) startExploration() (tea.Model, tea.Cmd) {
 		fmt.Sprintf("Você adentra a mata fechada e é surpreendido por um %s!", m.Name),
 	}
 
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, nil
 }
 
@@ -157,11 +157,11 @@ func (s *ForestScreen) handleAttack() (tea.Model, tea.Cmd) {
 	if res.MonsterDefeated {
 		s.state = forestStateVictory
 		s.appendLog("Pressione [P]rocurar para outra luta ou [V]oltar para a cidade.")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	} else if res.PlayerDefeated {
 		s.state = forestStateDefeat
 		s.appendLog("Pressione qualquer tecla para prosseguir...")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	}
 
 	return s, nil
@@ -178,11 +178,11 @@ func (s *ForestScreen) handleFlee() (tea.Model, tea.Cmd) {
 	if res.FledSuccessfully {
 		s.state = forestStateFled
 		s.appendLog("Pressione [P]rocurar para outra luta ou [V]oltar para a cidade.")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	} else if res.PlayerDefeated {
 		s.state = forestStateDefeat
 		s.appendLog("Pressione qualquer tecla para prosseguir...")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	}
 
 	return s, nil
@@ -196,7 +196,7 @@ func (s *ForestScreen) handlePotion() (tea.Model, tea.Cmd) {
 	}
 
 	s.appendLog(fmt.Sprintf("Você bebeu uma Poção de Vida e recuperou %d pontos de HP! (Poções restantes: %d)", healed, s.player.PotionsCount))
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, nil
 }
 

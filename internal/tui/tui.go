@@ -61,9 +61,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		if msg.String() == "ctrl+c" {
-			if m.player != nil && m.db != nil {
-				_ = m.db.SavePlayer(m.player.ToStorage())
-			}
+			screens.SavePlayer(m.db, m.player)
 			return m, tea.Quit
 		}
 
@@ -77,9 +75,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Screen == ScreenGameOver && m.player != nil {
 			econ := engine.NewEconomyService()
 			lostGold, lostXP := econ.ProcessDeathPenalty(m.player)
-			if m.db != nil {
-				_ = m.db.SavePlayer(m.player.ToStorage())
-			}
+			screens.SavePlayer(m.db, m.player)
 			m.gameOverScreen = screens.NewGameOverScreen(m.db, m.player, lostGold, lostXP)
 			m.gameOverScreen.SetSize(m.width, m.height)
 		}

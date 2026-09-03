@@ -118,7 +118,7 @@ func (s *TavernScreen) selectCurrent() (tea.Model, tea.Cmd) {
 		if s.player.Gold >= 10 {
 			s.player.Gold -= 10
 			s.player.ForestFights++ // Ganha 1 turno de inspiração
-			_ = s.db.SavePlayer(s.player.ToStorage())
+			SavePlayer(s.db, s.player)
 			s.infoMsg = "Você oferece uma bebida a Cassandra. Ela sorri graciosamente e sua determinação é renovada! (+1 Luta na Floresta!)"
 		} else {
 			s.infoMsg = "Cassandra te olha com desdém: 'Volte quando tiver pelo menos 10 moedas de ouro para pagar uma rodada, aventureiro.'"
@@ -145,7 +145,7 @@ func (s *TavernScreen) selectCurrent() (tea.Model, tea.Cmd) {
 }
 
 func (s *TavernScreen) backToTown() (tea.Model, tea.Cmd) {
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, func() tea.Msg {
 		return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 	}
