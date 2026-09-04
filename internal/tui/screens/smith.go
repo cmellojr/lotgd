@@ -62,6 +62,32 @@ func (s *SmithScreen) SetSize(w, h int) {
 func (s *SmithScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		switch msg.String() {
+		case "1":
+			s.tab = smithTabWeapons
+			s.cursor = 0
+			return s, nil
+		case "2":
+			s.tab = smithTabArmors
+			s.cursor = 0
+			return s, nil
+		case "3":
+			s.tab = smithTabPotions
+			s.cursor = 0
+			return s, nil
+		case "up", "k":
+			if s.cursor > 0 {
+				s.cursor--
+			}
+			return s, nil
+		case "down", "j":
+			maxLen := s.getCurrentCatalogLen()
+			if s.cursor < maxLen-1 {
+				s.cursor++
+			}
+			return s, nil
+		}
+
 		k := strings.ToUpper(msg.String())
 
 		switch k {
@@ -81,17 +107,6 @@ func (s *SmithScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s.tab = smithTabPotions
 			}
 			s.cursor = 0
-			return s, nil
-		case "UP":
-			if s.cursor > 0 {
-				s.cursor--
-			}
-			return s, nil
-		case "DOWN":
-			maxLen := s.getCurrentCatalogLen()
-			if s.cursor < maxLen-1 {
-				s.cursor++
-			}
 			return s, nil
 		case "ENTER", "C":
 			return s.handlePurchase()

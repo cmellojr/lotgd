@@ -59,6 +59,23 @@ func (s *ChapelScreen) SetSize(w, h int) {
 func (s *ChapelScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		switch msg.String() {
+		case "up", "k":
+			if s.cursor > 0 {
+				s.cursor--
+			} else {
+				s.cursor = len(s.menuItems) - 1
+			}
+			return s, nil
+		case "down", "j":
+			if s.cursor < len(s.menuItems)-1 {
+				s.cursor++
+			} else {
+				s.cursor = 0
+			}
+			return s, nil
+		}
+
 		k := strings.ToUpper(msg.String())
 
 		switch k {
@@ -73,20 +90,6 @@ func (s *ChapelScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "M": // Meditar
 			s.cursor = 2
 			return s.selectCurrent()
-		case "UP":
-			if s.cursor > 0 {
-				s.cursor--
-			} else {
-				s.cursor = len(s.menuItems) - 1
-			}
-			return s, nil
-		case "DOWN":
-			if s.cursor < len(s.menuItems)-1 {
-				s.cursor++
-			} else {
-				s.cursor = 0
-			}
-			return s, nil
 		case "ENTER":
 			return s.selectCurrent()
 		}

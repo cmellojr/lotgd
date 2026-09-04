@@ -31,6 +31,7 @@ type DragonScreen struct {
 	dragon    *engine.Monster
 	slayer    string
 	isAlive   bool
+	cursor    int
 	combatLog []string
 	width     int
 	height    int
@@ -58,6 +59,7 @@ func (s *DragonScreen) Init() tea.Cmd {
 func (s *DragonScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 	s.state = dragonStateApproach
+	s.cursor = 0
 	s.combatLog = nil
 	s.loadDragonState()
 }
@@ -98,6 +100,25 @@ func (s *DragonScreen) loadDragonState() {
 func (s *DragonScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if s.state == dragonStateApproach {
+			switch msg.String() {
+			case "up", "k":
+				if s.cursor > 0 {
+					s.cursor--
+				} else if s.isAlive {
+					s.cursor = 1
+				}
+				return s, nil
+			case "down", "j":
+				if s.isAlive && s.cursor < 1 {
+					s.cursor++
+				} else {
+					s.cursor = 0
+				}
+				return s, nil
+			}
+		}
+
 		k := strings.ToUpper(msg.String())
 
 		if k == "V" || k == "ESC" {
@@ -114,7 +135,13 @@ func (s *DragonScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch s.state {
 		case dragonStateApproach:
 			switch k {
-			case "D", "ENTER", "L":
+			case "D", "L":
+				s.cursor = 0
+				return s.startDragonFight()
+			case "ENTER":
+				if !s.isAlive || s.cursor == 1 {
+					return s.backToTown()
+				}
 				return s.startDragonFight()
 			}
 
@@ -245,13 +272,22 @@ func (s *DragonScreen) View() string {
 		if !s.isAlive {
 			content.WriteString("As cavernas profundas estão em silêncio. A carcaça do Dragão jaz no abismo.\n")
 			content.WriteString(fmt.Sprintf("Ele foi derrotado hoje por %s!\n\n", ui.StatusGold.Render(s.slayer)))
-			content.WriteString(ui.MenuItemStyle.Render("  [V]oltar em paz para a Praça Central") + "\n")
+			content.WriteString(ui.SelectedMenuItemStyle.Render("> [V]oltar em paz para a Praça Central") + "\n")
 		} else {
 			content.WriteString("Rios de lava iluminam a colossal câmara rochosa. O ar queima os pulmões.\n")
 			content.WriteString(fmt.Sprintf("O Dragão do Dia aguarda: %s (%d/%d HP, ATK %d, DEF %d)\n\n",
 				ui.LogMonsterStyle.Render(s.dragon.Name), s.dragon.Health, s.dragon.MaxHealth, s.dragon.Attack, s.dragon.Defense))
-			content.WriteString(ui.SelectedMenuItemStyle.Render("> [D]esafiar o Dragão para o Combate Final") + "\n")
-			content.WriteString(ui.MenuItemStyle.Render("  [V]oltar para a Praça Central") + "\n")
+
+			item1 := "[D]esafiar o Dragão para o Combate Final"
+			item2 := "[V]oltar para a Praça Central"
+
+			if s.cursor == 0 {
+				content.WriteString(ui.SelectedMenuItemStyle.Render("> "+item1) + "\n")
+				content.WriteString(ui.MenuItemStyle.Render("  "+item2) + "\n")
+			} else {
+				content.WriteString(ui.MenuItemStyle.Render("  "+item1) + "\n")
+				content.WriteString(ui.SelectedMenuItemStyle.Render("> "+item2) + "\n")
+			}
 		}
 	} else {
 		dHPPercent := float64(s.dragon.Health) / float64(s.dragon.MaxHealth)
