@@ -46,14 +46,25 @@ func main() {
 	}
 	mainModel := tui.NewMainModel(db, dragonGen)
 
+	filter := func(m tea.Model, msg tea.Msg) tea.Msg {
+		if _, ok := msg.(tea.QuitMsg); ok {
+			if mm, ok := m.(*tui.MainModel); ok {
+				_ = mm.Save()
+			}
+		}
+		return msg
+	}
+
 	// Criamos o programa Bubble Tea com opções de execução:
 	// - tea.WithAltScreen(): Ativa o buffer de tela alternativo do terminal, preservando
 	//   o histórico anterior do terminal do usuário ao fechar o jogo.
 	// - tea.WithMouseCellMotion(): Habilita eventos de mouse se necessário no terminal.
+	// - tea.WithFilter(): Intercepta tea.QuitMsg para salvar o progresso do jogador ao encerrar.
 	program := tea.NewProgram(
 		mainModel,
 		tea.WithAltScreen(),
 		tea.WithMouseCellMotion(),
+		tea.WithFilter(filter),
 	)
 
 	// Executamos o loop de eventos principal do Bubble Tea.
