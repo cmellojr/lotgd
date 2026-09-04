@@ -75,12 +75,23 @@ func main() {
 		// Instanciação de um novo modelo para a sessão do jogador conectado.
 		model := tui.NewMainModel(db, dragonGen)
 
+		filter := func(m tea.Model, msg tea.Msg) tea.Msg {
+			if _, ok := msg.(tea.QuitMsg); ok {
+				if mm, ok := m.(*tui.MainModel); ok {
+					_ = mm.Save()
+				}
+			}
+			return msg
+		}
+
 		// Opções específicas da sessão Bubble Tea sobre o túnel SSH:
 		// - WithAltScreen(): Usa a tela secundária para limpar a interface ao desconectar.
+		// - WithFilter(): Intercepta tea.QuitMsg para salvar o progresso do jogador antes do encerramento.
 		// O middleware do Wish (wishbubbletea.Middleware) já conecta automaticamente os streams
 		// de entrada e saída (I/O) da sessão SSH ao programa Bubble Tea.
 		return model, []tea.ProgramOption{
 			tea.WithAltScreen(),
+			tea.WithFilter(filter),
 		}
 	}
 

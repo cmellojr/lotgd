@@ -126,3 +126,113 @@ func TestTUI_DeathPenalty_AppliedOnce(t *testing.T) {
 		t.Errorf("xp changed after syncPlayerState: expected %d, got %d", xpAfterDeath, sm.player.Experience)
 	}
 }
+
+func TestTUI_MainModel_Save(t *testing.T) {
+	// Test nil receiver or uninitialized model
+	var nilModel *MainModel
+	if err := nilModel.Save(); err != nil {
+		t.Errorf("expected nil error on nil model Save(), got %v", err)
+	}
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "test_save.db")
+
+	db, err := storage.OpenDB(dbPath)
+	if err != nil {
+		t.Fatalf("failed to open test sqlite db: %v", err)
+	}
+	defer db.Close()
+
+	model := NewMainModel(db, nil)
+
+	// Test Save() when player is nil
+	if err := model.Save(); err != nil {
+		t.Errorf("expected nil error on model Save() with nil player, got %v", err)
+	}
+
+	// Create and attach player
+	sp, err := db.CreatePlayer("saver", "pass123")
+	if err != nil {
+		t.Fatalf("failed to create player: %v", err)
+	}
+
+	p := engine.NewPlayerFromStorage(sp)
+	p.Gold = 500
+	p.Experience = 250
+
+	updatedModel, _ := model.Update(PlayerUpdatedMsg{Player: p})
+	m := updatedModel.(*MainModel)
+
+	// Mutate state in memory
+	m.player.Gold = 999
+	m.player.Experience = 450
+
+	// Save explicitly
+	if err := m.Save(); err != nil {
+		t.Fatalf("failed to save player state: %v", err)
+	}
+
+	// Verify persistence in DB via AuthenticatePlayer
+	fetched, err := db.AuthenticatePlayer("saver", "pass123")
+	if err != nil {
+		t.Fatalf("failed to fetch player from db: %v", err)
+	}
+
+	if fetched.Gold != 999 {
+		t.Errorf("expected 999 gold in db, got %d", fetched.Gold)
+	}
+	if fetched.Experience != 450 {
+		t.Errorf("expected 450 experience in db, got %d", fetched.Experience)
+	}
+}
+
+func TestTUI_Filter_SaveOnQuitMsg(t *testing.T) {
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "test_filter.db")
+
+	db, err := storage.OpenDB(dbPath)
+	if err != nil {
+		t.Fatalf("failed to open test sqlite db: %v", err)
+	}
+	defer db.Close()
+
+	model := NewMainModel(db, nil)
+
+	sp, err := db.CreatePlayer("quitter", "pass123")
+	if err != nil {
+		t.Fatalf("failed to create player: %v", err)
+	}
+
+	p := engine.NewPlayerFromStorage(sp)
+	p.Gold = 150
+
+	updatedModel, _ := model.Update(PlayerUpdatedMsg{Player: p})
+	m := updatedModel.(*MainModel)
+
+	m.player.Gold = 888
+
+	filter := func(tm tea.Model, msg tea.Msg) tea.Msg {
+		if _, ok := msg.(tea.QuitMsg); ok {
+			if mm, ok := tm.(*MainModel); ok {
+				_ = mm.Save()
+			}
+		}
+		return msg
+	}
+
+	// Simulate filter intercepting tea.QuitMsg
+	resMsg := filter(m, tea.QuitMsg{})
+	if _, ok := resMsg.(tea.QuitMsg); !ok {
+		t.Errorf("expected filter to pass through tea.QuitMsg")
+	}
+
+	// Verify persistence in DB via AuthenticatePlayer
+	fetched, err := db.AuthenticatePlayer("quitter", "pass123")
+	if err != nil {
+		t.Fatalf("failed to fetch player from db: %v", err)
+	}
+
+	if fetched.Gold != 888 {
+		t.Errorf("expected 888 gold in db after filter caught QuitMsg, got %d", fetched.Gold)
+	}
+}

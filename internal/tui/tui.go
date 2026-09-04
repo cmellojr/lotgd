@@ -61,7 +61,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		if msg.String() == "ctrl+c" {
-			screens.SavePlayer(m.db, m.player)
 			return m, tea.Quit
 		}
 
@@ -75,7 +74,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Screen == ScreenGameOver && m.player != nil {
 			econ := engine.NewEconomyService()
 			lostGold, lostXP := econ.ProcessDeathPenalty(m.player)
-			screens.SavePlayer(m.db, m.player)
+			_ = m.Save()
 			m.gameOverScreen = screens.NewGameOverScreen(m.db, m.player, lostGold, lostXP)
 			m.gameOverScreen.SetSize(m.width, m.height)
 		}
@@ -184,4 +183,12 @@ func (m *MainModel) View() string {
 	default:
 		return "Tela desconhecida."
 	}
+}
+
+// Save persists the current player state to the database in an exported, safe, and idempotent manner.
+func (m *MainModel) Save() error {
+	if m == nil || m.db == nil || m.player == nil {
+		return nil
+	}
+	return m.db.SavePlayer(m.player.ToStorage())
 }
