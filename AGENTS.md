@@ -11,6 +11,7 @@ Antes de gerar código ou conteúdo, consulte os documentos especializados:
 - **Universo e Lore**: [`docs/universo-e-lore.md`](docs/universo-e-lore.md) — Tom de voz, NPCs, bestiário e nomenclatura.
 - **Game Design Document**: [`docs/GDD.md`](docs/GDD.md) — Core loop, combate, economia de turnos e fluxo TUI.
 - **Arquitetura & Engenharia**: [`docs/architecture.md`](docs/architecture.md) — Camadas, SQLite (CGO-free), Bubble Tea e Wish (SSH).
+- **Decisões de Arquitetura (ADRs)**: [`design/adr/`](design/adr/) — Registro imutável de decisões arquiteturais do projeto.
 
 ---
 
@@ -26,6 +27,7 @@ Antes de gerar código ou conteúdo, consulte os documentos especializados:
 
 Para manter a consistência, a ergonomia e a qualidade de engenharia, os agentes devem consultar e seguir as diretrizes das seguintes skills quando disponíveis no ambiente ou via URL canônica:
 
+- **[`adr-template`](https://skills.danicat.dev/standards/adr-template/SKILL.md)**: Padrão imutável para documentação de decisões técnicas e trade-offs arquiteturais.
 - **[`godoctor`](https://skills.danicat.dev/coding/godoctor/SKILL.md)**: Boas práticas de Go idiomático, AST integrity, testes automatizados e compilação limpa via `go vet` e linters.
 - **[`engineering-flow`](https://skills.danicat.dev/coding/engineering-flow/SKILL.md)**: Decisões técnicas fundamentadas, política Zero-Debt em `0.x`, proibição de silenciamento de erros (`_ = err`) e higiene de código (*Broken Window Code Hygiene*).
 - **[`git-workflow-and-versioning`](https://github.com/addyosmani/agent-skills/blob/main/skills/git-workflow-and-versioning/SKILL.md)**: Commits atômicos, mensagens no padrão Conventional Commits, PRs curtas e branches de vida curta.
