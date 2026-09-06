@@ -173,3 +173,66 @@ func TestDragonScreen_VimNavigation(t *testing.T) {
 		t.Errorf("expected cursor 0 after 'k', got %d", dragon.cursor)
 	}
 }
+
+func TestTownScreen_DragonRequirementText(t *testing.T) {
+	db, player := createTestDBAndPlayer(t)
+	defer db.Close()
+
+	town := NewTownScreen(db, player)
+	view := town.View()
+
+	if testing.Verbose() {
+		t.Logf("Town View:\n%s", view)
+	}
+
+	if !testing.Verbose() && len(view) == 0 {
+		t.Fatal("expected non-empty view")
+	}
+
+	// Check that description mentions nível 5 and not nível máximo
+	foundLevel5 := false
+	for _, item := range town.items {
+		if item.key == "D" {
+			if testing.Verbose() {
+				t.Logf("Dragon item description: %s", item.description)
+			}
+			if item.description != "O confronto final! Requer nível 5 e coragem." {
+				t.Errorf("expected town dragon description 'O confronto final! Requer nível 5 e coragem.', got %q", item.description)
+			}
+			foundLevel5 = true
+		}
+	}
+	if !foundLevel5 {
+		t.Errorf("dragon menu item 'D' not found in town screen")
+	}
+}
+
+func TestScreens_FootersAndViews(t *testing.T) {
+	db, player := createTestDBAndPlayer(t)
+	defer db.Close()
+
+	screens := []struct {
+		name  string
+		model interface {
+			View() string
+			SetPlayer(*engine.Player)
+		}
+	}{
+		{"Town", NewTownScreen(db, player)},
+		{"Forest", NewForestScreen(db, player)},
+		{"Smith", NewSmithScreen(db, player)},
+		{"Chapel", NewChapelScreen(db, player)},
+		{"Tavern", NewTavernScreen(db, player)},
+		{"Guild", NewGuildScreen(db, player)},
+		{"Dragon", NewDragonScreen(db, player, nil)},
+		{"GameOver", NewGameOverScreen(db, player, 10, 5)},
+	}
+
+	for _, sc := range screens {
+		sc.model.SetPlayer(player)
+		view := sc.model.View()
+		if len(view) == 0 {
+			t.Errorf("screen %s View() returned empty string", sc.name)
+		}
+	}
+}

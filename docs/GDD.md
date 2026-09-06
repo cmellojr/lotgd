@@ -40,10 +40,16 @@ graph TD
 ### 2.2 Sistema de Combate por Turnos
 - **Fórmula de Dano**:
   $$\text{Dano} = \max(1, (\text{ATK}_{\text{atacante}} + \text{Rnd}(1, 4)) - \text{DEF}_{\text{defensor}})$$
+- **Acerto Crítico**:
+  - Há **10% de chance** em cada ataque de rolar um **Acerto Crítico**. Quando ocorre, o valor do ataque efetivo ($\text{ATK}_{\text{atacante}} + \text{Rnd}(1, 4)$) é multiplicado por **1,5** (+50% de dano base) antes de subtrair a defesa do oponente.
 - **Ações no Turno**:
-  - `[A]tacar`: Desfere golpe corpo a corpo.
-  - `[F]ugir`: Chance de 50% de sucesso baseada na agilidade.
-  - `[P]oção`: Usa consumível (*Elixir de Cura*).
+  - `[A]tacar`: Desfere golpe corpo a corpo aplicando a fórmula de dano e rolagem de crítico.
+  - `[F]ugir`: Tenta recuar estrategicamente do combate.
+    - **Chance base de sucesso**: 50%.
+    - **Monstros com afixo "Covarde"**: 80% de chance de sucesso.
+    - **Chefe Dragão do Dia**: 20% de chance de sucesso.
+    - **Penalidade por falha**: Se a tentativa de fuga falhar, o inimigo recebe um contra-ataque livre de oportunidade.
+  - `[P]oção`: Usa consumível (*Poção de Vida*) restaurando até +30 HP sem gastar o turno livre.
 
 ---
 
