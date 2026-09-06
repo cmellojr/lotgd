@@ -34,7 +34,7 @@ func (r *PlayerRepository) Register(ctx context.Context, username, password stri
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	today := time.Now().Format("2006-01-02")
+	today := time.Now().UTC().Format("2006-01-02")
 	query := `
 	INSERT INTO players (username, password_hash, last_login_day, created_at, updated_at)
 	VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)

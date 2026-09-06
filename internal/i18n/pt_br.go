@@ -16,7 +16,6 @@ var NPCNamesPTBR = map[NPCID]string{
 	NPCRosalinda: "Dona Rosalinda, a Taverneira",
 	NPCAnselmo:   "Frei Anselmo, o Curandeiro",
 	NPCTorin:     "Mestre Torin, o Ferreiro",
-	NPCYolanda:   "Yolanda, a Cigana Mercadora",
 	NPCCassandra: "Cassandra",
 	NPCRedKnight: "Cavaleiro Vermelho",
 	NPCTobias:    "Mestre Tobias, o Bibliotecário",
@@ -67,18 +66,6 @@ var DragonTitlesPTBR = []string{
 	"A Chama Vermelha do Abismo",
 }
 
-// MonsterPrefixesPTBR contains adjective prefixes for procedural monsters.
-var MonsterPrefixesPTBR = []string{
-	"Feroz",
-	"Covarde",
-	"Enfurecido",
-	"Sortudo",
-	"Faminto",
-	"Preguiçoso",
-	"Astuto",
-	"Gigantesco",
-}
-
 // ItemNamesPTBR maps item IDs to Portuguese names.
 var ItemNamesPTBR = map[ItemID]string{
 	WeaponStick:            "Pedaço de Pau",
@@ -86,7 +73,6 @@ var ItemNamesPTBR = map[ItemID]string{
 	WeaponShortSword:       "Espada Curta",
 	WeaponBroadsword:       "Montante de Aço",
 	WeaponDragonSlayer:     "Matadora de Dragões",
-	WeaponNullPointer:      "Ponteiro Nulo Amaldiçoado",
 	ArmorClothes:           "Roupas Simples",
 	ArmorLeather:           "Armadura de Couro",
 	ArmorChainmail:         "Cota de Malha",

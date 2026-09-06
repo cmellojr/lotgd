@@ -69,7 +69,6 @@ O **The Legend of the Go Dragon** é construído utilizando uma arquitetura modu
 - **Schema**:
   - `players`: Contas, senha hasheada, stats, ouro, nível, turnos restantes.
   - `village_state`: Data do dia atual, status do Dragão, ranking diário.
-  - `graveyard`: Histórico de heróis caídos.
   - `news`: Fofocas e anúncios de vitórias no vilarejo.
 
 ---

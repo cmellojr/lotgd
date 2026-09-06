@@ -20,7 +20,6 @@ const (
 	NPCRosalinda NPCID = "rosalinda"
 	NPCAnselmo   NPCID = "anselmo"
 	NPCTorin     NPCID = "torin"
-	NPCYolanda   NPCID = "yolanda"
 	NPCCassandra NPCID = "cassandra"
 	NPCRedKnight NPCID = "red_knight"
 	NPCTobias    NPCID = "tobias"
@@ -83,5 +82,4 @@ const (
 	// Consumables & Easter Eggs
 	PotionHealth           ItemID = "potion_health"
 	PotionGarbageCollector ItemID = "potion_gc"
-	WeaponNullPointer      ItemID = "null_pointer"
 )

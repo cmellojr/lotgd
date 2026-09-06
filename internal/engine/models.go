@@ -106,6 +106,8 @@ func NewPlayerFromStorage(sp storage.Player) *Player {
 
 // ToStorage converte o modelo de domínio de volta para a struct de persistência.
 func (p *Player) ToStorage() storage.Player {
+	now := time.Now().UTC()
+	p.UpdatedAt = now
 	return storage.Player{
 		ID:           p.ID,
 		Username:     p.Username,
@@ -124,6 +126,6 @@ func (p *Player) ToStorage() storage.Player {
 		DragonKills:  p.DragonKills,
 		LastLoginDay: p.LastLoginDay,
 		CreatedAt:    p.CreatedAt,
-		UpdatedAt:    p.UpdatedAt,
+		UpdatedAt:    now,
 	}
 }

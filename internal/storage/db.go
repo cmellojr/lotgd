@@ -144,13 +144,6 @@ func (d *DB) migrate() error {
 		message TEXT NOT NULL,
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);
-
-	CREATE TABLE IF NOT EXISTS graveyard (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		victim_name TEXT NOT NULL,
-		killer_name TEXT NOT NULL,
-		killed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-	);
 	`
 
 	_, err := d.Exec(schema)
