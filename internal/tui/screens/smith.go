@@ -260,7 +260,7 @@ func (s *SmithScreen) View() string {
 	}
 
 	b.WriteString(ui.ContentBoxStyle.Width(76).Render(content.String()))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render("[Tab/Setas] Trocar Categoria • [Enter] Comprar Item • [V] Voltar"))
+	b.WriteString("\n" + ui.HelpFooterStyle.Render("[1-3/Tab] Categorias • [↑/↓] Selecionar • [Enter] Comprar • [V] Voltar"))
 
 	return ui.AppStyle.Render(b.String())
 }

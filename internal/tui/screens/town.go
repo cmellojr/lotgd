@@ -39,7 +39,7 @@ func NewTownScreen(db *storage.DB, player *engine.Player) *TownScreen {
 		{key: "C", label: "Capela do Frei Anselmo", target: ui.ScreenChapel, description: "Cure seus ferimentos com o curandeiro do vilarejo."},
 		{key: "M", label: "Ferraria do Mestre Torin", target: ui.ScreenSmith, description: "Compre armas melhores, armaduras e poções de cura."},
 		{key: "G", label: "Guilda dos Aventureiros", target: ui.ScreenGuild, description: "Treine com o Mestre Tobias para subir de nível."},
-		{key: "D", label: "Covil do Dragão Ancestral", target: ui.ScreenDragon, description: "O confronto final! Requer nível máximo e coragem."},
+		{key: "D", label: "Covil do Dragão Ancestral", target: ui.ScreenDragon, description: "O confronto final! Requer nível 5 e coragem."},
 		{key: "B", label: "Banco do Vilarejo", target: "", description: "Deposite seu ouro para não perder ao morrer na floresta."},
 		{key: "S", label: "Salvar e Sair (Logout)", target: ui.ScreenLogin, description: "Encerra a sessão e guarda o progresso no templo."},
 	}
