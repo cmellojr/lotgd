@@ -23,6 +23,29 @@ Antes de gerar código ou conteúdo, consulte os documentos especializados:
 
 ---
 
+## 🤖 Regras de Automação com `gh` CLI
+
+Ao criar ou editar Pull Requests e Issues via `gh` CLI no PowerShell, **NUNCA use `--body` com texto inline**. O PowerShell faz double-escaping de backticks (`` ` ``), corrompendo a formatação Markdown no GitHub.
+
+**Sempre escreva o corpo em um arquivo temporário e use `--body-file`:**
+
+```powershell
+# ✅ Correto — escrever corpo em arquivo, depois usar --body-file
+$body = @"
+## Descrição
+Texto com `backticks` e **formatação** funcionando corretamente.
+"@
+$body | Out-File -FilePath "$env:TEMP\pr_body.md" -Encoding utf8
+gh pr create --title "título" --body-file "$env:TEMP\pr_body.md"
+
+# ❌ Errado — --body inline causa double-escaping de backticks
+gh pr create --title "título" --body "Texto com `backticks`"
+```
+
+Isso se aplica a: `gh pr create`, `gh pr edit`, `gh issue create`, `gh issue edit`.
+
+---
+
 ## 🧰 Skills & Tooling Recomendados
 
 Para manter a consistência, a ergonomia e a qualidade de engenharia, os agentes devem consultar e seguir as diretrizes das seguintes skills quando disponíveis no ambiente ou via URL canônica:
