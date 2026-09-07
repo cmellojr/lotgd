@@ -120,6 +120,103 @@ func TestCombatEngine_FleeAttempt(t *testing.T) {
 	}
 }
 
+func TestCombatEngine_UsePotionEdgeCases(t *testing.T) {
+	ce := engine.NewCombatEngine(nil)
+
+	tests := []struct {
+		name        string
+		player      engine.Player
+		wantHealth  int
+		wantPotions int
+		wantHealed  int
+		wantError   bool
+	}{
+		{
+			name:        "rejects when inventory is empty",
+			player:      engine.Player{Health: 10, MaxHealth: 50},
+			wantHealth:  10,
+			wantPotions: 0,
+			wantError:   true,
+		},
+		{
+			name:        "rejects when health is full",
+			player:      engine.Player{Health: 50, MaxHealth: 50, PotionsCount: 1},
+			wantHealth:  50,
+			wantPotions: 1,
+			wantError:   true,
+		},
+		{
+			name:        "caps healing at maximum health",
+			player:      engine.Player{Health: 40, MaxHealth: 50, PotionsCount: 1},
+			wantHealth:  50,
+			wantPotions: 0,
+			wantHealed:  10,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			player := tt.player
+			healed, err := ce.UsePotion(&player)
+
+			if (err != nil) != tt.wantError {
+				t.Fatalf("UsePotion() error = %v, want error: %v", err, tt.wantError)
+			}
+			if healed != tt.wantHealed || player.Health != tt.wantHealth || player.PotionsCount != tt.wantPotions {
+				t.Fatalf("unexpected potion result: healed=%d health=%d potions=%d", healed, player.Health, player.PotionsCount)
+			}
+		})
+	}
+}
+
+func TestEconomyService_RejectsInvalidTransfers(t *testing.T) {
+	econ := engine.NewEconomyService()
+
+	tests := []struct {
+		name string
+		call func(*engine.Player) error
+		gold int
+		bank int
+	}{
+		{
+			name: "rejects zero deposit",
+			call: func(p *engine.Player) error { return econ.Deposit(p, 0) },
+			gold: 100,
+			bank: 50,
+		},
+		{
+			name: "rejects deposit above wallet balance",
+			call: func(p *engine.Player) error { return econ.Deposit(p, 101) },
+			gold: 100,
+			bank: 50,
+		},
+		{
+			name: "rejects negative withdrawal",
+			call: func(p *engine.Player) error { return econ.Withdraw(p, -1) },
+			gold: 100,
+			bank: 50,
+		},
+		{
+			name: "rejects withdrawal above bank balance",
+			call: func(p *engine.Player) error { return econ.Withdraw(p, 51) },
+			gold: 100,
+			bank: 50,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			player := &engine.Player{Gold: tt.gold, BankGold: tt.bank}
+			if err := tt.call(player); err == nil {
+				t.Fatal("expected transfer to be rejected")
+			}
+			if player.Gold != tt.gold || player.BankGold != tt.bank {
+				t.Fatalf("rejected transfer mutated balances: gold=%d bank=%d", player.Gold, player.BankGold)
+			}
+		})
+	}
+}
+
 func TestProgression_LevelUp(t *testing.T) {
 	p := &engine.Player{
 		Level:       1,
@@ -152,6 +249,22 @@ func TestProgression_LevelUp(t *testing.T) {
 	}
 	if p.Health != 65 {
 		t.Fatalf("ao subir de nível a vida deve ser completamente restaurada, obtido %d", p.Health)
+	}
+}
+
+func TestProgression_Boundaries(t *testing.T) {
+	if req, ok := engine.NextLevelRequirement(10); ok || req != (engine.LevelRequirement{}) {
+		t.Fatalf("expected no requirement beyond max level, got %+v, ok=%v", req, ok)
+	}
+
+	player := &engine.Player{Level: 1, Experience: 99, Gold: 50}
+	if can, _ := engine.CanLevelUp(player); can {
+		t.Fatal("player should not level up below the exact XP threshold")
+	}
+
+	player.Experience = 100
+	if can, _ := engine.CanLevelUp(player); !can {
+		t.Fatal("player should level up at the exact XP threshold")
 	}
 }
 
@@ -205,6 +318,18 @@ func TestTurnManager(t *testing.T) {
 	err := tm.ConsumeFight(p)
 	if err != nil || p.ForestFights != 14 {
 		t.Fatalf("falha ao consumir turno: %v", err)
+	}
+}
+
+func TestTurnManager_RejectsExhaustedFights(t *testing.T) {
+	tm := engine.NewTurnManager()
+	player := &engine.Player{ForestFights: 0}
+
+	if err := tm.ConsumeFight(player); err == nil {
+		t.Fatal("expected exhausted fights to be rejected")
+	}
+	if player.ForestFights != 0 {
+		t.Fatalf("rejected fight changed remaining fights to %d", player.ForestFights)
 	}
 }
 

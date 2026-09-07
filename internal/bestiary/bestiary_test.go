@@ -24,6 +24,21 @@ func TestMonsterGenerator_TierBounds(t *testing.T) {
 	}
 }
 
+func TestMonsterGenerator_ClampsInvalidTiers(t *testing.T) {
+	rng := rand.New(rand.NewSource(99))
+	gen := bestiary.NewMonsterGenerator(rng)
+
+	for _, requestedTier := range []int{0, 5} {
+		monster := gen.GenerateByTier(requestedTier)
+		if monster.Tier < 1 || monster.Tier > 4 {
+			t.Fatalf("requested tier %d produced invalid tier %d", requestedTier, monster.Tier)
+		}
+		if monster.Health <= 0 || monster.Attack <= 0 || monster.XPReward <= 0 || monster.GoldReward <= 0 {
+			t.Fatalf("requested tier %d produced invalid rewards or stats: %+v", requestedTier, monster)
+		}
+	}
+}
+
 func TestMonsterGenerator_PlayerScaling(t *testing.T) {
 	rng := rand.New(rand.NewSource(123))
 	gen := bestiary.NewMonsterGenerator(rng)
