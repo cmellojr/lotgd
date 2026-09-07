@@ -3,6 +3,7 @@ package screens
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"lotgd/internal/engine"
@@ -205,7 +206,9 @@ func (s *DragonScreen) handleAttack() (tea.Model, tea.Cmd) {
 	if res.MonsterDefeated {
 		s.state = dragonStateVictory
 		vRepo := storage.NewVillageRepository(s.db, storage.WithDragonGenerator(s.dragonGen))
-		_ = vRepo.RecordDragonSlayed(context.Background(), s.player.Username)
+		if err := vRepo.RecordDragonSlayed(context.Background(), s.player.Username); err != nil {
+			log.Printf("WARN: failed to record dragon slayed for %s: %v", s.player.Username, err)
+		}
 		SavePlayer(s.db, s.player)
 		s.appendLog("🔥 O DRAGÃO CAIU! Seus restos viraram lenda e você salvou todo o Vilarejo! 🔥")
 		s.appendLog("Pressione [Enter] para retornar triunfante à Praça do Vilarejo!")

@@ -24,7 +24,7 @@ func main() {
 	// e executa automaticamente as migrações de schema necessárias (DDL).
 	db, err := storage.OpenDB(*dbPath)
 	if err != nil {
-		log.Fatalf("Erro ao inicializar o banco de dados SQLite em %q: %v", *dbPath, err)
+		log.Fatalf("failed to initialize SQLite database at %q: %v", *dbPath, err)
 	}
 
 	// O uso da declaração 'defer' garante que o fechamento do banco de dados (db.Close)
@@ -32,7 +32,7 @@ func main() {
 	// liberando descritores de arquivos e salvando estados pendentes mesmo se ocorrerem erros.
 	defer func() {
 		if err := db.Close(); err != nil {
-			log.Printf("Aviso: erro ao encerrar conexões com o banco de dados: %v", err)
+			log.Printf("warning: error closing database connections: %v", err)
 		}
 	}()
 
@@ -49,7 +49,9 @@ func main() {
 	filter := func(m tea.Model, msg tea.Msg) tea.Msg {
 		if _, ok := msg.(tea.QuitMsg); ok {
 			if mm, ok := m.(*tui.MainModel); ok {
-				_ = mm.Save()
+				if err := mm.Save(); err != nil {
+					log.Printf("WARN: failed to save player state on exit: %v", err)
+				}
 			}
 		}
 		return msg
@@ -70,7 +72,7 @@ func main() {
 	// Executamos o loop de eventos principal do Bubble Tea.
 	// A função program.Run() bloqueia até que o usuário saia do jogo (ex: pressionando Ctrl+C ou optando por sair).
 	if _, err := program.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Erro durante a execução do jogo: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error during game execution: %v\n", err)
 		os.Exit(1)
 	}
 }

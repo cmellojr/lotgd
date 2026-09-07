@@ -214,7 +214,9 @@ func TestTUI_Filter_SaveOnQuitMsg(t *testing.T) {
 	filter := func(tm tea.Model, msg tea.Msg) tea.Msg {
 		if _, ok := msg.(tea.QuitMsg); ok {
 			if mm, ok := tm.(*MainModel); ok {
-				_ = mm.Save()
+				if err := mm.Save(); err != nil {
+					t.Errorf("failed to save on QuitMsg: %v", err)
+				}
 			}
 		}
 		return msg

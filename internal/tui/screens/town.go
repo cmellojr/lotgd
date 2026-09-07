@@ -87,9 +87,12 @@ func (s *TownScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					econ := engine.NewEconomyService()
 					deposited := s.player.Gold
-					_ = econ.Deposit(s.player, deposited)
-					SavePlayer(s.db, s.player)
-					s.infoMsg = fmt.Sprintf("Você depositou %d moedas de ouro no cofre com segurança!", deposited)
+					if err := econ.Deposit(s.player, deposited); err != nil {
+						s.infoMsg = fmt.Sprintf("⚠ %v", err)
+					} else {
+						SavePlayer(s.db, s.player)
+						s.infoMsg = fmt.Sprintf("Você depositou %d moedas de ouro no cofre com segurança!", deposited)
+					}
 				}
 				s.bankMode = false
 				return s, nil
@@ -99,9 +102,12 @@ func (s *TownScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					econ := engine.NewEconomyService()
 					withdrawn := s.player.BankGold
-					_ = econ.Withdraw(s.player, withdrawn)
-					SavePlayer(s.db, s.player)
-					s.infoMsg = fmt.Sprintf("Você retirou %d moedas de ouro do seu cofre.", withdrawn)
+					if err := econ.Withdraw(s.player, withdrawn); err != nil {
+						s.infoMsg = fmt.Sprintf("⚠ %v", err)
+					} else {
+						SavePlayer(s.db, s.player)
+						s.infoMsg = fmt.Sprintf("Você retirou %d moedas de ouro do seu cofre.", withdrawn)
+					}
 				}
 				s.bankMode = false
 				return s, nil

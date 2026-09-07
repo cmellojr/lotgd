@@ -16,6 +16,6 @@ func SavePlayer(db *storage.DB, p *engine.Player) {
 		return
 	}
 	if err := db.SavePlayer(p.ToStorage()); err != nil {
-		log.Printf("WARN: falha ao salvar jogador %s: %v", p.Username, err)
+		log.Printf("WARN: failed to save player %s: %v", p.Username, err)
 	}
 }

@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"log"
+
 	"lotgd/internal/engine"
 	"lotgd/internal/storage"
 	"lotgd/internal/tui/screens"
@@ -89,7 +91,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Screen == ScreenGameOver && m.player != nil {
 			econ := engine.NewEconomyService()
 			lostGold, lostXP := econ.ProcessDeathPenalty(m.player)
-			_ = m.Save()
+			if err := m.Save(); err != nil {
+				log.Printf("WARN: failed to save player state during Game Over: %v", err)
+			}
 			m.gameOverScreen = screens.NewGameOverScreen(m.db, m.player, lostGold, lostXP)
 			m.gameOverScreen.SetSize(m.width, m.height)
 		}
