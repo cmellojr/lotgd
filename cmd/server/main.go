@@ -78,7 +78,9 @@ func main() {
 		filter := func(m tea.Model, msg tea.Msg) tea.Msg {
 			if _, ok := msg.(tea.QuitMsg); ok {
 				if mm, ok := m.(*tui.MainModel); ok {
-					_ = mm.Save()
+					if err := mm.Save(); err != nil {
+						logger.Warn("Falha ao salvar jogador no encerramento", "err", err)
+					}
 				}
 			}
 			return msg

@@ -137,7 +137,10 @@ func (s *ForestScreen) startExploration() (tea.Model, tea.Cmd) {
 		}
 	}
 
-	_ = s.tm.ConsumeFight(s.player)
+	if err := s.tm.ConsumeFight(s.player); err != nil {
+		s.appendLog(fmt.Sprintf("⚠ %v", err))
+		return s, nil
+	}
 
 	m := s.gen.GenerateForPlayer(s.player.Level)
 	s.monster = &m
