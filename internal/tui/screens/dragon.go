@@ -207,7 +207,7 @@ func (s *DragonScreen) handleAttack() (tea.Model, tea.Cmd) {
 		s.state = dragonStateVictory
 		vRepo := storage.NewVillageRepository(s.db, storage.WithDragonGenerator(s.dragonGen))
 		if err := vRepo.RecordDragonSlayed(context.Background(), s.player.Username); err != nil {
-			log.Printf("WARN: falha ao registrar abate do dragão para %s: %v", s.player.Username, err)
+			log.Printf("WARN: failed to record dragon slayed for %s: %v", s.player.Username, err)
 		}
 		SavePlayer(s.db, s.player)
 		s.appendLog("🔥 O DRAGÃO CAIU! Seus restos viraram lenda e você salvou todo o Vilarejo! 🔥")

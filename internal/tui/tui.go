@@ -92,7 +92,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			econ := engine.NewEconomyService()
 			lostGold, lostXP := econ.ProcessDeathPenalty(m.player)
 			if err := m.Save(); err != nil {
-				log.Printf("WARN: falha ao salvar jogador durante Game Over: %v", err)
+				log.Printf("WARN: failed to save player state during Game Over: %v", err)
 			}
 			m.gameOverScreen = screens.NewGameOverScreen(m.db, m.player, lostGold, lostXP)
 			m.gameOverScreen.SetSize(m.width, m.height)

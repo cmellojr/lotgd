@@ -44,13 +44,13 @@ func main() {
 	// entre todas as sessões SSH conectadas simultaneamente sem corromper os dados.
 	db, err := storage.OpenDB(*dbPath)
 	if err != nil {
-		logger.Fatal("Falha ao abrir banco de dados SQLite", "db", *dbPath, "err", err)
+		logger.Fatal("Failed to open SQLite database", "db", *dbPath, "err", err)
 	}
 
 	// Garantimos o encerramento gracioso do pool de conexões SQLite ao finalizar o servidor.
 	defer func() {
 		if err := db.Close(); err != nil {
-			logger.Warn("Aviso ao fechar banco de dados", "err", err)
+			logger.Warn("Warning when closing database", "err", err)
 		}
 	}()
 
@@ -79,7 +79,7 @@ func main() {
 			if _, ok := msg.(tea.QuitMsg); ok {
 				if mm, ok := m.(*tui.MainModel); ok {
 					if err := mm.Save(); err != nil {
-						logger.Warn("Falha ao salvar jogador no encerramento", "err", err)
+						logger.Warn("Failed to save player state on exit", "err", err)
 					}
 				}
 			}
@@ -112,7 +112,7 @@ func main() {
 		),
 	)
 	if err != nil {
-		logger.Fatal("Falha ao configurar servidor Wish SSH", "err", err)
+		logger.Fatal("Failed to configure Wish SSH server", "err", err)
 	}
 
 	// Gerenciamento de sinais do Sistema Operacional (SIGINT, SIGTERM) para encerramento gracioso (Graceful Shutdown).
@@ -121,24 +121,24 @@ func main() {
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		logger.Info("Iniciando servidor SSH The Legend of the Go Dragon (BBS)...", "addr", serverAddr)
-		logger.Info("Para conectar, use o comando:", "cmd", fmt.Sprintf("ssh localhost -p %d", *port))
+		logger.Info("Starting The Legend of the Go Dragon SSH server (BBS)...", "addr", serverAddr)
+		logger.Info("To connect, run command:", "cmd", fmt.Sprintf("ssh localhost -p %d", *port))
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, ssh.ErrServerClosed) {
-			logger.Error("Erro na execução do servidor SSH", "err", err)
+			logger.Error("Error running SSH server", "err", err)
 			done <- nil
 		}
 	}()
 
 	// Bloqueia a execução da main goroutine até que um sinal de parada seja recebido no canal 'done'.
 	<-done
-	logger.Info("Sinal de encerramento recebido. Desligando servidor SSH graciosamente...")
+	logger.Info("Shutdown signal received. Gracefully shutting down SSH server...")
 
 	// Definimos um timeout de 10 segundos para desconectar as sessões ativas e liberar recursos.
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil && !errors.Is(err, ssh.ErrServerClosed) {
-		logger.Error("Erro ao desligar o servidor SSH", "err", err)
+		logger.Error("Error shutting down SSH server", "err", err)
 	}
-	logger.Info("Servidor LOTGD BBS finalizado com sucesso.")
+	logger.Info("LOTGD BBS server successfully shut down.")
 }
