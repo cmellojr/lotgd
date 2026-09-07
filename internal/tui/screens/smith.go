@@ -20,7 +20,10 @@ const (
 	smithTabPotions
 )
 
-// SmithScreen handles weapons, armors, and potions trading with Master Torin.
+// SmithScreen gerencia o comércio de armas, armaduras e consumíveis na Ferraria do Mestre Torin.
+//
+// Didática TEA: O `SmithScreen` alterna entre abas (`smithTabWeapons`, `smithTabArmors`, `smithTabPotions`),
+// exibindo os catálogos estáticos do pacote `engine`, validando moedas do jogador e equipando novos itens.
 type SmithScreen struct {
 	db      *storage.DB
 	player  *engine.Player
@@ -31,7 +34,7 @@ type SmithScreen struct {
 	height  int
 }
 
-// NewSmithScreen initializes the blacksmith forge.
+// NewSmithScreen inicializa a loja da ferraria com mensagens e aba padrão.
 func NewSmithScreen(db *storage.DB, player *engine.Player) *SmithScreen {
 	return &SmithScreen{
 		db:      db,
@@ -42,23 +45,23 @@ func NewSmithScreen(db *storage.DB, player *engine.Player) *SmithScreen {
 	}
 }
 
-// Init starts the smith screen.
+// Init inicializa a tela do ferreiro.
 func (s *SmithScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates the player reference.
+// SetPlayer atualiza a referência ao herói ativo em memória.
 func (s *SmithScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 }
 
-// SetSize updates screen dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *SmithScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
-// Update processes blacksmith shop navigation and purchases.
+// Update processa a navegação por abas (`1`, `2`, `3`, `Tab`), movimentação do cursor e compras (`Enter`).
 func (s *SmithScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -178,7 +181,7 @@ func (s *SmithScreen) handlePurchase() (tea.Model, tea.Cmd) {
 	return s, nil
 }
 
-// View renders the blacksmith forge.
+// View renderiza os catálogos da ferraria organizados em abas de navegação.
 func (s *SmithScreen) View() string {
 	var b strings.Builder
 

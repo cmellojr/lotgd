@@ -22,7 +22,11 @@ const (
 	dragonStateDefeat
 )
 
-// DragonScreen handles the legendary confrontation against the Daily Dragon boss.
+// DragonScreen gerencia o confronto contra o chefe lendário no Covil do Dragão do Dia.
+//
+// Didática TEA: O `DragonScreen` orquestra a batalha final exigindo pré-requisito de Nível 5.
+// Ao derrotar o Dragão, registra a vitória global no SQLite via `storage.VillageRepository.RecordDragonSlayed`
+// informando o nome do herói vitorioso em todo o servidor.
 type DragonScreen struct {
 	db        *storage.DB
 	player    *engine.Player
@@ -38,7 +42,7 @@ type DragonScreen struct {
 	dragonGen storage.DragonGenerator
 }
 
-// NewDragonScreen initializes the Dragon's Lair.
+// NewDragonScreen inicializa a tela do Covil do Dragão Ancestral.
 func NewDragonScreen(db *storage.DB, player *engine.Player, dragonGen storage.DragonGenerator) *DragonScreen {
 	return &DragonScreen{
 		db:        db,
@@ -50,12 +54,12 @@ func NewDragonScreen(db *storage.DB, player *engine.Player, dragonGen storage.Dr
 	}
 }
 
-// Init starts the dragon screen.
+// Init inicializa a tela do covil do dragão.
 func (s *DragonScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates the player state and queries daily dragon status.
+// SetPlayer atualiza a referência ao herói ativo e consulta o estado diário do Dragão no banco.
 func (s *DragonScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 	s.state = dragonStateApproach
@@ -64,7 +68,7 @@ func (s *DragonScreen) SetPlayer(p *engine.Player) {
 	s.loadDragonState()
 }
 
-// SetSize updates screen dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *DragonScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
@@ -96,7 +100,7 @@ func (s *DragonScreen) loadDragonState() {
 	}
 }
 
-// Update processes dragon combat and lair interactions.
+// Update processa interações de combate contra o chefe ou fuga.
 func (s *DragonScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -257,7 +261,7 @@ func (s *DragonScreen) backToTown() (tea.Model, tea.Cmd) {
 	}
 }
 
-// View renders the dragon's lair.
+// View renderiza a interface do Covil do Dragão e o combate dinâmico contra o chefe.
 func (s *DragonScreen) View() string {
 	var b strings.Builder
 

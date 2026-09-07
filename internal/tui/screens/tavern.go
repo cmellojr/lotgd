@@ -13,7 +13,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// TavernScreen represents the bustling social hub of the village.
+// TavernScreen gerencia as interações sociais, fofocas e o mural de notícias na Taverna da Dona Rosalinda.
+//
+// Didática TEA: O `TavernScreen` consulta o banco SQLite via `storage.VillageRepository` para carregar
+// notícias do servidor e permite interações com NPCs (Dona Rosalinda, Cassandra e Cavaleiro Vermelho).
 type TavernScreen struct {
 	db        *storage.DB
 	player    *engine.Player
@@ -25,7 +28,7 @@ type TavernScreen struct {
 	height    int
 }
 
-// NewTavernScreen initializes the tavern screen.
+// NewTavernScreen inicializa a interface da taverna e carrega as opções do menu social.
 func NewTavernScreen(db *storage.DB, player *engine.Player) *TavernScreen {
 	return &TavernScreen{
 		db:     db,
@@ -42,18 +45,18 @@ func NewTavernScreen(db *storage.DB, player *engine.Player) *TavernScreen {
 	}
 }
 
-// Init starts the tavern screen.
+// Init inicializa a tela da taverna.
 func (s *TavernScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates the player reference.
+// SetPlayer atualiza a referência ao herói ativo e carrega as notícias mais recentes do banco.
 func (s *TavernScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 	s.loadNews()
 }
 
-// SetSize updates screen dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *TavernScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
@@ -67,7 +70,7 @@ func (s *TavernScreen) loadNews() {
 	}
 }
 
-// Update processes player interactions in the tavern.
+// Update processa as seleções do jogador na taverna.
 func (s *TavernScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -156,7 +159,7 @@ func (s *TavernScreen) backToTown() (tea.Model, tea.Cmd) {
 	}
 }
 
-// View renders the tavern interface.
+// View renderiza a interface da taverna no terminal.
 func (s *TavernScreen) View() string {
 	var b strings.Builder
 

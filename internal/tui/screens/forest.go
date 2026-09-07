@@ -23,7 +23,11 @@ const (
 	forestStateFled
 )
 
-// ForestScreen handles forest exploration and turn-based combat.
+// ForestScreen gerencia a mecânica de exploração da Floresta Sombria e combates por turnos.
+//
+// Didática TEA: O `ForestScreen` controla uma máquina de estados finita interna (`forestState`):
+// Explorando, Em Combate, Vitória, Derrota e Fuga. A cada rodada de ação (ataque, fuga ou poção),
+// invocamos as funções do `CombatEngine` e atualizamos a interface e o estado persistido do jogador.
 type ForestScreen struct {
 	db        *storage.DB
 	player    *engine.Player
@@ -37,7 +41,7 @@ type ForestScreen struct {
 	height    int
 }
 
-// NewForestScreen initializes the forest exploration and combat screen.
+// NewForestScreen inicializa a tela de exploração e combate na floresta.
 func NewForestScreen(db *storage.DB, player *engine.Player) *ForestScreen {
 	return &ForestScreen{
 		db:        db,
@@ -50,12 +54,12 @@ func NewForestScreen(db *storage.DB, player *engine.Player) *ForestScreen {
 	}
 }
 
-// Init starts the forest screen.
+// Init inicializa a tela da floresta.
 func (s *ForestScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates the active player.
+// SetPlayer atualiza a referência ao herói ativo e reseta o estado de combate para exploração.
 func (s *ForestScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 	s.state = forestStateExploring
@@ -63,13 +67,13 @@ func (s *ForestScreen) SetPlayer(p *engine.Player) {
 	s.combatLog = nil
 }
 
-// SetSize updates screen dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *ForestScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
-// Update processes forest actions and combat rounds.
+// Update processa as ações do jogador durante a exploração ou combate (Atacar, Fugir, Poção, Voltar).
 func (s *ForestScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -207,7 +211,7 @@ func (s *ForestScreen) appendLog(msg string) {
 	}
 }
 
-// View renders the forest environment and combat screen.
+// View renderiza a atmosfera da floresta e o painel de combate dinâmico no terminal.
 func (s *ForestScreen) View() string {
 	var b strings.Builder
 

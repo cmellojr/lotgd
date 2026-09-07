@@ -4,7 +4,10 @@ import (
 	"lotgd/internal/i18n"
 )
 
-// MonsterTemplate define os atributos base de uma espécie de criatura.
+// MonsterTemplate define a estrutura de dados base e estatísticas canônicas de uma espécie de criatura.
+//
+// Didática Go: A struct agrupa os atributos básicos sem afixos procedurais. As tags `json:"..."`
+// facilitam a serialização para exportação de dados ou depuração.
 type MonsterTemplate struct {
 	ID       i18n.MonsterID `json:"id"`
 	Tier     int            `json:"tier"`
@@ -15,7 +18,10 @@ type MonsterTemplate struct {
 	BaseGold int            `json:"base_gold"`
 }
 
-// AffixModifier define alterações estocásticas em atributos e recompensas.
+// AffixModifier define alterações estocásticas em atributos e recompensas aplicadas dinamicamente aos monstros.
+//
+// Didática Go: Os multiplicadores de ponto flutuante (`float64`) aplicam variações percentuais
+// sobre os atributos base da criatura no momento da geração estocástica.
 type AffixModifier struct {
 	NamePTBR string  `json:"name_pt_br"`
 	HPMult   float64 `json:"hp_mult"`
@@ -25,7 +31,7 @@ type AffixModifier struct {
 	GoldMult float64 `json:"gold_mult"`
 }
 
-// AvailableAffixes lista os modificadores procedurais de monstros.
+// AvailableAffixes contém a lista de afixos procedurais que podem ser sorteados aleatoriamente ao gerar um monstro.
 var AvailableAffixes = []AffixModifier{
 	{NamePTBR: "Feroz", HPMult: 1.1, ATKMult: 1.3, DEFMult: 1.0, XPMult: 1.3, GoldMult: 1.2},
 	{NamePTBR: "Covarde", HPMult: 0.8, ATKMult: 0.8, DEFMult: 0.9, XPMult: 0.8, GoldMult: 1.1},
@@ -37,7 +43,10 @@ var AvailableAffixes = []AffixModifier{
 	{NamePTBR: "Gigantesco", HPMult: 1.6, ATKMult: 1.3, DEFMult: 1.2, XPMult: 1.6, GoldMult: 1.5},
 }
 
-// CanonicalTemplates contém o registro dos 20 monstros do jogo organizados por Tier 1 a 4.
+// CanonicalTemplates mapeia cada `MonsterID` para o seu modelo canônico contendo atributos base.
+//
+// Didática Go: Mapeamento direto via `map[i18n.MonsterID]MonsterTemplate` provê acesso imediato em tempo O(1)
+// para obtenção das estatísticas padrão dos 20 monstros organizados do Tier 1 ao Tier 4.
 var CanonicalTemplates = map[i18n.MonsterID]MonsterTemplate{
 	// Tier 1 (Iniciante - Níveis 1 a 2)
 	i18n.MonsterSewerRat:     {ID: i18n.MonsterSewerRat, Tier: 1, BaseHP: 12, BaseATK: 3, BaseDEF: 1, BaseXP: 15, BaseGold: 8},
@@ -68,7 +77,10 @@ var CanonicalTemplates = map[i18n.MonsterID]MonsterTemplate{
 	i18n.MonsterSwampSpecter:     {ID: i18n.MonsterSwampSpecter, Tier: 4, BaseHP: 140, BaseATK: 34, BaseDEF: 15, BaseXP: 550, BaseGold: 320},
 }
 
-// TierMonstersLists organiza as IDs de monstros por Tier para sorteio rápido.
+// TierMonstersLists agrupa os IDs de monstros em slices indexados pelo seu número de Tier (1 a 4).
+//
+// Didática Go: Permite que o algoritmo de geração escolha aleatoriamente qualquer monstro pertencente
+// ao Tier selecionado via indexação direta de fatias (slices).
 var TierMonstersLists = map[int][]i18n.MonsterID{
 	1: {i18n.MonsterSewerRat, i18n.MonsterMossSpider, i18n.MonsterClumsyKobold, i18n.MonsterGreenSlime, i18n.MonsterSinisterCrow},
 	2: {i18n.MonsterGoblinScout, i18n.MonsterOrcRecruit, i18n.MonsterShadowWolf, i18n.MonsterRoadBandit, i18n.MonsterRustySkeleton},
