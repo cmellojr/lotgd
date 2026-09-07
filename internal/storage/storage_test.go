@@ -3,7 +3,9 @@ package storage
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
+	"sync"
 	"testing"
 )
 
@@ -227,4 +229,80 @@ func TestLegacySchemaMigration(t *testing.T) {
 	if updatedP.PotionsCount != 5 {
 		t.Errorf("expected PotionsCount 5, got %d", updatedP.PotionsCount)
 	}
+}
+
+func TestConcurrentStorageAccess(t *testing.T) {
+	ctx := context.Background()
+	tmpDir := t.TempDir()
+	dbPath := filepath.Join(tmpDir, "test_concurrent.db")
+
+	db, err := OpenDB(dbPath)
+	if err != nil {
+		t.Fatalf("OpenDB failed: %v", err)
+	}
+	defer db.Close()
+
+	playerRepo := NewPlayerRepository(db)
+	villageRepo := NewVillageRepository(db)
+
+	const numPlayers = 5
+	players := make([]*Player, numPlayers)
+	for i := 0; i < numPlayers; i++ {
+		pName := fmt.Sprintf("HeroConcurrency_%d", i)
+		p, err := playerRepo.Register(ctx, pName, "pass123")
+		if err != nil {
+			t.Fatalf("Failed to register %s: %v", pName, err)
+		}
+		players[i] = p
+	}
+
+	const numWorkers = 20
+	const iterationsPerWorker = 15
+	var wg sync.WaitGroup
+
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func(workerID int) {
+			defer wg.Done()
+			for iter := 0; iter < iterationsPerWorker; iter++ {
+				p := players[workerID%numPlayers]
+
+				// Concurrent read 1: GetByUsername
+				if _, err := playerRepo.GetByUsername(ctx, p.Username); err != nil {
+					t.Errorf("Worker %d iter %d GetByUsername failed: %v", workerID, iter, err)
+				}
+
+				// Concurrent read 2: ListRankings
+				if _, err := playerRepo.ListRankings(ctx, 10); err != nil {
+					t.Errorf("Worker %d iter %d ListRankings failed: %v", workerID, iter, err)
+				}
+
+				// Concurrent read 3: GetLatestNews
+				if _, err := villageRepo.GetLatestNews(ctx, 5); err != nil {
+					t.Errorf("Worker %d iter %d GetLatestNews failed: %v", workerID, iter, err)
+				}
+
+				// Concurrent read/init: GetOrCreateTodayState
+				if _, err := villageRepo.GetOrCreateTodayState(ctx); err != nil {
+					t.Errorf("Worker %d iter %d GetOrCreateTodayState failed: %v", workerID, iter, err)
+				}
+
+				// Concurrent write 1: Save player
+				pCopy := *p
+				pCopy.Gold += (workerID + 1) * 10
+				pCopy.Experience += 5
+				if err := playerRepo.Save(ctx, &pCopy); err != nil {
+					t.Errorf("Worker %d iter %d Save failed: %v", workerID, iter, err)
+				}
+
+				// Concurrent write 2: Add news
+				msg := fmt.Sprintf("Worker %d news entry iter %d", workerID, iter)
+				if err := villageRepo.AddNews(ctx, msg); err != nil {
+					t.Errorf("Worker %d iter %d AddNews failed: %v", workerID, iter, err)
+				}
+			}
+		}(i)
+	}
+
+	wg.Wait()
 }

@@ -26,8 +26,12 @@ type DB struct {
 //    - `busy_timeout(5000)`: aguarda até 5 segundos para adquirir lock de escrita em ambiente concorrente.
 //    - `foreign_keys(1)`: ativa a verificação rigorosa de integridade referencial.
 //    - `synchronous(NORMAL)`: otimiza o flush de disco sem comprometer a integridade dos dados em modo WAL.
-// 3. Pool de Conexões em BBS: `SetMaxOpenConns(1)` limita a apenas 1 conexão aberta de escrita para evitar concorrência `database is locked`.
-// 4. `PRAGMA journal_mode=WAL`: grava transações no Write-Ahead Log, permitindo leituras concorrentes simultâneas.
+// 3. `PRAGMA journal_mode=WAL`: grava transações no Write-Ahead Log, permitindo leituras concorrentes simultâneas sem bloquear leitores.
+// 4. Pool de Conexões em BBS Concorrente:
+//    Configuramos `SetMaxOpenConns(10)` e `SetMaxIdleConns(10)`. Em modo WAL com `busy_timeout(5000)`,
+//    múltiplas conexões abertas no pool do Go permitem que variadas requisições de leitura (SELECTs) executem
+//    em paralelo sem gargalos de enfileiramento por mutex no driver, enquanto concorrências de escrita são
+//    serializadas com segurança e resiliência pelo engine do SQLite e pelo pragma `busy_timeout`.
 func OpenDB(dsn string) (*DB, error) {
 	pragmaParams := "_pragma=busy_timeout(5000)&_pragma=foreign_keys(1)&_pragma=synchronous(NORMAL)"
 	formattedDSN := dsn
@@ -42,9 +46,9 @@ func OpenDB(dsn string) (*DB, error) {
 		return nil, fmt.Errorf("falha ao abrir banco de dados sqlite: %w", err)
 	}
 
-	// Perfil de execução BBS: limita o pool para 1 conexão de escrita para estabilidade no SQLite
-	db.SetMaxOpenConns(1)
-	db.SetMaxIdleConns(1)
+	// Perfil de execução BBS: expande o pool para suportar leituras paralelas em modo WAL com busy_timeout(5000)
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(10)
 
 	// Habilita o modo WAL (Write-Ahead Logging) no cabeçalho do arquivo SQLite
 	if _, err := db.Exec("PRAGMA journal_mode=WAL;"); err != nil {
