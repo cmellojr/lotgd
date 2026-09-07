@@ -75,14 +75,6 @@ var WeaponsCatalog = []Item{
 		PowerBonus:  25,
 		Description: "Arma lendária banhada em sangue de monstros antigos, feita para abater dragões.",
 	},
-	{
-		ID:          i18n.WeaponNullPointer,
-		Type:        ItemTypeWeapon,
-		NameKey:     i18n.WeaponNullPointer,
-		Value:       9999,
-		PowerBonus:  50,
-		Description: "Artefato proibido da computação capaz de causar pânico instantâneo nos inimigos.",
-	},
 }
 
 // ArmorsCatalog contém todas as armaduras disponíveis para compra e equipamento.

@@ -39,7 +39,7 @@ func NewVillageRepository(db *DB, opts ...VillageRepositoryOption) *VillageRepos
 
 // GetOrCreateTodayState retrieves or generates the Dragon and state for today.
 func (r *VillageRepository) GetOrCreateTodayState(ctx context.Context) (*VillageState, error) {
-	today := time.Now().Format("2006-01-02")
+	today := time.Now().UTC().Format("2006-01-02")
 
 	var maxHP, atk, def, goldReward int
 	if r.dragonGen != nil {
@@ -88,7 +88,7 @@ func (r *VillageRepository) GetOrCreateTodayState(ctx context.Context) (*Village
 
 // RecordDragonSlayed updates the Dragon state when defeated by a hero.
 func (r *VillageRepository) RecordDragonSlayed(ctx context.Context, slayerName string) error {
-	today := time.Now().Format("2006-01-02")
+	today := time.Now().UTC().Format("2006-01-02")
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
