@@ -1,6 +1,6 @@
 package i18n
 
-// LocationNamesPTBR maps locations to Portuguese display names.
+// LocationNamesPTBR mapeia os identificadores de locais para seus nomes formatados em Português (PT-BR).
 var LocationNamesPTBR = map[LocationID]string{
 	LocationTown:   "Praça do Vilarejo",
 	LocationForest: "Floresta Sombria",
@@ -11,7 +11,7 @@ var LocationNamesPTBR = map[LocationID]string{
 	LocationDragon: "Covil do Dragão",
 }
 
-// NPCNamesPTBR maps canonical NPCs to display names with titles.
+// NPCNamesPTBR mapeia os identificadores de NPCs para seus nomes canônicos e títulos em PT-BR.
 var NPCNamesPTBR = map[NPCID]string{
 	NPCRosalinda: "Dona Rosalinda, a Taverneira",
 	NPCAnselmo:   "Frei Anselmo, o Curandeiro",
@@ -21,7 +21,7 @@ var NPCNamesPTBR = map[NPCID]string{
 	NPCTobias:    "Mestre Tobias, o Bibliotecário",
 }
 
-// MonsterNamesPTBR maps monster IDs to canonical PT-BR names.
+// MonsterNamesPTBR mapeia os IDs de espécies de monstros para seus nomes traduzidos em PT-BR.
 var MonsterNamesPTBR = map[MonsterID]string{
 	// Tier 1
 	MonsterSewerRat:     "Rato-do-Esgoto",
@@ -51,12 +51,13 @@ var MonsterNamesPTBR = map[MonsterID]string{
 	MonsterColdGazeBasilisk: "Basilisco de Olhar Frio",
 	MonsterSwampSpecter:     "Espectro do Pântano",
 
-	// Special Boss
+	// Chefe Especial Final
 	MonsterDragon: "O Dragão",
 }
 
 // DragonTitlesPTBR lista os subtítulos temáticos diários do Dragão.
-// A seleção é determinística: o índice é derivado do hash SHA-256 da data corrente,
+//
+// Didática Go: A seleção é determinística: o índice é derivado do hash SHA-256 da data corrente,
 // garantindo que todos os jogadores vejam o mesmo título no mesmo dia.
 var DragonTitlesPTBR = []string{
 	"O Devorador de Goroutines",
@@ -66,7 +67,7 @@ var DragonTitlesPTBR = []string{
 	"A Chama Vermelha do Abismo",
 }
 
-// ItemNamesPTBR maps item IDs to Portuguese names.
+// ItemNamesPTBR mapeia os IDs de itens e equipamentos para seus nomes formatados em PT-BR.
 var ItemNamesPTBR = map[ItemID]string{
 	WeaponStick:            "Pedaço de Pau",
 	WeaponDagger:           "Adaga Afiada",
@@ -82,7 +83,9 @@ var ItemNamesPTBR = map[ItemID]string{
 	PotionGarbageCollector: "Elixir do Garbage Collector",
 }
 
-// GetLocationName returns the localized location name.
+// GetLocationName retorna o nome traduzido do local, provendo fallback para a string do ID caso não encontrado.
+//
+// Didática Go: Usamos a sintaxe `comma-ok` (`value, ok := map[key]`) para verificar com segurança a existência da chave no mapa.
 func GetLocationName(id LocationID) string {
 	if name, ok := LocationNamesPTBR[id]; ok {
 		return name
@@ -90,7 +93,7 @@ func GetLocationName(id LocationID) string {
 	return string(id)
 }
 
-// GetNPCName returns the localized NPC name.
+// GetNPCName retorna o nome traduzido do NPC com seu título.
 func GetNPCName(id NPCID) string {
 	if name, ok := NPCNamesPTBR[id]; ok {
 		return name
@@ -98,7 +101,7 @@ func GetNPCName(id NPCID) string {
 	return string(id)
 }
 
-// GetMonsterName returns the localized monster name.
+// GetMonsterName retorna o nome traduzido do monstro.
 func GetMonsterName(id MonsterID) string {
 	if name, ok := MonsterNamesPTBR[id]; ok {
 		return name
@@ -106,7 +109,7 @@ func GetMonsterName(id MonsterID) string {
 	return string(id)
 }
 
-// GetItemName returns the localized item name.
+// GetItemName retorna o nome traduzido do item.
 func GetItemName(id ItemID) string {
 	if name, ok := ItemNamesPTBR[id]; ok {
 		return name

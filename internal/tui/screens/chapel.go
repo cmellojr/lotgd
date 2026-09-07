@@ -12,7 +12,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// ChapelScreen represents the sanctuary of healing and blessings.
+// ChapelScreen gerencia os serviços de restauração de saúde e oferendas na Capela do Frei Anselmo.
+//
+// Didática TEA: O `ChapelScreen` calcula custos de cura proporcionais ao dano acumulado do jogador,
+// deduz as moedas do modelo de domínio e persiste as alterações no SQLite.
 type ChapelScreen struct {
 	db        *storage.DB
 	player    *engine.Player
@@ -23,7 +26,7 @@ type ChapelScreen struct {
 	height    int
 }
 
-// NewChapelScreen initializes the chapel screen.
+// NewChapelScreen inicializa a interface da capela com opções de restauração e doações.
 func NewChapelScreen(db *storage.DB, player *engine.Player) *ChapelScreen {
 	return &ChapelScreen{
 		db:     db,
@@ -39,23 +42,23 @@ func NewChapelScreen(db *storage.DB, player *engine.Player) *ChapelScreen {
 	}
 }
 
-// Init starts the chapel screen.
+// Init inicializa a tela da capela.
 func (s *ChapelScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates player state.
+// SetPlayer atualiza a referência ao herói ativo em memória.
 func (s *ChapelScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 }
 
-// SetSize updates dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *ChapelScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
-// Update handles chapel interactions.
+// Update processa interações do jogador na capela (cura, doação, meditação).
 func (s *ChapelScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -149,7 +152,7 @@ func (s *ChapelScreen) backToTown() (tea.Model, tea.Cmd) {
 	}
 }
 
-// View renders the chapel UI.
+// View renderiza a interface da capela no terminal.
 func (s *ChapelScreen) View() string {
 	var b strings.Builder
 

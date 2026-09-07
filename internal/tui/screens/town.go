@@ -19,7 +19,10 @@ type townMenuItem struct {
 	description string
 }
 
-// TownScreen represents the main village hub.
+// TownScreen gerencia a exibição e navegação da Praça Central do Vilarejo (Hub Principal).
+//
+// Didática TEA: O `TownScreen` implementa o modelo de sub-tela no Bubble Tea, gerenciando um cursor de menu,
+// atalhos diretos via teclado, acesso ao Banco do Vilarejo e navegação para outros locais.
 type TownScreen struct {
 	db       *storage.DB
 	player   *engine.Player
@@ -31,7 +34,7 @@ type TownScreen struct {
 	height   int
 }
 
-// NewTownScreen initializes the town hub.
+// NewTownScreen instancia e configura o Hub da Praça Central do Vilarejo.
 func NewTownScreen(db *storage.DB, player *engine.Player) *TownScreen {
 	items := []townMenuItem{
 		{key: "F", label: "Floresta Sombria", target: ui.ScreenForest, description: "Procure monstros, lute por ouro e experiência."},
@@ -53,23 +56,23 @@ func NewTownScreen(db *storage.DB, player *engine.Player) *TownScreen {
 	}
 }
 
-// Init initializes the town screen.
+// Init inicializa a tela de cidade.
 func (s *TownScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates the active player reference.
+// SetPlayer atualiza a referência ao herói ativo em memória.
 func (s *TownScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 }
 
-// SetSize updates screen dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *TownScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
-// Update processes navigation and actions in the town square.
+// Update processa eventos de entrada (navegação por setas, enter e teclas de atalho BBS).
 func (s *TownScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -164,7 +167,7 @@ func (s *TownScreen) selectItem(item townMenuItem) (tea.Model, tea.Cmd) {
 	return s, nil
 }
 
-// View renders the village square.
+// View renderiza visualmente a Praça Central do Vilarejo com barra de status e menu formatado.
 func (s *TownScreen) View() string {
 	var b strings.Builder
 

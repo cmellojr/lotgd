@@ -10,7 +10,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Color palette constants for the retro BBS ANSI theme.
+// Constantes de paleta de cores ANSI para o tema de terminal retro BBS.
+//
+// Didática Go: Usamos `lipgloss.Color` com códigos hexadecimais para criar um visual rico em
+// terminais ANSI de 256 cores ou TrueColor, mantendo consistência temática em toda a interface TUI.
 const (
 	ColorGoldDark   = lipgloss.Color("#D4AF37")
 	ColorGoldBright = lipgloss.Color("#FFD700")
@@ -27,14 +30,17 @@ const (
 	ColorWhite      = lipgloss.Color("#ECEFF4")
 )
 
-// UI styles using Lip Gloss.
+// Estilos de UI reutilizáveis instanciados com a biblioteca Lip Gloss.
+//
+// Didática Go: Estilos no Lip Gloss são imutáveis e encadeáveis (builder pattern).
+// Definir e reutilizar variáveis globais de estilo evita alocações redundantes a cada quadro renderizado.
 var (
-	// Base application box style
+	// Caixas base da aplicação
 	AppStyle = lipgloss.NewStyle().
 			Padding(1, 2).
 			Foreground(ColorWhite)
 
-	// Banner & Titles
+	// Banners e Títulos
 	TitleStyle = lipgloss.NewStyle().
 			Bold(true).
 			Foreground(ColorGoldBright).
@@ -46,7 +52,7 @@ var (
 			Italic(true).
 			Foreground(ColorCyanBright)
 
-	// Status bar at top of screen
+	// Barra de status no topo da tela
 	StatusBarContainer = lipgloss.NewStyle().
 				Border(lipgloss.NormalBorder(), false, false, true, false).
 				BorderForeground(ColorGrayMid).
@@ -73,14 +79,14 @@ var (
 			Foreground(ColorRedBright).
 			Bold(true)
 
-	// Dialog & Content Box
+	// Caixa de Conteúdo e Diálogos
 	ContentBoxStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(ColorCyanDark).
 			Padding(1, 2).
 			MarginBottom(1)
 
-	// Menu Item Styles
+	// Estilos de Itens de Menu
 	MenuItemStyle = lipgloss.NewStyle().
 			PaddingLeft(2).
 			Foreground(ColorGrayLight)
@@ -94,7 +100,7 @@ var (
 				Bold(true).
 				Foreground(ColorGoldBright)
 
-	// Combat & Log Styles
+	// Estilos de Combate e Log
 	CombatBoxStyle = lipgloss.NewStyle().
 			Border(lipgloss.DoubleBorder()).
 			BorderForeground(ColorRedDark).
@@ -115,7 +121,7 @@ var (
 				Foreground(ColorGoldBright).
 				Bold(true)
 
-	// Error & Notice Messages
+	// Notificações e Mensagens de Erro
 	ErrorNoticeStyle = lipgloss.NewStyle().
 				Foreground(ColorRedBright).
 				Bold(true)
@@ -130,7 +136,7 @@ var (
 			MarginTop(1)
 )
 
-// ScreenID represents unique screen identifiers in the TUI state machine.
+// ScreenID representa o identificador único de cada tela na máquina de estados da TUI.
 type ScreenID string
 
 const (
@@ -145,17 +151,21 @@ const (
 	ScreenGameOver ScreenID = "game_over"
 )
 
-// ChangeScreenMsg requests the root model to navigate to a new screen.
+// ChangeScreenMsg é uma mensagem do Bubble Tea solicitando a transição de tela ativa.
+//
+// Didática Go: No Bubble Tea (The Elm Architecture), as telas filhas disparam comandos (`tea.Cmd`)
+// que retornam mensagens customizadas como `ChangeScreenMsg`. O modelo raiz (`MainModel`) intercepta
+// essa mensagem no seu método `Update` e altera a tela visível.
 type ChangeScreenMsg struct {
 	Screen ScreenID
 }
 
-// PlayerUpdatedMsg notifies the root model and sub-models that the active player state changed.
+// PlayerUpdatedMsg notifica o modelo raiz e as sub-telas de que o estado do jogador em memória mudou.
 type PlayerUpdatedMsg struct {
 	Player *engine.Player
 }
 
-// RenderStatusBar renders the standard top status bar for the active player.
+// RenderStatusBar renderiza o cabeçalho superior padrão com atributos do herói, barra de vida e equipamentos.
 func RenderStatusBar(p *engine.Player, width int) string {
 	if p == nil {
 		return ""
@@ -206,6 +216,7 @@ func RenderStatusBar(p *engine.Player, width int) string {
 	return StatusBarContainer.Width(width).Render(line1 + "\n" + line2)
 }
 
+// renderHPBar constrói a representação gráfica visual em blocos ANSI da barra de vida do jogador.
 func renderHPBar(ratio float64, totalBlocks int) string {
 	if ratio < 0 {
 		ratio = 0

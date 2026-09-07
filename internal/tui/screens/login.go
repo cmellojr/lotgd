@@ -21,7 +21,11 @@ const (
 	focusSubmit
 )
 
-// LoginScreen handles authentication and player account creation.
+// LoginScreen gerencia o formulário de autenticação e registro automático de novos jogadores.
+//
+// Didática TEA: O `LoginScreen` utiliza os componentes de campo de texto `bubbles/textinput` para
+// capturar entradas de usuário (nome e senha), alternando o foco com `Tab` ou setas e validando
+// as credenciais diretamente no banco SQLite via `storage.DB`.
 type LoginScreen struct {
 	db         *storage.DB
 	usernameIn textinput.Model
@@ -33,7 +37,7 @@ type LoginScreen struct {
 	height     int
 }
 
-// NewLoginScreen initializes the login interface.
+// NewLoginScreen inicializa a interface do formulário de login com campos configurados.
 func NewLoginScreen(db *storage.DB) *LoginScreen {
 	u := textinput.New()
 	u.Placeholder = "Digite seu nome de aventureiro..."
@@ -57,18 +61,18 @@ func NewLoginScreen(db *storage.DB) *LoginScreen {
 	}
 }
 
-// Init returns the initial command for the login screen.
+// Init retorna o comando inicial de piscamento do cursor para os campos de texto.
 func (s *LoginScreen) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-// SetSize updates the screen dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *LoginScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
-// Update processes input events on the login form.
+// Update processa o foco dos campos de formulário e a confirmação de autenticação via tecla Enter.
 func (s *LoginScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -141,7 +145,7 @@ func (s *LoginScreen) handleLogin() (tea.Model, tea.Cmd) {
 			s.errMsg = "Senha incorreta para o aventureiro."
 			return s, nil
 		case errors.Is(err, storage.ErrPlayerNotFound):
-			// Se não existe, cria
+			// Se não existe, cria a conta automaticamente
 			newSP, createErr := s.db.CreatePlayer(user, pass)
 			if createErr != nil {
 				if errors.Is(createErr, storage.ErrUserExists) {
@@ -158,7 +162,7 @@ func (s *LoginScreen) handleLogin() (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// Converte para modelo de domínio
+	// Converte para o modelo de domínio do jogo
 	player := engine.NewPlayerFromStorage(sp)
 
 	// Verifica e processa virada do dia
@@ -173,7 +177,7 @@ func (s *LoginScreen) handleLogin() (tea.Model, tea.Cmd) {
 	}
 }
 
-// View renders the login screen.
+// View renderiza a caixa de login estilizada no terminal.
 func (s *LoginScreen) View() string {
 	title := ui.TitleStyle.Render("🏰 THE LEGEND OF THE GO DRAGON 🐉")
 	subtitle := ui.SubtitleStyle.Render("Uma aventura épica no terminal (BBS RPG Clássico)")

@@ -12,7 +12,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// GuildScreen handles player level-up promotions and lore with Master Tobias.
+// GuildScreen gerencia o treinamento de promoção de nível e avanço de atributos com o Mestre Tobias.
+//
+// Didática TEA: O `GuildScreen` valida o progresso de experiência (`XP`) e ouro do herói usando `engine.CanLevelUp`
+// e executa o avanço de nível através de `engine.LevelUp`, persistindo as alterações no SQLite.
 type GuildScreen struct {
 	db        *storage.DB
 	player    *engine.Player
@@ -23,7 +26,7 @@ type GuildScreen struct {
 	height    int
 }
 
-// NewGuildScreen initializes the adventurers guild.
+// NewGuildScreen inicializa a interface da guilda dos aventureiros.
 func NewGuildScreen(db *storage.DB, player *engine.Player) *GuildScreen {
 	return &GuildScreen{
 		db:     db,
@@ -39,23 +42,23 @@ func NewGuildScreen(db *storage.DB, player *engine.Player) *GuildScreen {
 	}
 }
 
-// Init starts the guild screen.
+// Init inicializa a tela da guilda.
 func (s *GuildScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates the player reference.
+// SetPlayer atualiza a referência ao herói ativo em memória.
 func (s *GuildScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 }
 
-// SetSize updates screen dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *GuildScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
-// Update processes guild interactions.
+// Update processa interações de promoção e consulta na guilda dos aventureiros.
 func (s *GuildScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -142,7 +145,7 @@ func (s *GuildScreen) backToTown() (tea.Model, tea.Cmd) {
 	}
 }
 
-// View renders the guild interface.
+// View renderiza a interface da guilda dos aventureiros no terminal.
 func (s *GuildScreen) View() string {
 	var b strings.Builder
 

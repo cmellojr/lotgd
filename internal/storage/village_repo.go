@@ -6,29 +6,30 @@ import (
 	"time"
 )
 
-// DragonGenerator é um contrato de geração do Dragão do Dia.
-// O pacote storage não importa bestiary diretamente (evita ciclo de dependência);
-// a implementação é injetada pelo chamador (cmd/lotgd, cmd/server) via closure.
+// DragonGenerator define o contrato da closure geradora dos atributos do Dragão do Dia.
 //
-// Retorna: hp, atk, def, goldReward — os atributos brutos do Dragão para persistência.
+// Didática Go: O pacote `storage` não importa o pacote `bestiary` diretamente para evitar ciclos
+// de dependência circular (`storage` -> `bestiary` -> `engine` -> `storage`). Em seu lugar, usamos
+// injeção de dependência via closure/tipo função (`DragonGenerator`), que é instanciado na `main`.
+//
+// Retorna os atributos brutos: `(hp, atk, def, goldReward)`.
 type DragonGenerator func(dayDate string) (hp, atk, def, goldReward int)
 
-// VillageRepositoryOption configura opções opcionais do repositório.
+// VillageRepositoryOption define o tipo para aplicação do padrão Functional Options no repositório.
 type VillageRepositoryOption func(*VillageRepository)
 
-// WithDragonGenerator injeta a função de geração do Dragão do Dia.
-// Se não fornecido, GetOrCreateTodayState usa um fallback seguro (para testes).
+// WithDragonGenerator injeta a função geradora dos atributos do Dragão do Dia no repositório.
 func WithDragonGenerator(gen DragonGenerator) VillageRepositoryOption {
 	return func(r *VillageRepository) { r.dragonGen = gen }
 }
 
-// VillageRepository manages global village state, the Dragon of the Day, and town news.
+// VillageRepository gerencia o estado global do vilarejo, o status diário do Dragão e os murais de notícias.
 type VillageRepository struct {
 	db        *DB
 	dragonGen DragonGenerator
 }
 
-// NewVillageRepository creates a new instance of VillageRepository.
+// NewVillageRepository cria e inicializa um novo repositório do vilarejo aplicando opções funcionais.
 func NewVillageRepository(db *DB, opts ...VillageRepositoryOption) *VillageRepository {
 	r := &VillageRepository{db: db}
 	for _, opt := range opts {
@@ -37,7 +38,12 @@ func NewVillageRepository(db *DB, opts ...VillageRepositoryOption) *VillageRepos
 	return r
 }
 
-// GetOrCreateTodayState retrieves or generates the Dragon and state for today.
+// GetOrCreateTodayState busca ou inicializa atomicamente o estado do vilarejo e do Dragão do Dia no SQLite.
+//
+// Didática Go:
+// 1. Abrimos uma transação explícita com `r.db.BeginTx(ctx, nil)` para garantir isolamento ACID.
+// 2. Usamos `defer tx.Rollback()` para garantir o rollback automático se a função retornar antes de `tx.Commit()`.
+// 3. Executamos `INSERT OR IGNORE` para criar a linha do dia corrente sem sobrescrever se já existir.
 func (r *VillageRepository) GetOrCreateTodayState(ctx context.Context) (*VillageState, error) {
 	today := time.Now().UTC().Format("2006-01-02")
 
@@ -50,7 +56,7 @@ func (r *VillageRepository) GetOrCreateTodayState(ctx context.Context) (*Village
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+		return nil, fmt.Errorf("falha ao iniciar transação: %w", err)
 	}
 	defer tx.Rollback()
 
@@ -59,7 +65,7 @@ func (r *VillageRepository) GetOrCreateTodayState(ctx context.Context) (*Village
 	VALUES (?, 1, ?, ?, ?, ?, ?, '')
 	`
 	if _, err := tx.ExecContext(ctx, insertQuery, today, maxHP, maxHP, atk, def, goldReward); err != nil {
-		return nil, fmt.Errorf("failed to ensure daily dragon state: %w", err)
+		return nil, fmt.Errorf("falha ao assegurar estado do dragão do dia: %w", err)
 	}
 
 	selectQuery := `
@@ -75,24 +81,28 @@ func (r *VillageRepository) GetOrCreateTodayState(ctx context.Context) (*Village
 		&state.DragonATK, &state.DragonDEF, &state.DragonGoldReward, &state.SlayerName,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan village state: %w", err)
+		return nil, fmt.Errorf("falha ao ler estado do vilarejo: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+		return nil, fmt.Errorf("falha ao efetuar commit da transação: %w", err)
 	}
 
 	state.DragonAlive = dragonAliveInt == 1
 	return &state, nil
 }
 
-// RecordDragonSlayed updates the Dragon state when defeated by a hero.
+// RecordDragonSlayed registra o abate do Dragão do Dia por um herói, atualizando o estado e inserindo um anúncio no jornal.
+//
+// Didática Go: A transação utiliza controle de concorrência otimista (`WHERE day_date = ? AND dragon_alive = 1`).
+// Se `res.RowsAffected()` retornar 0, significa que outro jogador abateu o Dragão no mesmo dia milissegundos antes,
+// abortando a operação de forma segura.
 func (r *VillageRepository) RecordDragonSlayed(ctx context.Context, slayerName string) error {
 	today := time.Now().UTC().Format("2006-01-02")
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return fmt.Errorf("falha ao iniciar transação: %w", err)
 	}
 	defer tx.Rollback()
 
@@ -102,34 +112,34 @@ func (r *VillageRepository) RecordDragonSlayed(ctx context.Context, slayerName s
 	`
 	res, err := tx.ExecContext(ctx, query, slayerName, today)
 	if err != nil {
-		return fmt.Errorf("failed to update dragon status: %w", err)
+		return fmt.Errorf("falha ao atualizar status do dragão: %w", err)
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("failed to check rows affected: %w", err)
+		return fmt.Errorf("falha ao verificar linhas afetadas: %w", err)
 	}
 	if rows == 0 {
-		return fmt.Errorf("dragon already slain or not found for %s", today)
+		return fmt.Errorf("o dragão já foi derrotado hoje por outro herói")
 	}
 
 	news := fmt.Sprintf("GLÓRIA AO HERÓI! %s derrotou o Dragão e salvou o Vilarejo hoje!", slayerName)
 	newsQuery := `INSERT INTO news (message, created_at) VALUES (?, CURRENT_TIMESTAMP)`
 	if _, err := tx.ExecContext(ctx, newsQuery, news); err != nil {
-		return fmt.Errorf("failed to record news: %w", err)
+		return fmt.Errorf("falha ao registrar notícia do feito: %w", err)
 	}
 
 	return tx.Commit()
 }
 
-// AddNews inserts a new event to the village board.
+// AddNews publica um novo anúncio ou comunicado no mural de notícias do vilarejo.
 func (r *VillageRepository) AddNews(ctx context.Context, message string) error {
 	query := `INSERT INTO news (message, created_at) VALUES (?, CURRENT_TIMESTAMP)`
 	_, err := r.db.ExecContext(ctx, query, message)
 	return err
 }
 
-// GetLatestNews retrieves recent news entries.
+// GetLatestNews recupera os comunicados mais recentes do mural de notícias ordenados do mais novo ao mais antigo.
 func (r *VillageRepository) GetLatestNews(ctx context.Context, limit int) ([]*NewsEntry, error) {
 	query := `SELECT id, message, created_at FROM news ORDER BY id DESC LIMIT ?`
 	rows, err := r.db.QueryContext(ctx, query, limit)
