@@ -67,11 +67,6 @@ var DragonTitlesPTBR = []string{
 	"A Chama Vermelha do Abismo",
 }
 
-// UITextsPTBR mapeia as chaves de interface genéricas para suas traduções em PT-BR.
-var UITextsPTBR = map[UIKey]string{
-	UIMaxLevel: "(máx)",
-}
-
 // ItemNamesPTBR mapeia os IDs de itens e equipamentos para seus nomes formatados em PT-BR.
 var ItemNamesPTBR = map[ItemID]string{
 	WeaponStick:            "Pedaço de Pau",
@@ -96,14 +91,6 @@ func GetLocationName(id LocationID) string {
 		return name
 	}
 	return string(id)
-}
-
-// GetUIText retorna o texto traduzido de um elemento genérico de interface.
-func GetUIText(key UIKey) string {
-	if text, ok := UITextsPTBR[key]; ok {
-		return text
-	}
-	return string(key)
 }
 
 // GetNPCName retorna o nome traduzido do NPC com seu título.
