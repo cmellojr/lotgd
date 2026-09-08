@@ -87,3 +87,10 @@ const (
 	PotionHealth           ItemID = "potion_health"
 	PotionGarbageCollector ItemID = "potion_gc"
 )
+
+// UIKey representa chaves de tradução de elementos genéricos da interface do usuário.
+type UIKey string
+
+const (
+	UIMaxLevel UIKey = "max_level"
+)
