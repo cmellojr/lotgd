@@ -79,8 +79,11 @@ func (s *ForestScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		k := strings.ToUpper(msg.String())
 
-		// Retornar à cidade
-		if k == "V" || k == "ESC" || (s.state == forestStateExploring && k == "C") {
+		// Retornar à cidade.
+		// Em estado de derrota nenhuma tecla escapa: o fluxo tem de passar pela
+		// tela de Game Over, onde a penalidade de morte é aplicada.
+		if s.state != forestStateDefeat &&
+			(k == "V" || k == "ESC" || (s.state == forestStateExploring && k == "C")) {
 			if s.state == forestStateCombat {
 				s.appendLog("Você não pode fugir sem tentar uma retirada estratégica! [F]ugir")
 				return s, nil
