@@ -66,6 +66,21 @@ func (s *LoginScreen) Init() tea.Cmd {
 	return textinput.Blink
 }
 
+// Reset devolve a tela de login ao estado inicial.
+//
+// Sem isto, sair da sessão deixava o nome e a senha preenchidos nos campos: bastava
+// pressionar Enter para entrar de novo na conta anterior. Em um BBS multiusuário
+// via SSH isso equivale a sair sem encerrar a sessão.
+func (s *LoginScreen) Reset() {
+	s.usernameIn.SetValue("")
+	s.passwordIn.SetValue("")
+	s.usernameIn.Focus()
+	s.passwordIn.Blur()
+	s.focus = focusUsername
+	s.errMsg = ""
+	s.infoMsg = "Se a conta não existir, ela será criada automaticamente."
+}
+
 // SetSize atualiza as dimensões de largura e altura da tela.
 func (s *LoginScreen) SetSize(w, h int) {
 	s.width = w
