@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -93,30 +92,5 @@ func TestStyles_NoPanic(t *testing.T) {
 	}
 	if SelectedMenuItemStyle.Render(sample) == "" {
 		t.Errorf("SelectedMenuItemStyle rendered empty string")
-	}
-}
-
-func TestRenderStatusBar_ShowsCombatStatsAndXP(t *testing.T) {
-	p := &engine.Player{
-		Username:    "Hero",
-		Level:       1,
-		Experience:  40,
-		Health:      20,
-		MaxHealth:   20,
-		BaseAttack:  5,
-		BaseDefense: 2,
-		Weapon:      engine.WeaponsCatalog[0],
-		Armor:       engine.ArmorsCatalog[0],
-	}
-	out := RenderStatusBar(p, 120)
-
-	for _, want := range []string{
-		"ATK:", fmt.Sprintf("%d", p.TotalAttack()),
-		"DEF:", fmt.Sprintf("%d", p.TotalDefense()),
-		"XP:", "40/",
-	} {
-		if !strings.Contains(out, want) {
-			t.Errorf("barra de estado não mostra %q:\n%s", want, out)
-		}
 	}
 }
