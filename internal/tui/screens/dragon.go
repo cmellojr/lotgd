@@ -126,7 +126,9 @@ func (s *DragonScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		k := strings.ToUpper(msg.String())
 
-		if k == "V" || k == "ESC" {
+		// Em estado de derrota nenhuma tecla escapa: o fluxo tem de passar pela
+		// tela de Game Over, onde a penalidade de morte é aplicada.
+		if (k == "V" || k == "ESC") && s.state != dragonStateDefeat {
 			if s.state == dragonStateCombat {
 				s.appendLog("Não há como recuar agora! O calor sufocante e a fúria do Dragão bloqueiam a saída!")
 				return s, nil
