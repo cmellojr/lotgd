@@ -210,8 +210,27 @@ func RenderStatusBar(p *engine.Player, width int) string {
 		StatusValue.Render(fmt.Sprintf("%d", p.PotionsCount)),
 	)
 
+	// Atributos de combate e progresso de experiência.
+	//
+	// Sem isto o jogador vê os atributos do monstro na tela de combate e nunca os
+	// seus: TotalAttack e TotalDefense eram calculados e nunca exibidos, e a
+	// experiência só aparecia na Guilda.
+	xpText := fmt.Sprintf("%d (máx)", p.Experience)
+	if req, ok := engine.NextLevelRequirement(p.Level); ok {
+		xpText = fmt.Sprintf("%d/%d", p.Experience, req.RequiredXP)
+	}
+
+	combatInfo := fmt.Sprintf("%s %s | %s %s | %s %s",
+		StatusLabel.Render("ATK:"),
+		StatusValue.Render(fmt.Sprintf("%d", p.TotalAttack())),
+		StatusLabel.Render("DEF:"),
+		StatusValue.Render(fmt.Sprintf("%d", p.TotalDefense())),
+		StatusLabel.Render("XP:"),
+		StatusValue.Render(xpText),
+	)
+
 	line1 := fmt.Sprintf("%s    %s    %s    %s", heroInfo, healthInfo, goldInfo, fightsInfo)
-	line2 := equipInfo
+	line2 := fmt.Sprintf("%s | %s", equipInfo, combatInfo)
 
 	return StatusBarContainer.Width(width).Render(line1 + "\n" + line2)
 }
