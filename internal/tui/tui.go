@@ -99,6 +99,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.currentScreen = msg.Screen
 		m.syncPlayerState()
+		// Sair da sessão encerra-a de fato: limpa os campos do login e a referência
+		// ao jogador, para que ninguém entre na conta anterior apenas com um Enter.
+		if msg.Screen == ScreenLogin {
+			m.loginScreen.Reset()
+			m.player = nil
+		}
 		return m, nil
 	}
 
