@@ -211,10 +211,8 @@ func RenderStatusBar(p *engine.Player, width int) string {
 	)
 
 	// Atributos de combate e progresso de experiência.
-	//
-	// Sem isto o jogador vê os atributos do monstro na tela de combate e nunca os
-	// seus: TotalAttack e TotalDefense eram calculados e nunca exibidos, e a
-	// experiência só aparecia na Guilda.
+	// No nível máximo não existe requisito seguinte, e o XP é exibido com o
+	// marcador de nível máximo em vez da fração atual/necessário.
 	xpText := fmt.Sprintf("%d %s", p.Experience, i18n.GetUIText(i18n.UIMaxLevel))
 	if req, ok := engine.NextLevelRequirement(p.Level); ok {
 		xpText = fmt.Sprintf("%d/%d", p.Experience, req.RequiredXP)
