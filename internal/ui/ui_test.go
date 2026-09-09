@@ -120,3 +120,23 @@ func TestRenderStatusBar_ShowsCombatStatsAndXP(t *testing.T) {
 		}
 	}
 }
+
+func TestRenderStatusBar_MaxLevelUsesLocalizedTag(t *testing.T) {
+	p := &engine.Player{
+		Username:    "Hero",
+		Level:       engine.MaxLevel,
+		Experience:  22000,
+		Health:      20,
+		MaxHealth:   20,
+		BaseAttack:  5,
+		BaseDefense: 2,
+		Weapon:      engine.WeaponsCatalog[0],
+		Armor:       engine.ArmorsCatalog[0],
+	}
+	out := RenderStatusBar(p, 120)
+
+	want := fmt.Sprintf("%d %s", p.Experience, i18n.GetUIText(i18n.UIMaxLevel))
+	if !strings.Contains(out, want) {
+		t.Errorf("no nível máximo a barra de estado não mostra %q:\n%s", want, out)
+	}
+}

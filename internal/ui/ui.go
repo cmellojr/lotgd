@@ -215,7 +215,7 @@ func RenderStatusBar(p *engine.Player, width int) string {
 	// Sem isto o jogador vê os atributos do monstro na tela de combate e nunca os
 	// seus: TotalAttack e TotalDefense eram calculados e nunca exibidos, e a
 	// experiência só aparecia na Guilda.
-	xpText := fmt.Sprintf("%d (máx)", p.Experience)
+	xpText := fmt.Sprintf("%d %s", p.Experience, i18n.GetUIText(i18n.UIMaxLevel))
 	if req, ok := engine.NextLevelRequirement(p.Level); ok {
 		xpText = fmt.Sprintf("%d/%d", p.Experience, req.RequiredXP)
 	}
