@@ -210,8 +210,25 @@ func RenderStatusBar(p *engine.Player, width int) string {
 		StatusValue.Render(fmt.Sprintf("%d", p.PotionsCount)),
 	)
 
+	// Atributos de combate e progresso de experiência.
+	// No nível máximo não existe requisito seguinte, e o XP é exibido com o
+	// marcador de nível máximo em vez da fração atual/necessário.
+	xpText := fmt.Sprintf("%d %s", p.Experience, i18n.GetUIText(i18n.UIMaxLevel))
+	if req, ok := engine.NextLevelRequirement(p.Level); ok {
+		xpText = fmt.Sprintf("%d/%d", p.Experience, req.RequiredXP)
+	}
+
+	combatInfo := fmt.Sprintf("%s %s | %s %s | %s %s",
+		StatusLabel.Render("ATK:"),
+		StatusValue.Render(fmt.Sprintf("%d", p.TotalAttack())),
+		StatusLabel.Render("DEF:"),
+		StatusValue.Render(fmt.Sprintf("%d", p.TotalDefense())),
+		StatusLabel.Render("XP:"),
+		StatusValue.Render(xpText),
+	)
+
 	line1 := fmt.Sprintf("%s    %s    %s    %s", heroInfo, healthInfo, goldInfo, fightsInfo)
-	line2 := equipInfo
+	line2 := fmt.Sprintf("%s | %s", equipInfo, combatInfo)
 
 	return StatusBarContainer.Width(width).Render(line1 + "\n" + line2)
 }
