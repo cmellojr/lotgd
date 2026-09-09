@@ -58,12 +58,13 @@ graph TD
 | Tela | Rota TUI | Comandos / Atalhos Principais |
 |---|---|---|
 | **Login / Criação** | `ScreenLogin` | Digitar nome/senha, `[Enter]` confirma, `[Tab]` alterna |
-| **Praça do Vilarejo** | `ScreenTown` | `[F]` Floresta, `[T]` Taverna, `[C]` Capela, `[M]` Ferraria, `[G]` Guilda, `[D]` Dragão, `[S]` Status, `[Q]` Sair |
+| **Praça do Vilarejo** | `ScreenTown` | `[F]` Floresta, `[T]` Taverna, `[C]` Capela, `[M]` Ferraria, `[G]` Guilda, `[D]` Dragão, `[S]` Salvar e Sair (Logout) |
 | **Floresta Sombria** | `ScreenForest` | `[P]` Procurar monstro, `[A]` Atacar, `[F]` Fugir, `[V]` Voltar à vila |
-| **Ferraria (Torin)** | `ScreenSmith` | `[1..5]` Comprar Armas, `[6..0]` Comprar Armaduras |
-| **Capela (Anselmo)** | `ScreenChapel` | `[C]` Curar ferimentos, `[B]` Pedir bênção |
-| **Taverna (Rosalinda)**| `ScreenTavern` | `[O]` Ouvir fofocas, `[F]` Flertar com Cassandra |
+| **Ferraria (Torin)** | `ScreenSmith` | `[1]` Armas, `[2]` Armaduras, `[3]` Poções, `[Tab]` Trocar aba |
+| **Capela (Anselmo)** | `ScreenChapel` | `[C]` Curar ferimentos, `[D]` Doação (10ouro), `[M]` Meditar |
+| **Taverna (Rosalinda)**| `ScreenTavern` | `[R]/[F]` Ouvir fofocas, `[C]` Flertar com Cassandra |
 | **Covil do Dragão** | `ScreenDragon` | `[D]` Desafiar o Dragão do Dia |
+| **Guilda dos Aventureiros** | `ScreenGuild` | `[A]/[T]` Avançar/consultar, `[R]/[C]` Consultar tabela, `[P]/[L]` Ler pergaminhos |
 
 ---
 
