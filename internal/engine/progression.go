@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// LevelRequirement define os custos e ganhos para atingir um novo nível.
+// LevelRequirement define os pré-requisitos (XP e Ouro) e as recompensas de atributos ao atingir um novo nível.
 type LevelRequirement struct {
 	Level      int `json:"level"`
 	RequiredXP int `json:"required_xp"`
@@ -14,7 +14,10 @@ type LevelRequirement struct {
 	DefGain    int `json:"def_gain"`
 }
 
-// LevelTable define a progressão do nível 1 ao nível 10 com o Mestre Tobias na Guilda.
+// LevelTable especifica a curva de progressão do nível 1 ao nível 10 com o Mestre Tobias na Guilda.
+//
+// Didática Go: A tabela estática de structs desacopla as fórmulas numéricas e permite ajustes
+// rápidos de balanceamento no GDD sem alterar o fluxo do algoritmo de verificação.
 var LevelTable = []LevelRequirement{
 	{Level: 1, RequiredXP: 0, CostGold: 0, HealthGain: 0, AttackGain: 0, DefGain: 0},
 	{Level: 2, RequiredXP: 100, CostGold: 50, HealthGain: 15, AttackGain: 2, DefGain: 2},
@@ -28,10 +31,13 @@ var LevelTable = []LevelRequirement{
 	{Level: 10, RequiredXP: 22000, CostGold: 12000, HealthGain: 60, AttackGain: 12, DefGain: 10},
 }
 
-// MaxLevel é o nível mais alto alcançável antes de derrotar o Dragão.
+// MaxLevel define o teto máximo de nível alcançável antes do confronto final contra o Dragão.
 const MaxLevel = 10
 
-// NextLevelRequirement obtém os requisitos para o próximo nível do jogador.
+// NextLevelRequirement obtém a estrutura de requisitos do próximo nível do jogador.
+//
+// Didática Go: Retorna `(LevelRequirement, bool)` no padrão `comma-ok`. Se o jogador já estiver no nível máximo,
+// o booleano retornado será `false`.
 func NextLevelRequirement(currentLevel int) (LevelRequirement, bool) {
 	targetLevel := currentLevel + 1
 	if targetLevel > MaxLevel {
@@ -46,7 +52,7 @@ func NextLevelRequirement(currentLevel int) (LevelRequirement, bool) {
 	return LevelRequirement{}, false
 }
 
-// CanLevelUp verifica se o jogador atende aos requisitos de XP e ouro para promoção.
+// CanLevelUp valida se o herói possui a experiência e o ouro mínimos necessários para ser promovido.
 func CanLevelUp(p *Player) (bool, string) {
 	req, ok := NextLevelRequirement(p.Level)
 	if !ok {
@@ -64,7 +70,9 @@ func CanLevelUp(p *Player) (bool, string) {
 	return true, fmt.Sprintf("Pronto para avançar para o Nível %d com o Mestre Tobias!", req.Level)
 }
 
-// LevelUp processa o treinamento na Guilda, cobrando o ouro e aumentando os atributos permanentemente.
+// LevelUp executa o treinamento na Guilda dos Aventureiros, deduzindo o ouro e aumentando os atributos de forma permanente.
+//
+// Didática Go: O método altera o ponteiro do jogador em memória (`*Player`), atualizando o nível e curando-o totalmente.
 func LevelUp(p *Player) error {
 	req, ok := NextLevelRequirement(p.Level)
 	if !ok {
@@ -79,11 +87,11 @@ func LevelUp(p *Player) error {
 		return fmt.Errorf("ouro insuficiente para o treinamento na guilda")
 	}
 
-	// Aplica dedução de ouro e ganhos de atributos
+	// Deduz o custo de treinamento em ouro e aplica a progressão de atributos
 	p.Gold -= req.CostGold
 	p.Level = req.Level
 	p.MaxHealth += req.HealthGain
-	p.Health = p.MaxHealth // Cura completa ao subir de nível
+	p.Health = p.MaxHealth // Cura completa e imediata ao subir de nível
 	p.BaseAttack += req.AttackGain
 	p.BaseDefense += req.DefGain
 

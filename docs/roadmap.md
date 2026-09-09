@@ -1,8 +1,8 @@
 # Roadmap de Desenvolvimento — The Legend of the Go Dragon
 
 > **Documento Estratégico de Fases & Entregas**  
-> **Status:** Aprovado via Entrevista Interativa (`/grill-me`)  
-> **Alinhamento:** [GDD.md](file:///c:/GitHub/go/lotgd/docs/GDD.md) · [universo-e-prompt.md](file:///c:/GitHub/go/lotgd/docs/universo-e-prompt.md) · [architecture.md](file:///c:/GitHub/go/lotgd/docs/architecture.md)
+> **Status:** Aprovado
+> **Alinhamento:** [GDD.md](GDD.md) · [universo-e-lore.md](universo-e-lore.md) · [architecture.md](architecture.md)
 
 ---
 
@@ -10,7 +10,7 @@
 
 1. **Autenticação & Contas**: Usuário e senha armazenados no SQLite (`modernc.org/sqlite`), garantindo paridade total entre execução standalone local (`cmd/lotgd`) e servidor SSH (`cmd/server`).
 2. **Mecânica de "Novo Dia"**: Verificação automática sob demanda (ao fazer login, se a data do servidor mudou, o sistema restaura os 15 turnos diários e regenera o Dragão do Dia com novas estatísticas).
-3. **PvP & Rival Cavaleiro Vermelho**: Modelo clássico assíncrono de BBS — você pode desafiar clones/fantasmas de outros aventureiros e do Cavaleiro Vermelho na taverna.
+3. **PvP & Rival Cavaleiro Vermelho**: Modelo clássico assíncrono de BBS — você pode desafiar clones/fantasmas de outros aventureiros e do Cavaleiro Vermelho na taverna. *(Não implementado)*
 4. **Navegação na Interface (TUI)**: Modo híbrido no **Bubble Tea** (navegação fluida por setas `[↑/↓/Enter]` combinada com teclas de atalho rápido estilo BBS `[F]loresta`, `[T]averna`, `[C]apela`, `[M]estre Torin`, etc.).
 
 ---
@@ -49,7 +49,7 @@
   - `login.go`: Tela de login / criação de aventureiro.
   - `town.go`: Praça principal do vilarejo com atalhos e seleção por setas.
   - `forest.go`: Exploração da Floresta Sombria e interface de combate por turnos.
-  - `tavern.go`: Taverna da Dona Rosalinda (fofocas, flerte com Cassandra, duelos PvP assíncronos).
+  - `tavern.go`: Taverna da Dona Rosalinda (fofocas, flerte com Cassandra; duelos PvP assíncronos e Hall da Fama: Não implementado).
   - `chapel.go`: Capela do Frei Anselmo (cura de HP e bênçãos).
   - `smith.go`: Ferraria do Mestre Torin (compra e venda de armas e armaduras).
   - `guild.go`: Guilda & Biblioteca do Mestre Tobias (promoção de nível e lore).

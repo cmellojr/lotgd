@@ -8,12 +8,16 @@ import (
 	"lotgd/internal/i18n"
 )
 
-// MonsterGenerator produz criaturas procedurais com modificadores estocásticos.
+// MonsterGenerator produz criaturas procedurais com modificadores estocásticos e escalonamento por nível.
+//
+// Didática Go: Injetamos o gerador `*rand.Rand` via campo de struct para isolar o estado de aleatoriedade,
+// permitindo o uso de sementes fixas em testes unitários para reprodutibilidade total.
 type MonsterGenerator struct {
 	rng *rand.Rand
 }
 
-// NewMonsterGenerator cria o gerador com um RNG injetável para reprodutibilidade.
+// NewMonsterGenerator instancia um novo gerador de monstros procedurais.
+// Se `rng` for nil, inicializa um gerador com semente aleatória baseada no relógio do sistema.
 func NewMonsterGenerator(rng *rand.Rand) *MonsterGenerator {
 	if rng == nil {
 		rng = rand.New(rand.NewSource(rand.Int63()))
@@ -21,13 +25,14 @@ func NewMonsterGenerator(rng *rand.Rand) *MonsterGenerator {
 	return &MonsterGenerator{rng: rng}
 }
 
-// GenerateForPlayer escolhe um monstro balanceado de acordo com o nível atual do jogador.
+// GenerateForPlayer seleciona e gera um monstro balanceado para o nível atual do herói.
 //
-// Regra de Tier:
-// - Nível 1 a 2 -> Tier 1 (com 10% de chance de encontrar Tier 2 desafiador)
-// - Nível 3 a 4 -> Tier 2 (com 15% de chance de Tier 3)
-// - Nível 5 a 7 -> Tier 3 (com 15% de chance de Tier 4)
-// - Nível 8 a 10 -> Tier 4
+// Regras de Distribuição por Tier:
+// - Nível 1       -> Tier 1 (estritamente sem encontros em Tier 2 para viabilidade inicial)
+// - Nível 2       -> Tier 1 (com 10% de chance de encontro desafiador em Tier 2)
+// - Níveis 3 a 4  -> Tier 2 (com 15% de chance de Tier 3)
+// - Níveis 5 a 7  -> Tier 3 (com 15% de chance de Tier 4)
+// - Níveis 8 a 10 -> Tier 4
 func (mg *MonsterGenerator) GenerateForPlayer(playerLevel int) engine.Monster {
 	var tier int
 	roll := mg.rng.Float64()
@@ -35,7 +40,7 @@ func (mg *MonsterGenerator) GenerateForPlayer(playerLevel int) engine.Monster {
 	switch {
 	case playerLevel <= 2:
 		tier = 1
-		if roll < 0.10 {
+		if playerLevel > 1 && roll < 0.10 {
 			tier = 2
 		}
 	case playerLevel <= 4:
@@ -55,7 +60,14 @@ func (mg *MonsterGenerator) GenerateForPlayer(playerLevel int) engine.Monster {
 	return mg.GenerateByTier(tier)
 }
 
-// GenerateByTier gera um monstro procedural pertencente ao Tier requisitado.
+// GenerateByTier gera um monstro procedural pertencente estritamente ao Tier requisitado.
+//
+// Fluxo do Algoritmo:
+// 1. Clampa o parâmetro Tier entre 1 e 4.
+// 2. Sorteia um ID de monstro da lista de criaturas do Tier correspondente.
+// 3. Aplica uma chance estocástica de 50% de sortear e aplicar um afixo procedural (`AvailableAffixes`).
+// 4. Modifica os atributos (HP, ATK, DEF, XP, Ouro) através dos multiplicadores do afixo.
+// 5. Garante valores mínimos de viabilidade (HP >= 5, ATK >= 1, XP >= 1, Ouro >= 1).
 func (mg *MonsterGenerator) GenerateByTier(tier int) engine.Monster {
 	if tier < 1 {
 		tier = 1
@@ -70,7 +82,7 @@ func (mg *MonsterGenerator) GenerateByTier(tier int) engine.Monster {
 
 	baseName := i18n.GetMonsterName(chosenID)
 
-	// 50% de chance de receber um afixo especial
+	// 50% de chance de receber um afixo especial procedural
 	var prefix string
 	hp := tpl.BaseHP
 	atk := tpl.BaseATK
@@ -93,7 +105,7 @@ func (mg *MonsterGenerator) GenerateByTier(tier int) engine.Monster {
 		fullName = fmt.Sprintf("%s %s", prefix, baseName)
 	}
 
-	// Garante valores mínimos viáveis
+	// Trava os atributos em limites mínimos viáveis para evitar monstros inválidos
 	if hp < 5 {
 		hp = 5
 	}

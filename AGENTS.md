@@ -1,26 +1,59 @@
 # Guia de Agentes de IA — The Legend of the Go Dragon
 
-Este documento define as diretrizes de desenvolvimento e o contexto de atuação para **todos os agentes de Inteligência Artificial** que colaboram neste projeto.
+Diretrizes de desenvolvimento e contexto de atuação para agentes de IA no projeto.
 
 ---
 
-## 🧭 Referências Canônicas Obrigatórias
+## 🧭 Referências Canônicas
 
-Antes de gerar código, diálogos ou telas, consulte sempre a documentação especializada:
+Antes de gerar código ou conteúdo, consulte os documentos especializados:
 
-1. **Universo Narrativo e Lore**: [@docs/universo-e-prompt.md](file:///c:/GitHub/go/lotgd/docs/universo-e-prompt.md)
-   - *Fonte da verdade sobre tom de voz, NPCs, bestiário e regras de nomenclatura.*
-2. **Game Design Document (GDD)**: [@docs/GDD.md](file:///c:/GitHub/go/lotgd/docs/GDD.md)
-   - *Core loop, balanceamento, fórmulas de combate, economia de turnos e mapeamento de telas TUI.*
-3. **Arquitetura & Engenharia**: [@docs/architecture.md](file:///c:/GitHub/go/lotgd/docs/architecture.md)
-   - *Diagrama de camadas, SQLite CGO-free, The Elm Architecture (Bubble Tea) e concorrência SSH (Wish).*
-4. **Diretrizes Globais do Repositório**: [AGENTS.md Raiz](file:///c:/GitHub/go/AGENTS.md)
-   - *Padrões do Google Go Style Guide e comentários didáticos explicativos.*
+- **Universo e Lore**: [`docs/universo-e-lore.md`](docs/universo-e-lore.md) — Tom de voz, NPCs, bestiário e nomenclatura.
+- **Game Design Document**: [`docs/GDD.md`](docs/GDD.md) — Core loop, combate, economia de turnos e fluxo TUI.
+- **Arquitetura & Engenharia**: [`docs/architecture.md`](docs/architecture.md) — Camadas, SQLite (CGO-free), Bubble Tea e Wish (SSH).
+- **Decisões de Arquitetura (ADRs)**: [`design/adr/`](design/adr/) — Registro imutável de decisões arquiteturais do projeto.
 
 ---
 
-## 🛠️ Regra de Ouro da Linguagem e Código
+## 🛠️ Diretrizes Principais
 
-- **Código em Inglês**: Todas as structs, métodos, funções, enums, constantes e nomes de pacotes devem ser 100% em **inglês idiomático**.
-- **Interface e Conteúdo em Português do Brasil**: Nenhuma string de exibição para o jogador deve ficar hardcoded no código de domínio ou da TUI; utilize a camada de localização em `internal/i18n`.
-- **Código em Produção Limpo e Idiomático**: Ao contrário do diretório raiz do repositório, o código dentro de `lotgd/` não necessita de comentários didáticos explicativos internos. Siga o estilo padrão e limpo da comunidade Go ([Google Go Style Guide](https://google.github.io/styleguide/go/)), mantendo apenas a documentação padrão de tipos e funções públicas exportadas quando necessário.
+1. **Código em Inglês**: Structs, métodos, funções, enums, variáveis e pacotes devem ser 100% em **inglês idiomático**.
+2. **Interface em Português (PT-BR)**: Textos e mensagens para o jogador devem ser gerenciados pela camada de i18n (`internal/i18n`), sem strings de exibição hardcoded na lógica de domínio ou TUI.
+3. **Estilo Go Idiomático**: Siga as recomendações do [Google Go Style Guide](https://google.github.io/styleguide/go/). Mantenha a documentação Go padrão (`godoc`) para tipos e funções exportadas.
+
+---
+
+## 🤖 Regras de Automação com `gh` CLI
+
+Ao criar ou editar Pull Requests e Issues via `gh` CLI no PowerShell, **NUNCA use `--body` com texto inline**. O PowerShell faz double-escaping de backticks (`` ` ``), corrompendo a formatação Markdown no GitHub.
+
+**Sempre escreva o corpo em um arquivo temporário e use `--body-file`:**
+
+```powershell
+# ✅ Correto — escrever corpo em arquivo, depois usar --body-file
+$body = @"
+## Descrição
+Texto com `backticks` e **formatação** funcionando corretamente.
+"@
+$body | Out-File -FilePath "$env:TEMP\pr_body.md" -Encoding utf8
+gh pr create --title "título" --body-file "$env:TEMP\pr_body.md"
+
+# ❌ Errado — --body inline causa double-escaping de backticks
+gh pr create --title "título" --body "Texto com `backticks`"
+```
+
+Isso se aplica a: `gh pr create`, `gh pr edit`, `gh issue create`, `gh issue edit`.
+
+---
+
+## 🧰 Skills & Tooling Recomendados
+
+Para manter a consistência, a ergonomia e a qualidade de engenharia, os agentes devem consultar e seguir as diretrizes das seguintes skills quando disponíveis no ambiente ou via URL canônica:
+
+- **[`adr-template`](https://skills.danicat.dev/standards/adr-template/SKILL.md)**: Padrão imutável para documentação de decisões técnicas e trade-offs arquiteturais.
+- **[`godoctor`](https://skills.danicat.dev/coding/godoctor/SKILL.md)**: Boas práticas de Go idiomático, AST integrity, testes automatizados e compilação limpa via `go vet` e linters.
+- **[`engineering-flow`](https://skills.danicat.dev/coding/engineering-flow/SKILL.md)**: Decisões técnicas fundamentadas, política Zero-Debt em `0.x`, proibição de silenciamento de erros (`_ = err`) e higiene de código (*Broken Window Code Hygiene*).
+- **[`git-workflow-and-versioning`](https://github.com/addyosmani/agent-skills/blob/main/skills/git-workflow-and-versioning/SKILL.md)**: Commits atômicos, mensagens no padrão Conventional Commits, PRs curtas e branches de vida curta.
+- **[`game-design`](https://skills.danicat.dev/game-dev/game-design/SKILL.md)**: Diretrizes de mecânica de jogo, balanceamento de atributos, progressão e loops de gameplay.
+- **[`latest-version`](https://skills.danicat.dev/coding/latest-version/SKILL.md)**: Verificação de versões estáveis de dependências em manifestos (`go.mod`) sem adivinhação.
+

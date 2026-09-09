@@ -2,38 +2,42 @@ package engine
 
 import "lotgd/internal/i18n"
 
-// ItemType categoriza os tipos de itens existentes no jogo.
+// ItemType categoriza os tipos de equipamentos e consumíveis no RPG.
+//
+// Didática Go: Criamos um tipo alias customizado `type ItemType string` baseado no tipo primitivo
+// string para prover segurança de tipo em tempo de compilação (type safety), impedindo a atribuição
+// inadvertida de strings arbitrárias em campos de tipo de item.
 type ItemType string
 
 const (
-	// ItemTypeWeapon define itens equipáveis na mão principal que concedem bônus de ataque.
+	// ItemTypeWeapon define armas equipáveis na mão principal que aumentam o poder de ataque.
 	ItemTypeWeapon ItemType = "weapon"
 
-	// ItemTypeArmor define itens de proteção corporal que concedem bônus de defesa.
+	// ItemTypeArmor define armaduras e vestimentas de proteção que aumentam a defesa total.
 	ItemTypeArmor ItemType = "armor"
 
-	// ItemTypePotion define consumíveis que recuperam vida ou concedem efeitos temporários.
+	// ItemTypePotion define consumíveis da bolsa de utilidades (ex: cura de vida).
 	ItemTypePotion ItemType = "potion"
 )
 
-// Item representa qualquer item ou equipamento utilizável no jogo.
+// Item representa a entidade de equipamento ou consumível no modelo de domínio do jogo.
 //
-// No design idiomático de Go, mantemos structs focadas com campos bem definidos
-// e desacopladas de I/O ou banco de dados.
+// Didática Go: A struct agrupa atributos relevantes para compras na ferraria e combate,
+// mantendo-se puramente desacoplada de operações de banco de dados ou renderização gráfica.
 type Item struct {
 	ID          i18n.ItemID `json:"id"`
 	Type        ItemType    `json:"type"`
 	NameKey     i18n.ItemID `json:"name_key"`
-	Value       int         `json:"value"`       // Preço de compra na ferraria / loja
-	PowerBonus  int         `json:"power_bonus"` // Bônus de ATK (se arma) ou DEF (se armadura)
+	Value       int         `json:"value"`       // Preço de compra na ferraria
+	PowerBonus  int         `json:"power_bonus"` // Bônus de Ataque (se arma) ou Defesa (se armadura)
 	HealAmount  int         `json:"heal_amount"` // Quantidade de HP restaurado (se poção)
 	Description string      `json:"description"`
 }
 
-// WeaponsCatalog contém todas as armas disponíveis no jogo, ordenadas por progressão de poder.
+// WeaponsCatalog contém todas as armas disponíveis no jogo, ordenadas por progressão de poder e preço.
 //
 // Didática Go: O uso de um slice estático de structs imutáveis evita alocações
-// dinâmicas desnecessárias em tempo de execução e simplifica consultas de balanceamento.
+// dinâmicas desnecessárias em tempo de execução e garante consultas de catálogo extremamente rápidas.
 var WeaponsCatalog = []Item{
 	{
 		ID:          i18n.WeaponStick,
@@ -75,17 +79,9 @@ var WeaponsCatalog = []Item{
 		PowerBonus:  25,
 		Description: "Arma lendária banhada em sangue de monstros antigos, feita para abater dragões.",
 	},
-	{
-		ID:          i18n.WeaponNullPointer,
-		Type:        ItemTypeWeapon,
-		NameKey:     i18n.WeaponNullPointer,
-		Value:       9999,
-		PowerBonus:  50,
-		Description: "Artefato proibido da computação capaz de causar pânico instantâneo nos inimigos.",
-	},
 }
 
-// ArmorsCatalog contém todas as armaduras disponíveis para compra e equipamento.
+// ArmorsCatalog contém todas as armaduras e trajes de proteção para compra e equipamento.
 var ArmorsCatalog = []Item{
 	{
 		ID:          i18n.ArmorClothes,
@@ -129,7 +125,7 @@ var ArmorsCatalog = []Item{
 	},
 }
 
-// PotionsCatalog lista os consumíveis disponíveis.
+// PotionsCatalog lista os consumíveis e poções de restauração disponíveis na ferraria/loja.
 var PotionsCatalog = []Item{
 	{
 		ID:          i18n.PotionHealth,
@@ -151,7 +147,8 @@ var PotionsCatalog = []Item{
 
 // FindWeapon busca uma arma no catálogo pelo seu identificador único.
 //
-// Retorna a arma encontrada e um booleano de confirmação (idioma padrão de Go: comma-ok).
+// Didática Go: Retorna a struct do item e um booleano de confirmação `(Item, bool)`,
+// seguindo o padrão clássico `comma-ok` idiomático de Go.
 func FindWeapon(id i18n.ItemID) (Item, bool) {
 	for _, w := range WeaponsCatalog {
 		if w.ID == id {

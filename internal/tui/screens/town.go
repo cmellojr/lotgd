@@ -19,7 +19,10 @@ type townMenuItem struct {
 	description string
 }
 
-// TownScreen represents the main village hub.
+// TownScreen gerencia a exibição e navegação da Praça Central do Vilarejo (Hub Principal).
+//
+// Didática TEA: O `TownScreen` implementa o modelo de sub-tela no Bubble Tea, gerenciando um cursor de menu,
+// atalhos diretos via teclado, acesso ao Banco do Vilarejo e navegação para outros locais.
 type TownScreen struct {
 	db       *storage.DB
 	player   *engine.Player
@@ -31,7 +34,7 @@ type TownScreen struct {
 	height   int
 }
 
-// NewTownScreen initializes the town hub.
+// NewTownScreen instancia e configura o Hub da Praça Central do Vilarejo.
 func NewTownScreen(db *storage.DB, player *engine.Player) *TownScreen {
 	items := []townMenuItem{
 		{key: "F", label: "Floresta Sombria", target: ui.ScreenForest, description: "Procure monstros, lute por ouro e experiência."},
@@ -39,7 +42,7 @@ func NewTownScreen(db *storage.DB, player *engine.Player) *TownScreen {
 		{key: "C", label: "Capela do Frei Anselmo", target: ui.ScreenChapel, description: "Cure seus ferimentos com o curandeiro do vilarejo."},
 		{key: "M", label: "Ferraria do Mestre Torin", target: ui.ScreenSmith, description: "Compre armas melhores, armaduras e poções de cura."},
 		{key: "G", label: "Guilda dos Aventureiros", target: ui.ScreenGuild, description: "Treine com o Mestre Tobias para subir de nível."},
-		{key: "D", label: "Covil do Dragão Ancestral", target: ui.ScreenDragon, description: "O confronto final! Requer nível máximo e coragem."},
+		{key: "D", label: "Covil do Dragão Ancestral", target: ui.ScreenDragon, description: "O confronto final! Requer nível 5 e coragem."},
 		{key: "B", label: "Banco do Vilarejo", target: "", description: "Deposite seu ouro para não perder ao morrer na floresta."},
 		{key: "S", label: "Salvar e Sair (Logout)", target: ui.ScreenLogin, description: "Encerra a sessão e guarda o progresso no templo."},
 	}
@@ -53,23 +56,23 @@ func NewTownScreen(db *storage.DB, player *engine.Player) *TownScreen {
 	}
 }
 
-// Init initializes the town screen.
+// Init inicializa a tela de cidade.
 func (s *TownScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates the active player reference.
+// SetPlayer atualiza a referência ao herói ativo em memória.
 func (s *TownScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 }
 
-// SetSize updates screen dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *TownScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
-// Update processes navigation and actions in the town square.
+// Update processa eventos de entrada (navegação por setas, enter e teclas de atalho BBS).
 func (s *TownScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -84,9 +87,12 @@ func (s *TownScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					econ := engine.NewEconomyService()
 					deposited := s.player.Gold
-					_ = econ.Deposit(s.player, deposited)
-					_ = s.db.SavePlayer(s.player.ToStorage())
-					s.infoMsg = fmt.Sprintf("Você depositou %d moedas de ouro no cofre com segurança!", deposited)
+					if err := econ.Deposit(s.player, deposited); err != nil {
+						s.infoMsg = fmt.Sprintf("⚠ %v", err)
+					} else {
+						SavePlayer(s.db, s.player)
+						s.infoMsg = fmt.Sprintf("Você depositou %d moedas de ouro no cofre com segurança!", deposited)
+					}
 				}
 				s.bankMode = false
 				return s, nil
@@ -96,9 +102,12 @@ func (s *TownScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					econ := engine.NewEconomyService()
 					withdrawn := s.player.BankGold
-					_ = econ.Withdraw(s.player, withdrawn)
-					_ = s.db.SavePlayer(s.player.ToStorage())
-					s.infoMsg = fmt.Sprintf("Você retirou %d moedas de ouro do seu cofre.", withdrawn)
+					if err := econ.Withdraw(s.player, withdrawn); err != nil {
+						s.infoMsg = fmt.Sprintf("⚠ %v", err)
+					} else {
+						SavePlayer(s.db, s.player)
+						s.infoMsg = fmt.Sprintf("Você retirou %d moedas de ouro do seu cofre.", withdrawn)
+					}
 				}
 				s.bankMode = false
 				return s, nil
@@ -149,7 +158,7 @@ func (s *TownScreen) selectItem(item townMenuItem) (tea.Model, tea.Cmd) {
 	}
 
 	if item.target == ui.ScreenLogin {
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		return s, func() tea.Msg {
 			return ui.ChangeScreenMsg{Screen: ui.ScreenLogin}
 		}
@@ -164,7 +173,7 @@ func (s *TownScreen) selectItem(item townMenuItem) (tea.Model, tea.Cmd) {
 	return s, nil
 }
 
-// View renders the village square.
+// View renderiza visualmente a Praça Central do Vilarejo com barra de status e menu formatado.
 func (s *TownScreen) View() string {
 	var b strings.Builder
 

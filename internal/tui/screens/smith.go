@@ -20,7 +20,10 @@ const (
 	smithTabPotions
 )
 
-// SmithScreen handles weapons, armors, and potions trading with Master Torin.
+// SmithScreen gerencia o comércio de armas, armaduras e consumíveis na Ferraria do Mestre Torin.
+//
+// Didática TEA: O `SmithScreen` alterna entre abas (`smithTabWeapons`, `smithTabArmors`, `smithTabPotions`),
+// exibindo os catálogos estáticos do pacote `engine`, validando moedas do jogador e equipando novos itens.
 type SmithScreen struct {
 	db      *storage.DB
 	player  *engine.Player
@@ -31,7 +34,7 @@ type SmithScreen struct {
 	height  int
 }
 
-// NewSmithScreen initializes the blacksmith forge.
+// NewSmithScreen inicializa a loja da ferraria com mensagens e aba padrão.
 func NewSmithScreen(db *storage.DB, player *engine.Player) *SmithScreen {
 	return &SmithScreen{
 		db:      db,
@@ -42,31 +45,57 @@ func NewSmithScreen(db *storage.DB, player *engine.Player) *SmithScreen {
 	}
 }
 
-// Init starts the smith screen.
+// Init inicializa a tela do ferreiro.
 func (s *SmithScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates the player reference.
+// SetPlayer atualiza a referência ao herói ativo em memória.
 func (s *SmithScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 }
 
-// SetSize updates screen dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *SmithScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
-// Update processes blacksmith shop navigation and purchases.
+// Update processa a navegação por abas (`1`, `2`, `3`, `Tab`), movimentação do cursor e compras (`Enter`).
 func (s *SmithScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		switch msg.String() {
+		case "1":
+			s.tab = smithTabWeapons
+			s.cursor = 0
+			return s, nil
+		case "2":
+			s.tab = smithTabArmors
+			s.cursor = 0
+			return s, nil
+		case "3":
+			s.tab = smithTabPotions
+			s.cursor = 0
+			return s, nil
+		case "up", "k":
+			if s.cursor > 0 {
+				s.cursor--
+			}
+			return s, nil
+		case "down", "j":
+			maxLen := s.getCurrentCatalogLen()
+			if s.cursor < maxLen-1 {
+				s.cursor++
+			}
+			return s, nil
+		}
+
 		k := strings.ToUpper(msg.String())
 
 		switch k {
 		case "V", "ESC":
-			_ = s.db.SavePlayer(s.player.ToStorage())
+			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 			}
@@ -81,17 +110,6 @@ func (s *SmithScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s.tab = smithTabPotions
 			}
 			s.cursor = 0
-			return s, nil
-		case "UP":
-			if s.cursor > 0 {
-				s.cursor--
-			}
-			return s, nil
-		case "DOWN":
-			maxLen := s.getCurrentCatalogLen()
-			if s.cursor < maxLen-1 {
-				s.cursor++
-			}
 			return s, nil
 		case "ENTER", "C":
 			return s.handlePurchase()
@@ -128,7 +146,7 @@ func (s *SmithScreen) handlePurchase() (tea.Model, tea.Cmd) {
 
 		s.player.Gold -= weapon.Value
 		s.player.Weapon = weapon
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		s.infoMsg = fmt.Sprintf("Você comprou e equipou: %s (+%d ATK)!", i18n.GetItemName(weapon.ID), weapon.PowerBonus)
 
 	case smithTabArmors:
@@ -144,7 +162,7 @@ func (s *SmithScreen) handlePurchase() (tea.Model, tea.Cmd) {
 
 		s.player.Gold -= armor.Value
 		s.player.Armor = armor
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		s.infoMsg = fmt.Sprintf("Você comprou e equipou: %s (+%d DEF)!", i18n.GetItemName(armor.ID), armor.PowerBonus)
 
 	case smithTabPotions:
@@ -156,14 +174,14 @@ func (s *SmithScreen) handlePurchase() (tea.Model, tea.Cmd) {
 
 		s.player.Gold -= potion.Value
 		s.player.PotionsCount++
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		s.infoMsg = fmt.Sprintf("Você comprou uma %s! (Total na bolsa: %d)", i18n.GetItemName(potion.ID), s.player.PotionsCount)
 	}
 
 	return s, nil
 }
 
-// View renders the blacksmith forge.
+// View renderiza os catálogos da ferraria organizados em abas de navegação.
 func (s *SmithScreen) View() string {
 	var b strings.Builder
 
@@ -245,7 +263,7 @@ func (s *SmithScreen) View() string {
 	}
 
 	b.WriteString(ui.ContentBoxStyle.Width(76).Render(content.String()))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render("[Tab/Setas] Trocar Categoria • [Enter] Comprar Item • [V] Voltar"))
+	b.WriteString("\n" + ui.HelpFooterStyle.Render("[1-3/Tab] Categorias • [↑/↓] Selecionar • [Enter] Comprar • [V] Voltar"))
 
 	return ui.AppStyle.Render(b.String())
 }

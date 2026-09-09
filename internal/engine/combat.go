@@ -7,16 +7,17 @@ import (
 	"lotgd/internal/i18n"
 )
 
-// CombatEngine gerencia o fluxo de combates por turnos entre o jogador e monstros.
+// CombatEngine gerencia o fluxo de combates por turnos entre o herói e os monstros.
 //
 // Didática Go: Receber um gerador `*rand.Rand` via struct permite injetar sementes (seeds)
-// previsíveis nos testes unitários, garantindo testes 100% determinísticos sem flaky tests.
+// previsíveis nos testes unitários, garantindo testes 100% determinísticos sem depender
+// do estado global de aleatoriedade do sistema.
 type CombatEngine struct {
 	rng *rand.Rand
 }
 
-// NewCombatEngine cria uma nova instância do motor de combate.
-// Se rng for nil, um gerador padrão é inicializado.
+// NewCombatEngine cria e inicializa uma nova instância do motor de combate.
+// Se `rng` for nil, um novo gerador pseudo-aleatório é instanciado automaticamente.
 func NewCombatEngine(rng *rand.Rand) *CombatEngine {
 	if rng == nil {
 		rng = rand.New(rand.NewSource(rand.Int63()))
@@ -24,7 +25,11 @@ func NewCombatEngine(rng *rand.Rand) *CombatEngine {
 	return &CombatEngine{rng: rng}
 }
 
-// TurnResult detalha o desfecho de uma rodada de combate (ação do jogador e contra-ataque).
+// TurnResult detalha o desfecho completo de uma rodada de combate (ação do jogador,
+// acertos críticos, dano causado/sofrido, derrotas, fuga e recompensas acumuladas).
+//
+// Didática Go: As tags `json:"..."` permitem serializar e deserializar os resultados do turno
+// caso seja necessário registrar logs de combate ou salvar estados temporários em JSON.
 type TurnResult struct {
 	PlayerDamageDealt  int    `json:"player_damage_dealt"`
 	PlayerCritical     bool   `json:"player_critical"`
@@ -38,9 +43,12 @@ type TurnResult struct {
 	Message            string `json:"message"`
 }
 
-// CalculateDamage aplica a fórmula canônica do GDD:
-// Dano = max(1, (ATK_atacante + Rnd(1, 4)) - DEF_defensor)
-// Há 10% de chance de Acerto Crítico (dano base aumentado em 50%).
+// CalculateDamage aplica a fórmula canônica de cálculo de dano do Game Design Document (GDD):
+// Dano Base = max(1, (Ataque_Atacante + Rnd(1, 4)) - Defesa_Defensor).
+// Há uma chance estocástica de 10% de Acerto Crítico (dano base amplificado em +50%).
+//
+// Didática Go: O método retorna múltiplos valores `(int, bool)` para informar simultaneamente
+// o valor numérico do dano e se houve um evento de acerto crítico.
 func (ce *CombatEngine) CalculateDamage(atk, def int) (int, bool) {
 	roll := ce.rng.Intn(4) + 1 // Rnd(1, 4)
 	isCritical := ce.rng.Float64() < 0.10
@@ -58,12 +66,13 @@ func (ce *CombatEngine) CalculateDamage(atk, def int) (int, bool) {
 	return damage, isCritical
 }
 
-// Attack executa um turno completo de troca de golpes entre jogador e monstro.
+// Attack executa um turno completo de troca de golpes em combate direto.
 //
-// 1. O jogador ataca primeiro.
-// 2. Se o monstro morrer, a batalha encerra imediatamente com vitória e recompensas.
-// 3. Se o monstro sobreviver, ele desfere seu contra-ataque.
-// 4. Se o jogador morrer, o status é registrado para processamento de derrota.
+// Fluxo de Execução:
+// 1. O herói ataca primeiro com base no seu ataque total (Ataque Base + Arma).
+// 2. Se a vida do monstro chegar a zero, o combate se encerra com vitória, concedendo XP e Ouro.
+// 3. Caso o monstro sobreviva, ele desfere seu contra-ataque contra a defesa total do jogador.
+// 4. Se a vida do herói chegar a zero, a derrota é sinalizada no TurnResult para processamento moratório.
 func (ce *CombatEngine) Attack(player *Player, monster *Monster) TurnResult {
 	res := TurnResult{}
 
@@ -79,7 +88,7 @@ func (ce *CombatEngine) Attack(player *Player, monster *Monster) TurnResult {
 		res.XPBonus = monster.XPReward
 		res.GoldBonus = monster.GoldReward
 
-		// Aplica recompensas ao jogador
+		// Aplica recompensas diretamente ao estado do jogador em memória
 		player.Experience += monster.XPReward
 		player.Gold += monster.GoldReward
 
@@ -113,20 +122,22 @@ func (ce *CombatEngine) Attack(player *Player, monster *Monster) TurnResult {
 	return res
 }
 
-// AttemptFlee tenta escapar da batalha.
+// AttemptFlee processa a tentativa de recuo tático do combate.
 //
-// Chance base de fuga = 50%.
-// Se falhar na fuga, o monstro ganha um ataque livre de oportunidade!
+// Regras de Fuga:
+// - Chance base de fuga: 50%.
+// - Monstros com o afixo "Covarde": chance aumentada para 80%.
+// - O Dragão Ancestral dificulta a fuga: apenas 20% de chance.
+// - Falha na fuga concede um contra-ataque livre de oportunidade ao inimigo.
 func (ce *CombatEngine) AttemptFlee(player *Player, monster *Monster) TurnResult {
 	res := TurnResult{}
 
-	// Monstros com afixo "Covarde" aumentam a chance de fuga para 80%
+	// Modificadores de chance de fuga de acordo com o tipo/afixo do monstro
 	fleeChance := 0.50
 	if monster.Prefix == "Covarde" {
 		fleeChance = 0.80
 	}
 
-	// Dragão não permite fuga fácil (20% de chance)
 	if monster.IsDragon {
 		fleeChance = 0.20
 	}
@@ -137,7 +148,7 @@ func (ce *CombatEngine) AttemptFlee(player *Player, monster *Monster) TurnResult
 		return res
 	}
 
-	// Falha na fuga: monstro contra-ataca livremente
+	// Falha na fuga: o monstro ataca de graça
 	mDmg, mCrit := ce.CalculateDamage(monster.Attack, player.TotalDefense())
 	res.MonsterDamageDealt = mDmg
 	res.MonsterCritical = mCrit
@@ -154,7 +165,10 @@ func (ce *CombatEngine) AttemptFlee(player *Player, monster *Monster) TurnResult
 	return res
 }
 
-// UsePotion consome uma poção do inventário do jogador, restaurando vida sem gastar turno de combate livre.
+// UsePotion consome uma poção de cura da bolsa do jogador sem gastar turno de combate livre.
+//
+// Didática Go: Retorna um erro explícito `(int, error)` para indicar falha em pré-condições
+// (ex: sem poções na bolsa ou vida máxima já atingida), seguindo o padrão idiomático de Go.
 func (ce *CombatEngine) UsePotion(player *Player) (int, error) {
 	if player.PotionsCount <= 0 {
 		return 0, fmt.Errorf("você não possui poções na bolsa")

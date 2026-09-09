@@ -7,10 +7,11 @@ import (
 	"lotgd/internal/storage"
 )
 
-// Player representa o modelo de domínio do herói em memória durante o jogo.
+// Player representa o modelo de domínio do herói mantido em memória durante a sessão de jogo.
 //
-// Separamos o modelo de domínio (engine.Player) do modelo de banco (storage.Player)
-// para manter a lógica de negócio pura, isolada de detalhes de persistência e serialização.
+// Didática Go: Separamos o modelo de domínio (`engine.Player`) do modelo de banco de dados (`storage.Player`).
+// Essa separação arquitetural isola as regras de negócio de detalhes de persistência e serialização SQL,
+// permitindo que o modelo de domínio possua referências ricas (como as structs `Item` em vez de apenas IDs em string).
 type Player struct {
 	ID           int64     `json:"id"`
 	Username     string    `json:"username"`
@@ -32,22 +33,22 @@ type Player struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-// TotalAttack calcula o poder de ataque total do jogador (Base + Bônus da Arma).
+// TotalAttack calcula o poder de ataque total do jogador (Ataque Base + Bônus da Arma equipada).
 func (p *Player) TotalAttack() int {
 	return p.BaseAttack + p.Weapon.PowerBonus
 }
 
-// TotalDefense calcula a capacidade defensiva total do jogador (Base + Bônus da Armadura).
+// TotalDefense calcula a capacidade defensiva total do jogador (Defesa Base + Bônus da Armadura equipada).
 func (p *Player) TotalDefense() int {
 	return p.BaseDefense + p.Armor.PowerBonus
 }
 
-// IsAlive verifica se o jogador ainda possui pontos de vida restantes.
+// IsAlive verifica se o herói ainda possui pontos de vida positivos restantes.
 func (p *Player) IsAlive() bool {
 	return p.Health > 0
 }
 
-// Monster representa um inimigo encontrado na floresta ou no covil.
+// Monster representa a entidade de um inimigo encontrado na floresta ou no covil do chefe.
 type Monster struct {
 	ID         i18n.MonsterID `json:"id"`
 	Name       string         `json:"name"` // Nome completo formatado com prefixo (ex: "Feroz Rato-do-Esgoto")
@@ -62,15 +63,15 @@ type Monster struct {
 	IsDragon   bool           `json:"is_dragon"`
 }
 
-// IsAlive indica se o monstro ainda está em combate.
+// IsAlive indica se o monstro ainda está ativo no combate.
 func (m *Monster) IsAlive() bool {
 	return m.Health > 0
 }
 
-// NewPlayerFromStorage converte a struct persistida do SQLite para o modelo de domínio.
+// NewPlayerFromStorage converte e hidrata a struct de persistência (`storage.Player`) para o modelo de domínio (`engine.Player`).
 //
-// Didática Go: Esta função fábrica hidrata o modelo de domínio buscando referências
-// de itens no catálogo de forma segura.
+// Didática Go: Esta função fábrica busca e vincula as instâncias completas dos itens (`Weapon` e `Armor`)
+// a partir dos catálogos em memória usando seus IDs em string, provendo fallbacks seguros caso um ID seja inválido.
 func NewPlayerFromStorage(sp storage.Player) *Player {
 	weapon, found := FindWeapon(i18n.ItemID(sp.WeaponID))
 	if !found {
@@ -95,7 +96,7 @@ func NewPlayerFromStorage(sp storage.Player) *Player {
 		BaseDefense:  sp.Defense,
 		Weapon:       weapon,
 		Armor:        armor,
-		PotionsCount: 0,
+		PotionsCount: sp.PotionsCount,
 		ForestFights: sp.ForestFights,
 		DragonKills:  sp.DragonKills,
 		LastLoginDay: sp.LastLoginDay,
@@ -104,8 +105,12 @@ func NewPlayerFromStorage(sp storage.Player) *Player {
 	}
 }
 
-// ToStorage converte o modelo de domínio de volta para a struct de persistência.
+// ToStorage converte o modelo de domínio de volta para a struct plana de persistência do SQLite.
+//
+// Didática Go: Mapeia as referências ricas de volta para IDs em string e atualiza o timestamp `UpdatedAt`.
 func (p *Player) ToStorage() storage.Player {
+	now := time.Now().UTC()
+	p.UpdatedAt = now
 	return storage.Player{
 		ID:           p.ID,
 		Username:     p.Username,
@@ -119,10 +124,11 @@ func (p *Player) ToStorage() storage.Player {
 		Defense:      p.BaseDefense,
 		WeaponID:     string(p.Weapon.ID),
 		ArmorID:      string(p.Armor.ID),
+		PotionsCount: p.PotionsCount,
 		ForestFights: p.ForestFights,
 		DragonKills:  p.DragonKills,
 		LastLoginDay: p.LastLoginDay,
 		CreatedAt:    p.CreatedAt,
-		UpdatedAt:    p.UpdatedAt,
+		UpdatedAt:    now,
 	}
 }

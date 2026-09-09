@@ -3,6 +3,7 @@ package screens
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"lotgd/internal/engine"
@@ -22,7 +23,11 @@ const (
 	dragonStateDefeat
 )
 
-// DragonScreen handles the legendary confrontation against the Daily Dragon boss.
+// DragonScreen gerencia o confronto contra o chefe lendário no Covil do Dragão do Dia.
+//
+// Didática TEA: O `DragonScreen` orquestra a batalha final exigindo pré-requisito de Nível 5.
+// Ao derrotar o Dragão, registra a vitória global no SQLite via `storage.VillageRepository.RecordDragonSlayed`
+// informando o nome do herói vitorioso em todo o servidor.
 type DragonScreen struct {
 	db        *storage.DB
 	player    *engine.Player
@@ -31,74 +36,104 @@ type DragonScreen struct {
 	dragon    *engine.Monster
 	slayer    string
 	isAlive   bool
+	cursor    int
 	combatLog []string
 	width     int
 	height    int
+	dragonGen storage.DragonGenerator
 }
 
-// NewDragonScreen initializes the Dragon's Lair.
-func NewDragonScreen(db *storage.DB, player *engine.Player) *DragonScreen {
+// NewDragonScreen inicializa a tela do Covil do Dragão Ancestral.
+func NewDragonScreen(db *storage.DB, player *engine.Player, dragonGen storage.DragonGenerator) *DragonScreen {
 	return &DragonScreen{
 		db:        db,
 		player:    player,
 		ce:        engine.NewCombatEngine(nil),
 		state:     dragonStateApproach,
 		combatLog: make([]string, 0),
+		dragonGen: dragonGen,
 	}
 }
 
-// Init starts the dragon screen.
+// Init inicializa a tela do covil do dragão.
 func (s *DragonScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates the player state and queries daily dragon status.
+// SetPlayer atualiza a referência ao herói ativo e consulta o estado diário do Dragão no banco.
 func (s *DragonScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 	s.state = dragonStateApproach
+	s.cursor = 0
 	s.combatLog = nil
 	s.loadDragonState()
 }
 
-// SetSize updates screen dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *DragonScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
 func (s *DragonScreen) loadDragonState() {
-	vRepo := storage.NewVillageRepository(s.db)
+	vRepo := storage.NewVillageRepository(s.db, storage.WithDragonGenerator(s.dragonGen))
 	st, err := vRepo.GetOrCreateTodayState(context.Background())
 	if err == nil {
 		s.isAlive = st.DragonAlive
 		s.slayer = st.SlayerName
+
+		// Título determinístico baseado na data (mesmo seed SHA-256 que o bestiary)
+		titleIdx := engine.DragonTitleIndex(st.DayDate, len(i18n.DragonTitlesPTBR))
+		fullName := fmt.Sprintf("%s, %s", i18n.GetMonsterName(i18n.MonsterDragon), i18n.DragonTitlesPTBR[titleIdx])
+
 		s.dragon = &engine.Monster{
 			ID:         i18n.MonsterDragon,
-			Name:       "O Dragão Ancestral de Fogo",
+			Name:       fullName,
 			Tier:       5,
 			Health:     st.DragonHP,
 			MaxHealth:  st.DragonMaxHP,
 			Attack:     st.DragonATK,
 			Defense:    st.DragonDEF,
 			XPReward:   5000,
-			GoldReward: 2500,
+			GoldReward: st.DragonGoldReward,
 			IsDragon:   true,
 		}
 	}
 }
 
-// Update processes dragon combat and lair interactions.
+// Update processa interações de combate contra o chefe ou fuga.
 func (s *DragonScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if s.state == dragonStateApproach {
+			switch msg.String() {
+			case "up", "k":
+				if s.cursor > 0 {
+					s.cursor--
+				} else if s.isAlive {
+					s.cursor = 1
+				}
+				return s, nil
+			case "down", "j":
+				if s.isAlive && s.cursor < 1 {
+					s.cursor++
+				} else {
+					s.cursor = 0
+				}
+				return s, nil
+			}
+		}
+
 		k := strings.ToUpper(msg.String())
 
-		if k == "V" || k == "ESC" {
+		// Em estado de derrota nenhuma tecla escapa: o fluxo tem de passar pela
+		// tela de Game Over, onde a penalidade de morte é aplicada.
+		if (k == "V" || k == "ESC") && s.state != dragonStateDefeat {
 			if s.state == dragonStateCombat {
 				s.appendLog("Não há como recuar agora! O calor sufocante e a fúria do Dragão bloqueiam a saída!")
 				return s, nil
 			}
-			_ = s.db.SavePlayer(s.player.ToStorage())
+			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 			}
@@ -107,7 +142,13 @@ func (s *DragonScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch s.state {
 		case dragonStateApproach:
 			switch k {
-			case "D", "ENTER", "L":
+			case "D", "L":
+				s.cursor = 0
+				return s.startDragonFight()
+			case "ENTER":
+				if !s.isAlive || s.cursor == 1 {
+					return s.backToTown()
+				}
 				return s.startDragonFight()
 			}
 
@@ -128,7 +169,7 @@ func (s *DragonScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case dragonStateDefeat:
-			_ = s.db.SavePlayer(s.player.ToStorage())
+			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenGameOver}
 			}
@@ -166,15 +207,17 @@ func (s *DragonScreen) handleAttack() (tea.Model, tea.Cmd) {
 
 	if res.MonsterDefeated {
 		s.state = dragonStateVictory
-		vRepo := storage.NewVillageRepository(s.db)
-		_ = vRepo.RecordDragonSlayed(context.Background(), s.player.Username)
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		vRepo := storage.NewVillageRepository(s.db, storage.WithDragonGenerator(s.dragonGen))
+		if err := vRepo.RecordDragonSlayed(context.Background(), s.player.Username); err != nil {
+			log.Printf("WARN: failed to record dragon slayed for %s: %v", s.player.Username, err)
+		}
+		SavePlayer(s.db, s.player)
 		s.appendLog("🔥 O DRAGÃO CAIU! Seus restos viraram lenda e você salvou todo o Vilarejo! 🔥")
 		s.appendLog("Pressione [Enter] para retornar triunfante à Praça do Vilarejo!")
 	} else if res.PlayerDefeated {
 		s.state = dragonStateDefeat
 		s.appendLog("Pressione [Enter] para sucumbir...")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	}
 
 	return s, nil
@@ -188,7 +231,7 @@ func (s *DragonScreen) handlePotion() (tea.Model, tea.Cmd) {
 	}
 
 	s.appendLog(fmt.Sprintf("Você usou uma Poção de Vida (+%d HP)! Poções restantes: %d", healed, s.player.PotionsCount))
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, nil
 }
 
@@ -199,11 +242,11 @@ func (s *DragonScreen) handleFlee() (tea.Model, tea.Cmd) {
 	if res.FledSuccessfully {
 		s.state = dragonStateApproach
 		s.appendLog("Você escapou milagrosamente do sopro abrasador do Dragão e voltou à entrada do covil.")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	} else if res.PlayerDefeated {
 		s.state = dragonStateDefeat
 		s.appendLog("Pressione [Enter] para sucumbir...")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	}
 
 	return s, nil
@@ -217,13 +260,13 @@ func (s *DragonScreen) appendLog(msg string) {
 }
 
 func (s *DragonScreen) backToTown() (tea.Model, tea.Cmd) {
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, func() tea.Msg {
 		return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 	}
 }
 
-// View renders the dragon's lair.
+// View renderiza a interface do Covil do Dragão e o combate dinâmico contra o chefe.
 func (s *DragonScreen) View() string {
 	var b strings.Builder
 
@@ -238,13 +281,22 @@ func (s *DragonScreen) View() string {
 		if !s.isAlive {
 			content.WriteString("As cavernas profundas estão em silêncio. A carcaça do Dragão jaz no abismo.\n")
 			content.WriteString(fmt.Sprintf("Ele foi derrotado hoje por %s!\n\n", ui.StatusGold.Render(s.slayer)))
-			content.WriteString(ui.MenuItemStyle.Render("  [V]oltar em paz para a Praça Central") + "\n")
+			content.WriteString(ui.SelectedMenuItemStyle.Render("> [V]oltar em paz para a Praça Central") + "\n")
 		} else {
 			content.WriteString("Rios de lava iluminam a colossal câmara rochosa. O ar queima os pulmões.\n")
 			content.WriteString(fmt.Sprintf("O Dragão do Dia aguarda: %s (%d/%d HP, ATK %d, DEF %d)\n\n",
 				ui.LogMonsterStyle.Render(s.dragon.Name), s.dragon.Health, s.dragon.MaxHealth, s.dragon.Attack, s.dragon.Defense))
-			content.WriteString(ui.SelectedMenuItemStyle.Render("> [D]esafiar o Dragão para o Combate Final") + "\n")
-			content.WriteString(ui.MenuItemStyle.Render("  [V]oltar para a Praça Central") + "\n")
+
+			item1 := "[D]esafiar o Dragão para o Combate Final"
+			item2 := "[V]oltar para a Praça Central"
+
+			if s.cursor == 0 {
+				content.WriteString(ui.SelectedMenuItemStyle.Render("> "+item1) + "\n")
+				content.WriteString(ui.MenuItemStyle.Render("  "+item2) + "\n")
+			} else {
+				content.WriteString(ui.MenuItemStyle.Render("  "+item1) + "\n")
+				content.WriteString(ui.SelectedMenuItemStyle.Render("> "+item2) + "\n")
+			}
 		}
 	} else {
 		dHPPercent := float64(s.dragon.Health) / float64(s.dragon.MaxHealth)

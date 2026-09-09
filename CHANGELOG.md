@@ -7,11 +7,37 @@ e este projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Adicionado
+- Framework formal de registros de decisão de arquitetura em `design/adr/` com índice `README.md` e cinco registros iniciais seguindo o padrão `adr-template`:
+  - **ADR-0001**: Adoção de Architecture Decision Records (ADRs) imutáveis.
+  - **ADR-0002**: Arquitetura em camadas canônicas e identificadores 100% em inglês idiomático.
+  - **ADR-0003**: Persistência com SQLite puro em Go (CGO-free), modo WAL e transações ACID.
+  - **ADR-0004**: Terminal UI com Bubble Tea e servidor SSH multi-usuário com Wish.
+  - **ADR-0005**: Camada centralizada de localização (i18n) em PT-BR.
+- Suíte de testes unitários para a barra de status e estilos ANSI em `internal/ui`.
+- Mecanismo de auto-save do estado do jogador no encerramento do programa e ao desconectar da sessão SSH (`b14be93`).
+- Suporte a navegação Vim (`j`/`k`) e atalhos por abas na Ferraria (`ScreenSmith`) (`c6a6334`).
+- Documento `docs/plano-fixes-auditoria.md` rastreando a resolução dos 27 achados do relatório de auditoria de código.
+
+### Alterado
+- Consolidação do design system ANSI em `internal/ui`: remoção de estilos duplicados em `internal/tui` e centralização da paleta e componentes.
+- Atualização do `AGENTS.md` com referências canônicas a `design/adr/` e catálogo de skills recomendadas (`adr-template`, `godoctor`, `engineering-flow`, `git-workflow-and-versioning`, `game-design`, `latest-version`).
+- Enriquecimento do `README.md` com atmosfera temática de RPG e nostalgia BBS dos anos 1980-90.
+- Lógica de "Novo Dia" consolidada no `TurnManager` (`internal/engine`) como fonte única da verdade para renovação de turnos.
+- Geração determinística do Dragão do Dia unificada via `bestiary.GenerateDragonOfDay` injetada na camada TUI.
+
+### Corrigido
+- **GameOver**: Corrigida a duplicação de penalidade de morte em `GameOverScreen` (`9b41902`).
+- **Persistência de Poções**: Adicionada persistência da quantidade de poções (`PotionsCount`) no banco SQLite com migração de schema automática (`efe58ba`).
+- **Segurança de Armazenamento**: Configurados `busy_timeout` e `foreign_keys` no DSN de conexão SQLite, transação em `RecordDragonSlayed` e tratamento adequado de erros de gravação (`e7765e4`).
+- **Autenticação**: Diferenciação clara na tela de login entre senha inválida e conta inexistente (`e3c5e50`, `fe97252`).
+- **Taverna**: Implementado limite diário para flerte com Cassandra e atualização das mensagens do Cavaleiro Vermelho (`d43db26`).
+
 ### Planejado
 - Módulo de interface TUI completo para todas as telas do vilarejo (Fase 3 do roadmap).
 - PvP assíncrono e mecânica do Cavaleiro Vermelho na taverna.
 - Sistema de clãs e ranking persistente no banco compartilhado.
-- Internacionalização: extração de toda a camada `i18n` para múltiplos idiomas.
+- Internacionalização: suporte a múltiplos idiomas adicionais além de PT-BR.
 
 ## [0.0.1] - 2026-08-31
 

@@ -1,6 +1,7 @@
 package screens
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -20,7 +21,11 @@ const (
 	focusSubmit
 )
 
-// LoginScreen handles authentication and player account creation.
+// LoginScreen gerencia o formulário de autenticação e registro automático de novos jogadores.
+//
+// Didática TEA: O `LoginScreen` utiliza os componentes de campo de texto `bubbles/textinput` para
+// capturar entradas de usuário (nome e senha), alternando o foco com `Tab` ou setas e validando
+// as credenciais diretamente no banco SQLite via `storage.DB`.
 type LoginScreen struct {
 	db         *storage.DB
 	usernameIn textinput.Model
@@ -32,7 +37,7 @@ type LoginScreen struct {
 	height     int
 }
 
-// NewLoginScreen initializes the login interface.
+// NewLoginScreen inicializa a interface do formulário de login com campos configurados.
 func NewLoginScreen(db *storage.DB) *LoginScreen {
 	u := textinput.New()
 	u.Placeholder = "Digite seu nome de aventureiro..."
@@ -56,18 +61,33 @@ func NewLoginScreen(db *storage.DB) *LoginScreen {
 	}
 }
 
-// Init returns the initial command for the login screen.
+// Init retorna o comando inicial de piscamento do cursor para os campos de texto.
 func (s *LoginScreen) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-// SetSize updates the screen dimensions.
+// Reset devolve a tela de login ao estado inicial.
+//
+// Sem isto, sair da sessão deixava o nome e a senha preenchidos nos campos: bastava
+// pressionar Enter para entrar de novo na conta anterior. Em um BBS multiusuário
+// via SSH isso equivale a sair sem encerrar a sessão.
+func (s *LoginScreen) Reset() {
+	s.usernameIn.SetValue("")
+	s.passwordIn.SetValue("")
+	s.usernameIn.Focus()
+	s.passwordIn.Blur()
+	s.focus = focusUsername
+	s.errMsg = ""
+	s.infoMsg = "Se a conta não existir, ela será criada automaticamente."
+}
+
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *LoginScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
-// Update processes input events on the login form.
+// Update processa o foco dos campos de formulário e a confirmação de autenticação via tecla Enter.
 func (s *LoginScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -135,23 +155,36 @@ func (s *LoginScreen) handleLogin() (tea.Model, tea.Cmd) {
 	// Tenta autenticar
 	sp, err := s.db.AuthenticatePlayer(user, pass)
 	if err != nil {
-		// Se não existe, cria
-		newSP, createErr := s.db.CreatePlayer(user, pass)
-		if createErr != nil {
-			s.errMsg = fmt.Sprintf("Erro ao autenticar/criar conta: %v", createErr)
+		switch {
+		case errors.Is(err, storage.ErrInvalidPass):
+			s.errMsg = "Senha incorreta para o aventureiro."
+			return s, nil
+		case errors.Is(err, storage.ErrPlayerNotFound):
+			// Se não existe, cria a conta automaticamente
+			newSP, createErr := s.db.CreatePlayer(user, pass)
+			if createErr != nil {
+				if errors.Is(createErr, storage.ErrUserExists) {
+					s.errMsg = "Este nome de aventureiro já está registrado."
+				} else {
+					s.errMsg = fmt.Sprintf("Erro ao criar conta: %v", createErr)
+				}
+				return s, nil
+			}
+			sp = newSP
+		default:
+			s.errMsg = fmt.Sprintf("Erro ao autenticar: %v", err)
 			return s, nil
 		}
-		sp = newSP
 	}
 
-	// Converte para modelo de domínio
+	// Converte para o modelo de domínio do jogo
 	player := engine.NewPlayerFromStorage(sp)
 
 	// Verifica e processa virada do dia
 	tm := engine.NewTurnManager()
 	today := engine.CurrentDateString()
 	if tm.CheckAndApplyNewDay(player, today) {
-		_ = s.db.SavePlayer(player.ToStorage())
+		SavePlayer(s.db, player)
 	}
 
 	return s, func() tea.Msg {
@@ -159,7 +192,7 @@ func (s *LoginScreen) handleLogin() (tea.Model, tea.Cmd) {
 	}
 }
 
-// View renders the login screen.
+// View renderiza a caixa de login estilizada no terminal.
 func (s *LoginScreen) View() string {
 	title := ui.TitleStyle.Render("🏰 THE LEGEND OF THE GO DRAGON 🐉")
 	subtitle := ui.SubtitleStyle.Render("Uma aventura épica no terminal (BBS RPG Clássico)")

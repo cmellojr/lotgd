@@ -3,7 +3,7 @@
 > **Documento Vivo de Design de Jogo**  
 > **Gênero:** RPG em Modo Texto / BBS Door Game / TUI Multi-usuário  
 > **Plataforma:** Terminal CLI / Servidor SSH (Go + Bubble Tea + Lip Gloss + Wish + SQLite)  
-> **Referência Narrativa:** [universo-e-prompt.md](file:///c:/GitHub/go/lotgd/docs/universo-e-prompt.md)
+> **Referência Narrativa:** [universo-e-lore.md](universo-e-lore.md)
 
 ---
 
@@ -40,10 +40,16 @@ graph TD
 ### 2.2 Sistema de Combate por Turnos
 - **Fórmula de Dano**:
   $$\text{Dano} = \max(1, (\text{ATK}_{\text{atacante}} + \text{Rnd}(1, 4)) - \text{DEF}_{\text{defensor}})$$
+- **Acerto Crítico**:
+  - Há **10% de chance** em cada ataque de rolar um **Acerto Crítico**. Quando ocorre, o valor do ataque efetivo ($\text{ATK}_{\text{atacante}} + \text{Rnd}(1, 4)$) é multiplicado por **1,5** (+50% de dano base) antes de subtrair a defesa do oponente.
 - **Ações no Turno**:
-  - `[A]tacar`: Desfere golpe corpo a corpo.
-  - `[F]ugir`: Chance de 50% de sucesso baseada na agilidade.
-  - `[P]oção`: Usa consumível (*Elixir de Cura*).
+  - `[A]tacar`: Desfere golpe corpo a corpo aplicando a fórmula de dano e rolagem de crítico.
+  - `[F]ugir`: Tenta recuar estrategicamente do combate.
+    - **Chance base de sucesso**: 50%.
+    - **Monstros com afixo "Covarde"**: 80% de chance de sucesso.
+    - **Chefe Dragão do Dia**: 20% de chance de sucesso.
+    - **Penalidade por falha**: Se a tentativa de fuga falhar, o inimigo recebe um contra-ataque livre de oportunidade.
+  - `[P]oção`: Usa consumível (*Poção de Vida*) restaurando até +30 HP sem gastar o turno livre.
 
 ---
 
@@ -52,12 +58,13 @@ graph TD
 | Tela | Rota TUI | Comandos / Atalhos Principais |
 |---|---|---|
 | **Login / Criação** | `ScreenLogin` | Digitar nome/senha, `[Enter]` confirma, `[Tab]` alterna |
-| **Praça do Vilarejo** | `ScreenTown` | `[F]` Floresta, `[T]` Taverna, `[C]` Capela, `[M]` Ferraria, `[G]` Guilda, `[D]` Dragão, `[S]` Status, `[Q]` Sair |
+| **Praça do Vilarejo** | `ScreenTown` | `[F]` Floresta, `[T]` Taverna, `[C]` Capela, `[M]` Ferraria, `[G]` Guilda, `[D]` Dragão, `[S]` Salvar e Sair (Logout) |
 | **Floresta Sombria** | `ScreenForest` | `[P]` Procurar monstro, `[A]` Atacar, `[F]` Fugir, `[V]` Voltar à vila |
-| **Ferraria (Torin)** | `ScreenSmith` | `[1..5]` Comprar Armas, `[6..0]` Comprar Armaduras |
-| **Capela (Anselmo)** | `ScreenChapel` | `[C]` Curar ferimentos, `[B]` Pedir bênção |
-| **Taverna (Rosalinda)**| `ScreenTavern` | `[O]` Ouvir fofocas, `[F]` Flertar com Cassandra |
+| **Ferraria (Torin)** | `ScreenSmith` | `[1]` Armas, `[2]` Armaduras, `[3]` Poções, `[Tab]` Trocar aba |
+| **Capela (Anselmo)** | `ScreenChapel` | `[C]` Curar ferimentos, `[D]` Doação (10ouro), `[M]` Meditar |
+| **Taverna (Rosalinda)**| `ScreenTavern` | `[R]/[F]` Ouvir fofocas, `[C]` Flertar com Cassandra |
 | **Covil do Dragão** | `ScreenDragon` | `[D]` Desafiar o Dragão do Dia |
+| **Guilda dos Aventureiros** | `ScreenGuild` | `[A]/[T]` Avançar/consultar, `[R]/[C]` Consultar tabela, `[P]/[L]` Ler pergaminhos |
 
 ---
 

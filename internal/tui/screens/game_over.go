@@ -11,7 +11,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// GameOverScreen displays the death penalty and resurrection screen.
+// GameOverScreen exibe a tela de derrota moratória, informando as perdas de ouro/XP e ressurreição na capela.
+//
+// Didática TEA: O `GameOverScreen` é acionado quando a vida do herói chega a zero.
+// Ele exibe os valores exatos de ouro perdido da bolsa e experiência reduzida calculados por `engine.EconomyService`,
+// lembrando o jogador de que os fundos guardados no cofre do banco permanecem 100% seguros.
 type GameOverScreen struct {
 	db       *storage.DB
 	player   *engine.Player
@@ -21,57 +25,41 @@ type GameOverScreen struct {
 	height   int
 }
 
-// NewGameOverScreen initializes the death screen.
-func NewGameOverScreen(db *storage.DB, player *engine.Player) *GameOverScreen {
-	econ := engine.NewEconomyService()
-	var lGold, lXP int
-	if player != nil {
-		lGold, lXP = econ.ProcessDeathPenalty(player)
-		if db != nil {
-			_ = db.SavePlayer(player.ToStorage())
-		}
-	}
-
+// NewGameOverScreen inicializa a tela de derrota com os valores das penalidades moratórias calculadas.
+func NewGameOverScreen(db *storage.DB, player *engine.Player, lostGold, lostXP int) *GameOverScreen {
 	return &GameOverScreen{
 		db:       db,
 		player:   player,
-		lostGold: lGold,
-		lostXP:   lXP,
+		lostGold: lostGold,
+		lostXP:   lostXP,
 	}
 }
 
-// Init starts the game over screen.
+// Init inicializa a tela de game over.
 func (s *GameOverScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer sets the player and applies death penalties.
+// SetPlayer atualiza a referência ao herói ativo em memória.
 func (s *GameOverScreen) SetPlayer(p *engine.Player) {
 	s.player = p
-	econ := engine.NewEconomyService()
-	if p != nil {
-		s.lostGold, s.lostXP = econ.ProcessDeathPenalty(p)
-		if s.db != nil {
-			_ = s.db.SavePlayer(p.ToStorage())
-		}
-	}
+	s.lostGold = 0
+	s.lostXP = 0
 }
 
-// SetSize updates screen size.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *GameOverScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
-// Update waits for confirmation to return to the chapel/town.
+// Update aguarda a confirmação do jogador (`Enter`) para redirecioná-lo ressuscitado para a Capela do Frei Anselmo.
 func (s *GameOverScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "enter", " ", "v", "c":
-			if s.player != nil && s.db != nil {
-				_ = s.db.SavePlayer(s.player.ToStorage())
-			}
+			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenChapel}
 			}
@@ -80,7 +68,7 @@ func (s *GameOverScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, nil
 }
 
-// View renders the death screen.
+// View renderiza o painel de derrota e o resumo das perdas moratórias no terminal.
 func (s *GameOverScreen) View() string {
 	var b strings.Builder
 

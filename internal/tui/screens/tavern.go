@@ -13,7 +13,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// TavernScreen represents the bustling social hub of the village.
+// TavernScreen gerencia as interações sociais, fofocas e o mural de notícias na Taverna da Dona Rosalinda.
+//
+// Didática TEA: O `TavernScreen` consulta o banco SQLite via `storage.VillageRepository` para carregar
+// notícias do servidor e permite interações com NPCs (Dona Rosalinda, Cassandra e Cavaleiro Vermelho).
 type TavernScreen struct {
 	db        *storage.DB
 	player    *engine.Player
@@ -25,7 +28,7 @@ type TavernScreen struct {
 	height    int
 }
 
-// NewTavernScreen initializes the tavern screen.
+// NewTavernScreen inicializa a interface da taverna e carrega as opções do menu social.
 func NewTavernScreen(db *storage.DB, player *engine.Player) *TavernScreen {
 	return &TavernScreen{
 		db:     db,
@@ -42,18 +45,18 @@ func NewTavernScreen(db *storage.DB, player *engine.Player) *TavernScreen {
 	}
 }
 
-// Init starts the tavern screen.
+// Init inicializa a tela da taverna.
 func (s *TavernScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates the player reference.
+// SetPlayer atualiza a referência ao herói ativo e carrega as notícias mais recentes do banco.
 func (s *TavernScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 	s.loadNews()
 }
 
-// SetSize updates screen dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *TavernScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
@@ -67,10 +70,27 @@ func (s *TavernScreen) loadNews() {
 	}
 }
 
-// Update processes player interactions in the tavern.
+// Update processa as seleções do jogador na taverna.
 func (s *TavernScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		switch msg.String() {
+		case "up", "k":
+			if s.cursor > 0 {
+				s.cursor--
+			} else {
+				s.cursor = len(s.menuItems) - 1
+			}
+			return s, nil
+		case "down", "j":
+			if s.cursor < len(s.menuItems)-1 {
+				s.cursor++
+			} else {
+				s.cursor = 0
+			}
+			return s, nil
+		}
+
 		k := strings.ToUpper(msg.String())
 
 		switch k {
@@ -82,26 +102,12 @@ func (s *TavernScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "C": // Cassandra
 			s.cursor = 1
 			return s.selectCurrent()
-		case "D", "K": // Duelo
+		case "D": // Duelo
 			s.cursor = 2
 			return s.selectCurrent()
 		case "N", "M": // Notícias
 			s.cursor = 3
 			return s.selectCurrent()
-		case "UP":
-			if s.cursor > 0 {
-				s.cursor--
-			} else {
-				s.cursor = len(s.menuItems) - 1
-			}
-			return s, nil
-		case "DOWN":
-			if s.cursor < len(s.menuItems)-1 {
-				s.cursor++
-			} else {
-				s.cursor = 0
-			}
-			return s, nil
 		case "ENTER":
 			return s.selectCurrent()
 		}
@@ -115,16 +121,18 @@ func (s *TavernScreen) selectCurrent() (tea.Model, tea.Cmd) {
 	case 0: // Dona Rosalinda
 		s.infoMsg = "Dona Rosalinda enxuga uma caneca: 'Ouvi dizer que o Mestre Torin forjou armas novas na ferraria, e que o Dragão anda mais agitado nos picos!'"
 	case 1: // Cassandra
-		if s.player.Gold >= 10 {
+		if s.player.ForestFights > engine.DailyForestFights {
+			s.infoMsg = "Cassandra já te inspirou hoje. Volte amanhã para nova dose de coragem!"
+		} else if s.player.Gold >= 10 {
 			s.player.Gold -= 10
 			s.player.ForestFights++ // Ganha 1 turno de inspiração
-			_ = s.db.SavePlayer(s.player.ToStorage())
+			SavePlayer(s.db, s.player)
 			s.infoMsg = "Você oferece uma bebida a Cassandra. Ela sorri graciosamente e sua determinação é renovada! (+1 Luta na Floresta!)"
 		} else {
 			s.infoMsg = "Cassandra te olha com desdém: 'Volte quando tiver pelo menos 10 moedas de ouro para pagar uma rodada, aventureiro.'"
 		}
 	case 2: // Cavaleiro Vermelho
-		s.infoMsg = "O Cavaleiro Vermelho ergue a viseira: 'Você ainda não possui a têmpera necessária para cruzar lâminas comigo, garoto. Vá caçar na floresta!'"
+		s.infoMsg = "O Cavaleiro Vermelho ergue a viseira: 'Você ainda não possui a tempera necessária para cruzar lâminas comigo. Volte quando estiver mais experiente!'"
 	case 3: // Mural de Notícias
 		s.loadNews()
 		if len(s.news) == 0 {
@@ -145,13 +153,13 @@ func (s *TavernScreen) selectCurrent() (tea.Model, tea.Cmd) {
 }
 
 func (s *TavernScreen) backToTown() (tea.Model, tea.Cmd) {
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, func() tea.Msg {
 		return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 	}
 }
 
-// View renders the tavern interface.
+// View renderiza a interface da taverna no terminal.
 func (s *TavernScreen) View() string {
 	var b strings.Builder
 

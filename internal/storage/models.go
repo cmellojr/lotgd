@@ -4,7 +4,10 @@ import (
 	"time"
 )
 
-// Player represents a registered adventurer in the database.
+// Player representa a entidade plana de persistência relacional do herói no banco de dados SQLite.
+//
+// Didática Go: A tag `json:"-"` no campo `PasswordHash` impede que o hash Bcrypt da senha do usuário
+// seja exposto acidentalmente ao serializar o jogador em logs ou JSON.
 type Player struct {
 	ID           int64     `json:"id"`
 	Username     string    `json:"username"`
@@ -19,6 +22,7 @@ type Player struct {
 	Defense      int       `json:"defense"`
 	WeaponID     string    `json:"weapon_id"`
 	ArmorID      string    `json:"armor_id"`
+	PotionsCount int       `json:"potions_count"`
 	ForestFights int       `json:"forest_fights"`
 	DragonKills  int       `json:"dragon_kills"`
 	LastLoginDay string    `json:"last_login_day"`
@@ -26,18 +30,19 @@ type Player struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-// VillageState holds global daily data such as the Dragon of the Day and server day.
+// VillageState armazena os dados globais diários do vilarejo, como o status do Dragão do Dia e o herói vitorioso.
 type VillageState struct {
-	DayDate     string `json:"day_date"`
-	DragonAlive bool   `json:"dragon_alive"`
-	DragonHP    int    `json:"dragon_hp"`
-	DragonMaxHP int    `json:"dragon_max_hp"`
-	DragonATK   int    `json:"dragon_atk"`
-	DragonDEF   int    `json:"dragon_def"`
-	SlayerName  string `json:"slayer_name"`
+	DayDate          string `json:"day_date"`
+	DragonAlive      bool   `json:"dragon_alive"`
+	DragonHP         int    `json:"dragon_hp"`
+	DragonMaxHP      int    `json:"dragon_max_hp"`
+	DragonATK        int    `json:"dragon_atk"`
+	DragonDEF        int    `json:"dragon_def"`
+	DragonGoldReward int    `json:"dragon_gold_reward"`
+	SlayerName       string `json:"slayer_name"`
 }
 
-// NewsEntry represents an announcement or gossip on the town board.
+// NewsEntry representa um comunicado, notícia ou fofoca publicado no mural da taverna do vilarejo.
 type NewsEntry struct {
 	ID        int64     `json:"id"`
 	Message   string    `json:"message"`

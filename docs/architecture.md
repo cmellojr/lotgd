@@ -1,9 +1,9 @@
 # Architecture & Engineering Document — The Legend of the Go Dragon
 
 > **Documento Técnico de Arquitetura de Software**  
-> **Referência Narrativa:** [universo-e-prompt.md](file:///c:/GitHub/go/lotgd/docs/universo-e-prompt.md)  
-> **Documento de Game Design:** [GDD.md](file:///c:/GitHub/go/lotgd/docs/GDD.md)  
-> **Padrões de Código e Ensino:** [AGENTS.md](file:///c:/GitHub/go/lotgd/AGENTS.md)
+> **Referência Narrativa:** [universo-e-lore.md](universo-e-lore.md)
+> **Documento de Game Design:** [GDD.md](GDD.md)
+> **Diretrizes para Agentes:** [AGENTS.md](../AGENTS.md)
 
 ---
 
@@ -65,11 +65,13 @@ O **The Legend of the Go Dragon** é construído utilizando uma arquitetura modu
 
 ### 2.5 Camada de Persistência (`internal/storage`)
 - **Driver SQLite CGO-free** (`modernc.org/sqlite`): Portabilidade sem dependência de GCC/Clang no host.
-- **Transações ACID**: Proteção contra corrupção em concorrência multi-sessão SSH.
+- **Transações ACID & Concorrência**:
+  - **Write-Ahead Logging (WAL mode)**: Ativado via `PRAGMA journal_mode=WAL`, permitindo leituras simultâneas em paralelo sem bloquear leitores nem ser bloqueado por leituras durante escritas.
+  - **Busy Timeout**: Configurado via DSN (`busy_timeout(5000)`), garantindo que transações de escrita aguardem resiliamente até 5 segundos para adquirir o lock de escrita se outra escrita estiver ativa.
+  - **Pool de Conexões Calibrado**: Configuramos `SetMaxOpenConns(10)` e `SetMaxIdleConns(10)`. No Go SQL pool em modo WAL, conexões abertas > 1 removem o gargalo de enfileiramento em leituras (`SELECT`), permitindo que múltiplas sessões leiam concorrentemente em paralelo.
 - **Schema**:
   - `players`: Contas, senha hasheada, stats, ouro, nível, turnos restantes.
   - `village_state`: Data do dia atual, status do Dragão, ranking diário.
-  - `graveyard`: Histórico de heróis caídos.
   - `news`: Fofocas e anúncios de vitórias no vilarejo.
 
 ---
@@ -77,5 +79,9 @@ O **The Legend of the Go Dragon** é construído utilizando uma arquitetura modu
 ## 3. Concorrência & Servidor SSH BBS (`cmd/server`)
 
 - Utiliza o framework **Wish** (`github.com/charmbracelet/wish`) sobre o protocolo SSH padrão.
-- Cada conexão SSH autenticada instancia uma sessão isolada de `tea.Program`, compartilhando o mesmo pool de banco de dados SQLite com controle de concorrência (`WAL mode`).
-- Suporte a desconexão limpa e auto-save de progresso do aventureiro.
+- Cada conexão SSH autenticada instancia uma sessão isolada de `tea.Program`, compartilhando a mesma instância de banco de dados SQLite (`*storage.DB`).
+- **Garantias de Concorrência Multi-Sessão**:
+  - **Isolamento de Estado de Usuário**: Cada sessão TUI mantém seu estado local em memória e sincroniza com o banco via repositórios otimizados.
+  - **Prevenção de Condições de Corrida**: Operações críticas de escrita (como registro do abate do Dragão do Dia) utilizam controle de concorrência otimista (`UPDATE ... WHERE day_date = ? AND dragon_alive = 1`) dentro de transações explícitas (`BeginTx`), garantindo que apenas um herói receba os prêmios do dia em caso de abates simultâneos.
+  - **Leituras Sem Gargalo**: Graças ao modo WAL e ao pool calibrado (`SetMaxOpenConns(10)`), operações frequentes de leitura (como atualizações de ranking, mural de notícias e consultas de perfil) são atendidas em paralelo sem encavalamento.
+- Suporte a desconexão limpa e auto-save de progresso do aventureiro via interceptação de `tea.QuitMsg`.

@@ -12,7 +12,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// ChapelScreen represents the sanctuary of healing and blessings.
+// ChapelScreen gerencia os serviços de restauração de saúde e oferendas na Capela do Frei Anselmo.
+//
+// Didática TEA: O `ChapelScreen` calcula custos de cura proporcionais ao dano acumulado do jogador,
+// deduz as moedas do modelo de domínio e persiste as alterações no SQLite.
 type ChapelScreen struct {
 	db        *storage.DB
 	player    *engine.Player
@@ -23,7 +26,7 @@ type ChapelScreen struct {
 	height    int
 }
 
-// NewChapelScreen initializes the chapel screen.
+// NewChapelScreen inicializa a interface da capela com opções de restauração e doações.
 func NewChapelScreen(db *storage.DB, player *engine.Player) *ChapelScreen {
 	return &ChapelScreen{
 		db:     db,
@@ -39,26 +42,43 @@ func NewChapelScreen(db *storage.DB, player *engine.Player) *ChapelScreen {
 	}
 }
 
-// Init starts the chapel screen.
+// Init inicializa a tela da capela.
 func (s *ChapelScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates player state.
+// SetPlayer atualiza a referência ao herói ativo em memória.
 func (s *ChapelScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 }
 
-// SetSize updates dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *ChapelScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
-// Update handles chapel interactions.
+// Update processa interações do jogador na capela (cura, doação, meditação).
 func (s *ChapelScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		switch msg.String() {
+		case "up", "k":
+			if s.cursor > 0 {
+				s.cursor--
+			} else {
+				s.cursor = len(s.menuItems) - 1
+			}
+			return s, nil
+		case "down", "j":
+			if s.cursor < len(s.menuItems)-1 {
+				s.cursor++
+			} else {
+				s.cursor = 0
+			}
+			return s, nil
+		}
+
 		k := strings.ToUpper(msg.String())
 
 		switch k {
@@ -73,20 +93,6 @@ func (s *ChapelScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "M": // Meditar
 			s.cursor = 2
 			return s.selectCurrent()
-		case "UP":
-			if s.cursor > 0 {
-				s.cursor--
-			} else {
-				s.cursor = len(s.menuItems) - 1
-			}
-			return s, nil
-		case "DOWN":
-			if s.cursor < len(s.menuItems)-1 {
-				s.cursor++
-			} else {
-				s.cursor = 0
-			}
-			return s, nil
 		case "ENTER":
 			return s.selectCurrent()
 		}
@@ -116,7 +122,7 @@ func (s *ChapelScreen) selectCurrent() (tea.Model, tea.Cmd) {
 
 		s.player.Gold -= cost
 		s.player.Health = s.player.MaxHealth
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		s.infoMsg = fmt.Sprintf("Frei Anselmo unge seus ferimentos com óleos sagrados. Vida restaurada completamente por %d moedas de ouro!", cost)
 
 	case 1: // Doação
@@ -126,7 +132,7 @@ func (s *ChapelScreen) selectCurrent() (tea.Model, tea.Cmd) {
 		}
 
 		s.player.Gold -= 10
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 		s.infoMsg = "Você coloca 10 moedas na caixa de esmolas. Uma sensação de paz e leveza espiritual aquece sua alma."
 
 	case 2: // Meditação
@@ -140,13 +146,13 @@ func (s *ChapelScreen) selectCurrent() (tea.Model, tea.Cmd) {
 }
 
 func (s *ChapelScreen) backToTown() (tea.Model, tea.Cmd) {
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, func() tea.Msg {
 		return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 	}
 }
 
-// View renders the chapel UI.
+// View renderiza a interface da capela no terminal.
 func (s *ChapelScreen) View() string {
 	var b strings.Builder
 

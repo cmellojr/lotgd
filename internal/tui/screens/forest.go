@@ -23,7 +23,11 @@ const (
 	forestStateFled
 )
 
-// ForestScreen handles forest exploration and turn-based combat.
+// ForestScreen gerencia a mecânica de exploração da Floresta Sombria e combates por turnos.
+//
+// Didática TEA: O `ForestScreen` controla uma máquina de estados finita interna (`forestState`):
+// Explorando, Em Combate, Vitória, Derrota e Fuga. A cada rodada de ação (ataque, fuga ou poção),
+// invocamos as funções do `CombatEngine` e atualizamos a interface e o estado persistido do jogador.
 type ForestScreen struct {
 	db        *storage.DB
 	player    *engine.Player
@@ -37,7 +41,7 @@ type ForestScreen struct {
 	height    int
 }
 
-// NewForestScreen initializes the forest exploration and combat screen.
+// NewForestScreen inicializa a tela de exploração e combate na floresta.
 func NewForestScreen(db *storage.DB, player *engine.Player) *ForestScreen {
 	return &ForestScreen{
 		db:        db,
@@ -50,12 +54,12 @@ func NewForestScreen(db *storage.DB, player *engine.Player) *ForestScreen {
 	}
 }
 
-// Init starts the forest screen.
+// Init inicializa a tela da floresta.
 func (s *ForestScreen) Init() tea.Cmd {
 	return nil
 }
 
-// SetPlayer updates the active player.
+// SetPlayer atualiza a referência ao herói ativo e reseta o estado de combate para exploração.
 func (s *ForestScreen) SetPlayer(p *engine.Player) {
 	s.player = p
 	s.state = forestStateExploring
@@ -63,25 +67,28 @@ func (s *ForestScreen) SetPlayer(p *engine.Player) {
 	s.combatLog = nil
 }
 
-// SetSize updates screen dimensions.
+// SetSize atualiza as dimensões de largura e altura da tela.
 func (s *ForestScreen) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 }
 
-// Update processes forest actions and combat rounds.
+// Update processa as ações do jogador durante a exploração ou combate (Atacar, Fugir, Poção, Voltar).
 func (s *ForestScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		k := strings.ToUpper(msg.String())
 
-		// Retornar à cidade
-		if k == "V" || k == "ESC" || (s.state == forestStateExploring && k == "C") {
+		// Retornar à cidade.
+		// Em estado de derrota nenhuma tecla escapa: o fluxo tem de passar pela
+		// tela de Game Over, onde a penalidade de morte é aplicada.
+		if s.state != forestStateDefeat &&
+			(k == "V" || k == "ESC" || (s.state == forestStateExploring && k == "C")) {
 			if s.state == forestStateCombat {
 				s.appendLog("Você não pode fugir sem tentar uma retirada estratégica! [F]ugir")
 				return s, nil
 			}
-			_ = s.db.SavePlayer(s.player.ToStorage())
+			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 			}
@@ -111,7 +118,7 @@ func (s *ForestScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case forestStateDefeat:
-			_ = s.db.SavePlayer(s.player.ToStorage())
+			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenGameOver}
 			}
@@ -133,7 +140,10 @@ func (s *ForestScreen) startExploration() (tea.Model, tea.Cmd) {
 		}
 	}
 
-	_ = s.tm.ConsumeFight(s.player)
+	if err := s.tm.ConsumeFight(s.player); err != nil {
+		s.appendLog(fmt.Sprintf("⚠ %v", err))
+		return s, nil
+	}
 
 	m := s.gen.GenerateForPlayer(s.player.Level)
 	s.monster = &m
@@ -142,7 +152,7 @@ func (s *ForestScreen) startExploration() (tea.Model, tea.Cmd) {
 		fmt.Sprintf("Você adentra a mata fechada e é surpreendido por um %s!", m.Name),
 	}
 
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, nil
 }
 
@@ -157,11 +167,11 @@ func (s *ForestScreen) handleAttack() (tea.Model, tea.Cmd) {
 	if res.MonsterDefeated {
 		s.state = forestStateVictory
 		s.appendLog("Pressione [P]rocurar para outra luta ou [V]oltar para a cidade.")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	} else if res.PlayerDefeated {
 		s.state = forestStateDefeat
 		s.appendLog("Pressione qualquer tecla para prosseguir...")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	}
 
 	return s, nil
@@ -178,11 +188,11 @@ func (s *ForestScreen) handleFlee() (tea.Model, tea.Cmd) {
 	if res.FledSuccessfully {
 		s.state = forestStateFled
 		s.appendLog("Pressione [P]rocurar para outra luta ou [V]oltar para a cidade.")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	} else if res.PlayerDefeated {
 		s.state = forestStateDefeat
 		s.appendLog("Pressione qualquer tecla para prosseguir...")
-		_ = s.db.SavePlayer(s.player.ToStorage())
+		SavePlayer(s.db, s.player)
 	}
 
 	return s, nil
@@ -196,7 +206,7 @@ func (s *ForestScreen) handlePotion() (tea.Model, tea.Cmd) {
 	}
 
 	s.appendLog(fmt.Sprintf("Você bebeu uma Poção de Vida e recuperou %d pontos de HP! (Poções restantes: %d)", healed, s.player.PotionsCount))
-	_ = s.db.SavePlayer(s.player.ToStorage())
+	SavePlayer(s.db, s.player)
 	return s, nil
 }
 
@@ -207,7 +217,7 @@ func (s *ForestScreen) appendLog(msg string) {
 	}
 }
 
-// View renders the forest environment and combat screen.
+// View renderiza a atmosfera da floresta e o painel de combate dinâmico no terminal.
 func (s *ForestScreen) View() string {
 	var b strings.Builder
 

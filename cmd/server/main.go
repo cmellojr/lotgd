@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"lotgd/internal/bestiary"
 	"lotgd/internal/storage"
 	"lotgd/internal/tui"
 
@@ -43,19 +44,26 @@ func main() {
 	// entre todas as sessões SSH conectadas simultaneamente sem corromper os dados.
 	db, err := storage.OpenDB(*dbPath)
 	if err != nil {
-		logger.Fatal("Falha ao abrir banco de dados SQLite", "db", *dbPath, "err", err)
+		logger.Fatal("Failed to open SQLite database", "db", *dbPath, "err", err)
 	}
 
 	// Garantimos o encerramento gracioso do pool de conexões SQLite ao finalizar o servidor.
 	defer func() {
 		if err := db.Close(); err != nil {
-			logger.Warn("Aviso ao fechar banco de dados", "err", err)
+			logger.Warn("Warning when closing database", "err", err)
 		}
 	}()
 
 	// Handler do Bubble Tea para o middleware do Wish:
 	// Para cada conexão SSH estabelecida por um cliente, essa função é executada para
 	// instanciar uma máquina de estados TUI isolada (MainModel) vinculada à sessão SSH.
+	// O DragonGenerator é criado uma única vez e compartilhado entre todas as sessões,
+	// garantindo que todos os jogadores enfrentem o mesmo Dragão do Dia (determinístico).
+	dragonGen := func(dayDate string) (int, int, int, int) {
+		d := bestiary.GenerateDragonOfDay(dayDate)
+		return d.MaxHealth, d.Attack, d.Defense, d.GoldReward
+	}
+
 	teaHandler := func(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 		// PTY (Pseudo-Terminal): O Wish aloca automaticamente um terminal virtual para a sessão.
 		_, _, active := s.Pty()
@@ -65,14 +73,27 @@ func main() {
 		}
 
 		// Instanciação de um novo modelo para a sessão do jogador conectado.
-		model := tui.NewMainModel(db)
+		model := tui.NewMainModel(db, dragonGen)
+
+		filter := func(m tea.Model, msg tea.Msg) tea.Msg {
+			if _, ok := msg.(tea.QuitMsg); ok {
+				if mm, ok := m.(*tui.MainModel); ok {
+					if err := mm.Save(); err != nil {
+						logger.Warn("Failed to save player state on exit", "err", err)
+					}
+				}
+			}
+			return msg
+		}
 
 		// Opções específicas da sessão Bubble Tea sobre o túnel SSH:
 		// - WithAltScreen(): Usa a tela secundária para limpar a interface ao desconectar.
+		// - WithFilter(): Intercepta tea.QuitMsg para salvar o progresso do jogador antes do encerramento.
 		// O middleware do Wish (wishbubbletea.Middleware) já conecta automaticamente os streams
 		// de entrada e saída (I/O) da sessão SSH ao programa Bubble Tea.
 		return model, []tea.ProgramOption{
 			tea.WithAltScreen(),
+			tea.WithFilter(filter),
 		}
 	}
 
@@ -91,7 +112,7 @@ func main() {
 		),
 	)
 	if err != nil {
-		logger.Fatal("Falha ao configurar servidor Wish SSH", "err", err)
+		logger.Fatal("Failed to configure Wish SSH server", "err", err)
 	}
 
 	// Gerenciamento de sinais do Sistema Operacional (SIGINT, SIGTERM) para encerramento gracioso (Graceful Shutdown).
@@ -100,24 +121,24 @@ func main() {
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		logger.Info("Iniciando servidor SSH The Legend of the Go Dragon (BBS)...", "addr", serverAddr)
-		logger.Info("Para conectar, use o comando:", "cmd", fmt.Sprintf("ssh localhost -p %d", *port))
+		logger.Info("Starting The Legend of the Go Dragon SSH server (BBS)...", "addr", serverAddr)
+		logger.Info("To connect, run command:", "cmd", fmt.Sprintf("ssh localhost -p %d", *port))
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, ssh.ErrServerClosed) {
-			logger.Error("Erro na execução do servidor SSH", "err", err)
+			logger.Error("Error running SSH server", "err", err)
 			done <- nil
 		}
 	}()
 
 	// Bloqueia a execução da main goroutine até que um sinal de parada seja recebido no canal 'done'.
 	<-done
-	logger.Info("Sinal de encerramento recebido. Desligando servidor SSH graciosamente...")
+	logger.Info("Shutdown signal received. Gracefully shutting down SSH server...")
 
 	// Definimos um timeout de 10 segundos para desconectar as sessões ativas e liberar recursos.
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil && !errors.Is(err, ssh.ErrServerClosed) {
-		logger.Error("Erro ao desligar o servidor SSH", "err", err)
+		logger.Error("Error shutting down SSH server", "err", err)
 	}
-	logger.Info("Servidor LOTGD BBS finalizado com sucesso.")
+	logger.Info("LOTGD BBS server successfully shut down.")
 }

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -16,31 +17,37 @@ var (
 	ErrInvalidPass    = errors.New("invalid password")
 )
 
-// PlayerRepository handles player database operations.
+// PlayerRepository gerencia todas as operações de persistência e consulta SQL relativas aos jogadores.
 type PlayerRepository struct {
 	db *DB
 }
 
-// NewPlayerRepository creates a new instance of PlayerRepository.
+// NewPlayerRepository instancia o repositório de jogadores.
 func NewPlayerRepository(db *DB) *PlayerRepository {
 	return &PlayerRepository{db: db}
 }
 
-// Register creates a new player account with a hashed password.
+// Register cria uma nova conta de jogador com a senha criptografada usando Bcrypt.
+//
+// Didática Go: Criptografamos a senha com `bcrypt.GenerateFromPassword` antes da gravação no banco,
+// garantindo que senhas puras em texto simples jamais sejam armazenadas no disco.
 func (r *PlayerRepository) Register(ctx context.Context, username, password string) (*Player, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, fmt.Errorf("failed to hash password: %w", err)
+		return nil, fmt.Errorf("falha ao criptografar senha: %w", err)
 	}
 
-	today := time.Now().Format("2006-01-02")
+	today := time.Now().UTC().Format("2006-01-02")
 	query := `
 	INSERT INTO players (username, password_hash, last_login_day, created_at, updated_at)
 	VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 	`
 	res, err := r.db.ExecContext(ctx, query, username, string(hash), today)
 	if err != nil {
-		return nil, fmt.Errorf("failed to register player: %w", err)
+		if strings.Contains(strings.ToLower(err.Error()), "unique constraint failed") {
+			return nil, ErrUserExists
+		}
+		return nil, fmt.Errorf("falha ao registrar jogador: %w", err)
 	}
 
 	id, err := res.LastInsertId()
@@ -51,7 +58,7 @@ func (r *PlayerRepository) Register(ctx context.Context, username, password stri
 	return r.GetByID(ctx, id)
 }
 
-// Authenticate verifies player credentials and applies New Day bonuses if applicable.
+// Authenticate valida as credenciais do jogador comparando o hash Bcrypt armazenado com a senha fornecida.
 func (r *PlayerRepository) Authenticate(ctx context.Context, username, password string) (*Player, error) {
 	player, err := r.GetByUsername(ctx, username)
 	if err != nil {
@@ -62,25 +69,14 @@ func (r *PlayerRepository) Authenticate(ctx context.Context, username, password 
 		return nil, ErrInvalidPass
 	}
 
-	// Check New Day trigger
-	today := time.Now().Format("2006-01-02")
-	if player.LastLoginDay != today {
-		player.ForestFights = 15
-		player.Health = player.MaxHealth
-		player.LastLoginDay = today
-		if err := r.Save(ctx, player); err != nil {
-			return nil, fmt.Errorf("failed to update new day player state: %w", err)
-		}
-	}
-
 	return player, nil
 }
 
-// GetByID retrieves a player by their ID.
+// GetByID busca um jogador no banco através de seu identificador numérico único (`ID`).
 func (r *PlayerRepository) GetByID(ctx context.Context, id int64) (*Player, error) {
 	query := `
 	SELECT id, username, password_hash, level, experience, gold, bank_gold, health, max_health,
-	       attack, defense, weapon_id, armor_id, forest_fights, dragon_kills, last_login_day,
+	       attack, defense, weapon_id, armor_id, potions_count, forest_fights, dragon_kills, last_login_day,
 	       created_at, updated_at
 	FROM players WHERE id = ?
 	`
@@ -88,11 +84,11 @@ func (r *PlayerRepository) GetByID(ctx context.Context, id int64) (*Player, erro
 	return scanPlayer(row)
 }
 
-// GetByUsername retrieves a player by their username.
+// GetByUsername busca um jogador no banco pelo seu nome de usuário (case-insensitive via NOCASE na tabela).
 func (r *PlayerRepository) GetByUsername(ctx context.Context, username string) (*Player, error) {
 	query := `
 	SELECT id, username, password_hash, level, experience, gold, bank_gold, health, max_health,
-	       attack, defense, weapon_id, armor_id, forest_fights, dragon_kills, last_login_day,
+	       attack, defense, weapon_id, armor_id, potions_count, forest_fights, dragon_kills, last_login_day,
 	       created_at, updated_at
 	FROM players WHERE username = ?
 	`
@@ -100,28 +96,28 @@ func (r *PlayerRepository) GetByUsername(ctx context.Context, username string) (
 	return scanPlayer(row)
 }
 
-// Save persists the current player state to the database.
+// Save atualiza os atributos e progresso do jogador no banco de dados SQLite.
 func (r *PlayerRepository) Save(ctx context.Context, p *Player) error {
 	query := `
 	UPDATE players SET
 		level = ?, experience = ?, gold = ?, bank_gold = ?, health = ?, max_health = ?,
-		attack = ?, defense = ?, weapon_id = ?, armor_id = ?, forest_fights = ?,
+		attack = ?, defense = ?, weapon_id = ?, armor_id = ?, potions_count = ?, forest_fights = ?,
 		dragon_kills = ?, last_login_day = ?, updated_at = CURRENT_TIMESTAMP
 	WHERE id = ?
 	`
 	_, err := r.db.ExecContext(ctx, query,
 		p.Level, p.Experience, p.Gold, p.BankGold, p.Health, p.MaxHealth,
-		p.Attack, p.Defense, p.WeaponID, p.ArmorID, p.ForestFights,
+		p.Attack, p.Defense, p.WeaponID, p.ArmorID, p.PotionsCount, p.ForestFights,
 		p.DragonKills, p.LastLoginDay, p.ID,
 	)
 	return err
 }
 
-// ListRankings returns top players ordered by dragon kills and level.
+// ListRankings retorna os melhores jogadores ordenados por abates de dragão, nível e experiência acumulada.
 func (r *PlayerRepository) ListRankings(ctx context.Context, limit int) ([]*Player, error) {
 	query := `
 	SELECT id, username, password_hash, level, experience, gold, bank_gold, health, max_health,
-	       attack, defense, weapon_id, armor_id, forest_fights, dragon_kills, last_login_day,
+	       attack, defense, weapon_id, armor_id, potions_count, forest_fights, dragon_kills, last_login_day,
 	       created_at, updated_at
 	FROM players
 	ORDER BY dragon_kills DESC, level DESC, experience DESC
@@ -144,6 +140,11 @@ func (r *PlayerRepository) ListRankings(ctx context.Context, limit int) ([]*Play
 	return players, nil
 }
 
+// rowScanner abstrai os métodos Scan do `*sql.Row` e `*sql.Rows`.
+//
+// Didática Go: A definição de uma interface local com um único método `Scan(dest ...any) error`
+// permite reutillizar a mesma função utilitária `scanPlayer` tanto para consultas de registro único (`QueryRow`)
+// quanto para iterações em conjunto de linhas (`Query`).
 type rowScanner interface {
 	Scan(dest ...any) error
 }
@@ -152,7 +153,7 @@ func scanPlayer(scanner rowScanner) (*Player, error) {
 	var p Player
 	err := scanner.Scan(
 		&p.ID, &p.Username, &p.PasswordHash, &p.Level, &p.Experience, &p.Gold, &p.BankGold,
-		&p.Health, &p.MaxHealth, &p.Attack, &p.Defense, &p.WeaponID, &p.ArmorID,
+		&p.Health, &p.MaxHealth, &p.Attack, &p.Defense, &p.WeaponID, &p.ArmorID, &p.PotionsCount,
 		&p.ForestFights, &p.DragonKills, &p.LastLoginDay, &p.CreatedAt, &p.UpdatedAt,
 	)
 	if err != nil {
