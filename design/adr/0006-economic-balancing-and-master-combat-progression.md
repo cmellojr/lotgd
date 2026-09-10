@@ -72,25 +72,29 @@ A economia e a curva de experiência foram calibradas considerando **15 lutas di
 | **7** | 5.500 | Mestra Elora | 200 HP / 44 ATK / 28 DEF | +40 HP / +7 ATK / +6 DEF | Tier 3 (Martelo de Guerra / Placa Completa) | Dias 12 - 13 |
 | **8** | 9.000 | Mestre Thorgrim | 260 HP / 55 ATK / 36 DEF | +45 HP / +8 ATK / +7 DEF | Tier 4 (Lâmina Rúnica / Placa Mithril) | Dias 15 - 16 |
 | **9** | 14.000 | Mestre Valerius | 330 HP / 68 ATK / 45 DEF | +50 HP / +10 ATK / +8 DEF | Tier 4 (Machado Mithril / Armadura Adamantina) | Dias 18 - 20 |
-| **10** | 22.000 | Mestre Arthorian | 420 HP / 83 ATK / 55 DEF | +60 HP / +12 ATK / +10 DEF | Tier 4 (Espada Lendária / Placa de Dragão) | **Dias 22 - 25** (~3 a 4 semanas) |
+| **10** | 22.000 | Mestre Arthorian | 420 HP / 83 ATK / 55 DEF | +60 HP / +12 ATK / +10 DEF | Tier 4 (Espada Lendária / Placa de Dragão) | **Dias 22 - 25** (~3 a 4 semanas — Qualificação para o Dragão) |
 
-#### Meta Explícita de Ritmo de Progressão:
+#### Meta Explícita de Ritmo de Progressão e Portão do Dragão:
 - **Nível 1 ao 5 (Iniciação / Early Game)**: O jogador atinge o Nível 5 em aproximadamente **6 a 7 dias reais** de jogo diário (acumulando ~100 lutas na floresta e atualizando seus equipamentos na Ferraria).
-- **Nível 5 ao 10 (Maturidade / End Game)**: A curva de XP desacelera progressivamente, exigindo entre **22 e 25 dias acumulados** de atividade constante para atingir o Nível 10 e se qualificar para enfrentar o **Dragão do Dia**.
+- **Nível 5 ao 10 (Maturidade / End Game)**: A curva de XP desacelera progressivamente, exigindo entre **22 e 25 dias acumulados** de atividade constante para atingir a maestria do Nível 10.
+- **Portão de Acesso ao Covil do Dragão**: O portão de qualificação para desafiar o Dragão do Dia fica **fixado no Nível 10** (o nível máximo de maestria). Na implementação técnica, a verificação em `internal/tui/screens/dragon.go` será ajustada de `< 5` para `< 10`, garantindo que o confronto final ocorra quando o herói possuir estatísticas e equipamentos condizentes com o desafio do Dragão.
+
+#### Rebalanceamento do Catálogo de Equipamentos (Dreno de Ouro):
+Para absorver o fluxo de ouro acumulado com a remoção da taxa financeira de nível (`CostGold`), o catálogo de armas e armaduras em `internal/engine/items.go` será expandido para incluir 10 opções graduais de armas e 10 de armaduras (alinhadas aos itens descritos na tabela acima), garantindo que a compra de equipamentos atue como o dreno primário de ouro do jogo.
 
 ---
 
 ### 3.2 Proposta de Teste / Simulação Determinística contra Regressão
 
-Para garantir que o balanceamento dos Mestres e a curva de progressão não sofram regressões em refatorações futuras, propõe-se a criação do teste determinístico `TestMasterCombatWinRateProgression` no pacote `internal/engine` (ou `internal/bestiary`):
+Para garantir que o balanceamento dos Mestres, a curva de progressão e os preços de equipamentos não sofram regressões em refatorações futuras, propõe-se a criação do teste determinístico `TestMasterCombatWinRateProgression` no pacote `internal/engine` (ou `internal/bestiary`):
 
 ```go
 // TestMasterCombatWinRateProgression simula 1.000 combates entre um jogador adequadamente
 // equipado para o seu nível e o Mestre de Treinamento correspondente.
 //
 // Critério de Aceite:
-// - Jogador com equipamento recomendado do nível: Taxa de vitória entre 65% e 85%.
-// - Jogador sem equipamentos (atributos base apenas): Taxa de vitória < 35% (exigindo compra de armas/armaduras).
+// - Jogador com equipamento recomendado do nível (comprado via catálogo expandido): Taxa de vitória entre 65% e 85%.
+// - Jogador sem equipamentos (atributos base apenas): Taxa de vitória < 35% (exigindo compra de armas/armaduras na Ferraria).
 func TestMasterCombatWinRateProgression(t *testing.T) {
     // 1. Instanciar CombatEngine determinístico com seed fixa.
     // 2. Para cada nível de 1 a 9:
@@ -105,20 +109,26 @@ Essa simulação funcionará nos mesmos moldes do teste `TestLevelOneWinRateVsFe
 
 ---
 
-### 3.3 Documentos a Serem Atualizados Pós-Aprovação
+### 3.3 Documentos e Código a Serem Atualizados Pós-Aprovação
 
-Quando a implementação técnica desta decisão for iniciada, as seguintes seções dos documentos de design e planejamento deverão ser atualizadas:
+Quando a implementação técnica desta decisão for iniciada, as seguintes seções de documentos e arquivos de código deverão ser atualizados:
 
 1. **`docs/GDD.md`**:
-   - **Seção 1.2 (Core Gameplay Loop)**: Atualizar o diagrama Mermaid substituindo *"Tem Nível para o Dragão?"* e a rota da Guilda por *"Desafiar Mestre de Treinamento (Turgon's Warrior Training / Guilda)"*.
+   - **Seção 1.2 (Core Gameplay Loop)**: Atualizar o diagrama Mermaid substituindo *"Tem Nível para o Dragão?"* por *"Alcançou Nível 10?"* e detalhando a rota da Guilda como *"Desafiar Mestre de Treinamento (Turgon's Warrior Training / Guilda)"*.
    - **Seção 2.1 (Economia de Recursos)**:
-     - Atualizar a definição de **Ouro**: desvinculá-lo do avanço de nível e explicitar seu uso em Equipamentos (Ferraria), Cura (Capela) e Banco.
+     - Atualizar a definição de **Ouro**: desvinculá-lo do avanço de nível e explicitar seu uso em Equipamentos (Ferraria com catálogo expandido), Cura (Capela) e Banco.
      - Atualizar a definição de **Experiência (XP)**: pontuar que ao atingir o limiar de XP, o jogador habilita a opção de desafiar o Mestre de Nível na Guilda.
    - **Seção 2.3 / 3 (Guilda / Treinamento de Guerreiros)**: Incluir a tabela de Mestres, a limitação de tentativas diárias e as regras de combate de promoção.
 
 2. **`docs/roadmap.md`**:
-   - **Fase 2 (Game Engine / `internal/engine`)**: Atualizar a descrição do subitem de progressão de *"Sistema de economia (ouro na bolsa vs ouro no banco), experiência e avanço de nível"* para *"Sistema de experiência, curva de nível e combates de promoção contra Mestres de Treinamento"*.
-   - **Fase 3 (TUI / `guild.go`)**: Atualizar o item da Guilda para especificar a interface de desafio ao Mestre e a exibição das tentativas diárias de Mestre restantes.
+   - **Fase 2 (Game Engine / `internal/engine`)**: Atualizar a descrição do subitem de progressão de *"Sistema de economia (ouro na bolsa vs ouro no banco), experiência e avanço de nível"* para *"Sistema de experiência, curva de nível, catálogo expandido de equipamentos e combates de promoção contra Mestres de Treinamento"*.
+   - **Fase 3 (TUI / `guild.go` & `dragon.go`)**: Atualizar o item da Guilda para especificar a interface de desafio ao Mestre e a exibição das tentativas diárias de Mestre restantes; atualizar a tela do Covil para refletir a trava de Nível 10.
+
+3. **Arquivos de Código de Produção**:
+   - **`internal/engine/progression.go`**: Remover a checagem e dedução de `CostGold` em `CanLevelUp` e `LevelUp`.
+   - **`internal/engine/items.go`**: Expandir o catálogo de armas e armaduras para contar com 10 níveis de itens escalonados por preço e poder.
+   - **`internal/tui/screens/dragon.go`**: Atualizar o portão do Covil do Dragão na linha 188 de `Level < 5` para `Level < 10`.
+   - **`internal/tui/screens/guild.go`**: Implementar o fluxo de combate de promoção contra o Mestre e exibição de tentativas diárias.
 
 ---
 
@@ -131,11 +141,11 @@ Quando a implementação técnica desta decisão for iniciada, as seguintes seç
 - **Proteção contra Regressões**: A inclusão de testes de simulação de taxa de vitória contra os Mestres garante estabilidade nos atributos ao longo de refatorações.
 
 ### Negativas / Restrições
-- **Esforço de Desenvolvimento**: Exige a criação do catálogo de Mestres em Go (`internal/engine`), atualização das structs de jogador/persistência no SQLite para registrar tentativas diárias de Mestre, e adaptação da tela da Guilda (`internal/tui/screens/guild.go`).
+- **Esforço de Desenvolvimento**: Exige a criação do catálogo de Mestres em Go (`internal/engine`), expansão do catálogo de itens em `items.go`, atualização das structs de jogador/persistência no SQLite para registrar tentativas diárias de Mestre, e adaptação das telas da Guilda e do Dragão (`internal/tui/screens/`).
 
 ---
 
 ## 5. Conformidade e Verificação
 
-- **Leitura Obrigatória**: Desenvolvedores e agentes de IA devem consultar este ADR antes de modificar `internal/engine/progression.go` ou `internal/tui/screens/guild.go`.
+- **Leitura Obrigatória**: Desenvolvedores e agentes de IA devem consultar este ADR antes de modificar `internal/engine/progression.go`, `internal/engine/items.go`, `internal/tui/screens/guild.go` ou `internal/tui/screens/dragon.go`.
 - **Validação Automatizada**: A implementação futura deverá incluir o teste `TestMasterCombatWinRateProgression` e manter 100% dos testes passando em `go test ./...`.
