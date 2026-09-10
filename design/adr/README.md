@@ -13,3 +13,4 @@ Este diretório contém o registro histórico e imutável de decisões de arquit
 | [ADR-0003](0003-cgo-free-sqlite-persistence.md) | Persistência com SQLite Puro em Go (CGO-free) e Modo WAL | Approved | 2026-09-05 |
 | [ADR-0004](0004-tui-with-bubble-tea-and-wish-ssh.md) | Terminal UI com Bubble Tea e Servidor Multi-usuário Wish SSH | Approved | 2026-09-05 |
 | [ADR-0005](0005-i18n-localization-layer.md) | Camada Centralizada de Localização (i18n) PT-BR | Approved | 2026-09-05 |
+| [ADR-0006](0006-economic-balancing-and-master-combat-progression.md) | Modelo de Balanceamento Econômico e Progressão por Combate com Mestres | Approved | 2026-09-05 |
