@@ -221,7 +221,7 @@ func TestProgression_LevelUp(t *testing.T) {
 	p := &engine.Player{
 		Level:       1,
 		Experience:  150, // Requisito para Nível 2 é 100 XP
-		Gold:        60,  // Custo é 50 Gold
+		Gold:        60,  // Ouro não é mais consumido no treino (ADR-0006)
 		Health:      20,
 		MaxHealth:   50,
 		BaseAttack:  10,
@@ -241,8 +241,8 @@ func TestProgression_LevelUp(t *testing.T) {
 	if p.Level != 2 {
 		t.Fatalf("esperado nível 2, obtido %d", p.Level)
 	}
-	if p.Gold != 10 {
-		t.Fatalf("esperado 10 moedas de ouro restantes, obtido %d", p.Gold)
+	if p.Gold != 60 {
+		t.Fatalf("esperado 60 moedas de ouro (sem alteração), obtido %d", p.Gold)
 	}
 	if p.MaxHealth != 65 {
 		t.Fatalf("esperado MaxHealth = 65 (50 + 15), obtido %d", p.MaxHealth)
@@ -250,10 +250,13 @@ func TestProgression_LevelUp(t *testing.T) {
 	if p.Health != 65 {
 		t.Fatalf("ao subir de nível a vida deve ser completamente restaurada, obtido %d", p.Health)
 	}
+	if !p.MasterFoughtToday {
+		t.Fatalf("ao subir de nível a tentativa diária deve ser marcada como utilizada")
+	}
 }
 
 func TestProgression_Boundaries(t *testing.T) {
-	if req, ok := engine.NextLevelRequirement(10); ok || req != (engine.LevelRequirement{}) {
+	if req, ok := engine.NextLevelRequirement(12); ok || req != (engine.LevelRequirement{}) {
 		t.Fatalf("expected no requirement beyond max level, got %+v, ok=%v", req, ok)
 	}
 
@@ -265,6 +268,146 @@ func TestProgression_Boundaries(t *testing.T) {
 	player.Experience = 100
 	if can, _ := engine.CanLevelUp(player); !can {
 		t.Fatal("player should level up at the exact XP threshold")
+	}
+}
+
+// TestMasterCombatWinRateProgression simula 1.000 combates entre um jogador adequadamente
+// equipado para o seu nível e o Mestre de Treinamento correspondente (ADR-0006).
+//
+// Critério de Aceite:
+// - Jogador com equipamento recomendado do nível: Taxa de vitória entre 65% e 85%.
+// - Jogador sem equipamentos (atributos base apenas): Taxa de vitória < 35%.
+func TestMasterCombatWinRateProgression(t *testing.T) {
+	type gearBonus struct {
+		weaponAtk int
+		armorDef  int
+	}
+
+	// Bônus de equipamento recomendados por nível alvo (2 a 12)
+	recommendedGear := map[int]gearBonus{
+		2:  {weaponAtk: 3, armorDef: 2},
+		3:  {weaponAtk: 5, armorDef: 4},
+		4:  {weaponAtk: 10, armorDef: 6},
+		5:  {weaponAtk: 14, armorDef: 9},
+		6:  {weaponAtk: 18, armorDef: 11},
+		7:  {weaponAtk: 23, armorDef: 14},
+		8:  {weaponAtk: 27, armorDef: 17},
+		9:  {weaponAtk: 34, armorDef: 21},
+		10: {weaponAtk: 40, armorDef: 26},
+		11: {weaponAtk: 47, armorDef: 30},
+		12: {weaponAtk: 55, armorDef: 36},
+	}
+
+	const iterations = 1000
+
+	// Simula para cada nível alvo de 2 a 12
+	for targetLevel := 2; targetLevel <= 12; targetLevel++ {
+		master, ok := engine.GetMasterForTargetLevel(targetLevel)
+		if !ok {
+			t.Fatalf("Mestre para nível alvo %d não encontrado", targetLevel)
+		}
+
+		// Calcula os atributos base acumulados do jogador no nível anterior
+		baseHP := 20
+		baseAtk := 5
+		baseDef := 2
+		for lvl := 2; lvl <= targetLevel-1; lvl++ {
+			for _, req := range engine.LevelTable {
+				if req.Level == lvl {
+					baseHP += req.HealthGain
+					baseAtk += req.AttackGain
+					baseDef += req.DefGain
+				}
+			}
+		}
+
+		gear := recommendedGear[targetLevel]
+
+		// 1. Simulação com jogador equipado
+		equippedWins := 0
+		for i := 0; i < iterations; i++ {
+			rng := rand.New(rand.NewSource(int64(targetLevel*10000 + i)))
+			ce := engine.NewCombatEngine(rng)
+
+			player := &engine.Player{
+				Username:    "HeroEquipped",
+				Health:      baseHP,
+				MaxHealth:   baseHP,
+				BaseAttack:  baseAtk,
+				BaseDefense: baseDef,
+				Weapon:      engine.Item{PowerBonus: gear.weaponAtk},
+				Armor:       engine.Item{PowerBonus: gear.armorDef},
+			}
+
+			masterMonster := &engine.Monster{
+				Name:      master.Name,
+				Health:    master.Health,
+				MaxHealth: master.MaxHealth,
+				Attack:    master.Attack,
+				Defense:   master.Defense,
+			}
+
+			for player.IsAlive() && masterMonster.IsAlive() {
+				res := ce.Attack(player, masterMonster)
+				if res.MonsterDefeated {
+					equippedWins++
+					break
+				}
+				if res.PlayerDefeated {
+					break
+				}
+			}
+		}
+
+		equippedWinRate := float64(equippedWins) / float64(iterations)
+
+		// 2. Simulação com jogador desarmado/sem equipamento
+		unequippedWins := 0
+		for i := 0; i < iterations; i++ {
+			rng := rand.New(rand.NewSource(int64(targetLevel*20000 + i)))
+			ce := engine.NewCombatEngine(rng)
+
+			player := &engine.Player{
+				Username:    "HeroBare",
+				Health:      baseHP,
+				MaxHealth:   baseHP,
+				BaseAttack:  baseAtk,
+				BaseDefense: baseDef,
+				Weapon:      engine.Item{PowerBonus: 0},
+				Armor:       engine.Item{PowerBonus: 0},
+			}
+
+			masterMonster := &engine.Monster{
+				Name:      master.Name,
+				Health:    master.Health,
+				MaxHealth: master.MaxHealth,
+				Attack:    master.Attack,
+				Defense:   master.Defense,
+			}
+
+			for player.IsAlive() && masterMonster.IsAlive() {
+				res := ce.Attack(player, masterMonster)
+				if res.MonsterDefeated {
+					unequippedWins++
+					break
+				}
+				if res.PlayerDefeated {
+					break
+				}
+			}
+		}
+
+		unequippedWinRate := float64(unequippedWins) / float64(iterations)
+
+		if equippedWinRate < 0.65 || equippedWinRate > 0.85 {
+			t.Errorf("Nível %d (%s): taxa de vitória equipado fora do intervalo [0.65, 0.85]: %.3f",
+				targetLevel, master.Name, equippedWinRate)
+		}
+
+		if unequippedWinRate >= 0.35 {
+			t.Errorf("Nível %d (%s): taxa de vitória desarmado deve ser < 0.35, obtido: %.3f",
+				targetLevel, master.Name, unequippedWinRate)
+		}
 	}
 }
 

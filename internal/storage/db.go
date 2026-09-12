@@ -127,6 +127,31 @@ func (d *DB) migrate() error {
 		}
 	}
 
+	if userVersion < 3 {
+		var tableExists int
+		err := d.QueryRow("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='players'").Scan(&tableExists)
+		if err != nil {
+			return fmt.Errorf("falha ao verificar existência da tabela players: %w", err)
+		}
+
+		if tableExists > 0 {
+			var columnExists int
+			err := d.QueryRow("SELECT COUNT(*) FROM pragma_table_info('players') WHERE name='master_fought_today'").Scan(&columnExists)
+			if err != nil {
+				return fmt.Errorf("falha ao verificar coluna master_fought_today: %w", err)
+			}
+			if columnExists == 0 {
+				if _, err := d.Exec("ALTER TABLE players ADD COLUMN master_fought_today INTEGER NOT NULL DEFAULT 0;"); err != nil {
+					return fmt.Errorf("falha ao adicionar coluna master_fought_today: %w", err)
+				}
+			}
+		}
+
+		if _, err := d.Exec("PRAGMA user_version = 3;"); err != nil {
+			return fmt.Errorf("falha ao atualizar user_version: %w", err)
+		}
+	}
+
 	schema := `
 	CREATE TABLE IF NOT EXISTS players (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -145,6 +170,7 @@ func (d *DB) migrate() error {
 		potions_count INTEGER NOT NULL DEFAULT 1,
 		forest_fights INTEGER NOT NULL DEFAULT 15,
 		dragon_kills INTEGER NOT NULL DEFAULT 0,
+		master_fought_today INTEGER NOT NULL DEFAULT 0,
 		last_login_day TEXT NOT NULL DEFAULT '',
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP

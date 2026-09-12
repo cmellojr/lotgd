@@ -26,11 +26,12 @@ type Player struct {
 	Weapon       Item      `json:"weapon"`
 	Armor        Item      `json:"armor"`
 	PotionsCount int       `json:"potions_count"`
-	ForestFights int       `json:"forest_fights"`
-	DragonKills  int       `json:"dragon_kills"`
-	LastLoginDay string    `json:"last_login_day"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ForestFights      int       `json:"forest_fights"`
+	DragonKills       int       `json:"dragon_kills"`
+	MasterFoughtToday bool      `json:"master_fought_today"`
+	LastLoginDay      string    `json:"last_login_day"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 }
 
 // TotalAttack calcula o poder de ataque total do jogador (Ataque Base + Bônus da Arma equipada).
@@ -84,24 +85,25 @@ func NewPlayerFromStorage(sp storage.Player) *Player {
 	}
 
 	return &Player{
-		ID:           sp.ID,
-		Username:     sp.Username,
-		Level:        sp.Level,
-		Experience:   sp.Experience,
-		Gold:         sp.Gold,
-		BankGold:     sp.BankGold,
-		Health:       sp.Health,
-		MaxHealth:    sp.MaxHealth,
-		BaseAttack:   sp.Attack,
-		BaseDefense:  sp.Defense,
-		Weapon:       weapon,
-		Armor:        armor,
-		PotionsCount: sp.PotionsCount,
-		ForestFights: sp.ForestFights,
-		DragonKills:  sp.DragonKills,
-		LastLoginDay: sp.LastLoginDay,
-		CreatedAt:    sp.CreatedAt,
-		UpdatedAt:    sp.UpdatedAt,
+		ID:                sp.ID,
+		Username:          sp.Username,
+		Level:             sp.Level,
+		Experience:        sp.Experience,
+		Gold:              sp.Gold,
+		BankGold:          sp.BankGold,
+		Health:            sp.Health,
+		MaxHealth:         sp.MaxHealth,
+		BaseAttack:        sp.Attack,
+		BaseDefense:       sp.Defense,
+		Weapon:            weapon,
+		Armor:             armor,
+		PotionsCount:      sp.PotionsCount,
+		ForestFights:      sp.ForestFights,
+		DragonKills:       sp.DragonKills,
+		MasterFoughtToday: sp.MasterFoughtToday,
+		LastLoginDay:      sp.LastLoginDay,
+		CreatedAt:         sp.CreatedAt,
+		UpdatedAt:         sp.UpdatedAt,
 	}
 }
 
@@ -112,23 +114,24 @@ func (p *Player) ToStorage() storage.Player {
 	now := time.Now().UTC()
 	p.UpdatedAt = now
 	return storage.Player{
-		ID:           p.ID,
-		Username:     p.Username,
-		Level:        p.Level,
-		Experience:   p.Experience,
-		Gold:         p.Gold,
-		BankGold:     p.BankGold,
-		Health:       p.Health,
-		MaxHealth:    p.MaxHealth,
-		Attack:       p.BaseAttack,
-		Defense:      p.BaseDefense,
-		WeaponID:     string(p.Weapon.ID),
-		ArmorID:      string(p.Armor.ID),
-		PotionsCount: p.PotionsCount,
-		ForestFights: p.ForestFights,
-		DragonKills:  p.DragonKills,
-		LastLoginDay: p.LastLoginDay,
-		CreatedAt:    p.CreatedAt,
-		UpdatedAt:    now,
+		ID:                p.ID,
+		Username:          p.Username,
+		Level:             p.Level,
+		Experience:        p.Experience,
+		Gold:              p.Gold,
+		BankGold:          p.BankGold,
+		Health:            p.Health,
+		MaxHealth:         p.MaxHealth,
+		Attack:            p.BaseAttack,
+		Defense:           p.BaseDefense,
+		WeaponID:          string(p.Weapon.ID),
+		ArmorID:           string(p.Armor.ID),
+		PotionsCount:      p.PotionsCount,
+		ForestFights:      p.ForestFights,
+		DragonKills:       p.DragonKills,
+		MasterFoughtToday: p.MasterFoughtToday,
+		LastLoginDay:      p.LastLoginDay,
+		CreatedAt:         p.CreatedAt,
+		UpdatedAt:         now,
 	}
 }

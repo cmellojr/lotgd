@@ -14,6 +14,7 @@ e este projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
   - **ADR-0003**: Persistência com SQLite puro em Go (CGO-free), modo WAL e transações ACID.
   - **ADR-0004**: Terminal UI com Bubble Tea e servidor SSH multi-usuário com Wish.
   - **ADR-0005**: Camada centralizada de localização (i18n) em PT-BR.
+  - **ADR-0006**: Modelo de Balanceamento Econômico e Progressão por Combate com Mestres (LORD 1989), estabelecendo a curva de 12 níveis de experiência, combate de promoção por turnos na Guilda sem penalidade de morte e dissociação entre ouro e avanço de nível (#35).
 - Suíte de testes unitários para a barra de status e estilos ANSI em `internal/ui`.
 - Mecanismo de auto-save do estado do jogador no encerramento do programa e ao desconectar da sessão SSH (`b14be93`).
 - Suporte a navegação Vim (`j`/`k`) e atalhos por abas na Ferraria (`ScreenSmith`) (`c6a6334`).

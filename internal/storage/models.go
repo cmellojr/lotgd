@@ -23,11 +23,12 @@ type Player struct {
 	WeaponID     string    `json:"weapon_id"`
 	ArmorID      string    `json:"armor_id"`
 	PotionsCount int       `json:"potions_count"`
-	ForestFights int       `json:"forest_fights"`
-	DragonKills  int       `json:"dragon_kills"`
-	LastLoginDay string    `json:"last_login_day"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ForestFights      int       `json:"forest_fights"`
+	DragonKills       int       `json:"dragon_kills"`
+	MasterFoughtToday bool      `json:"master_fought_today"`
+	LastLoginDay      string    `json:"last_login_day"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 }
 
 // VillageState armazena os dados globais diários do vilarejo, como o status do Dragão do Dia e o herói vitorioso.
