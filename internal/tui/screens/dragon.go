@@ -185,8 +185,8 @@ func (s *DragonScreen) startDragonFight() (tea.Model, tea.Cmd) {
 		return s, nil
 	}
 
-	if s.player.Level < 5 {
-		s.appendLog("Seu nível é muito baixo! Treine na guilda até pelo menos o Nível 5 antes de desafiar o Dragão.")
+	if s.player.Level < 12 {
+		s.appendLog("Seu nível é muito baixo! Treine na guilda até vencer o Mestre Turgon no Nível 12 antes de desafiar o Dragão.")
 		return s, nil
 	}
 
