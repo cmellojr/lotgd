@@ -1,9 +1,9 @@
 # ADR-0006: Modelo de Balanceamento Econômico e Progressão por Combate com Mestres
 
 - Status: Approved
-- Date: 2026-09-09
-- Author(s): Equipe de Desenvolvimento
-- Deciders: Mantenedores do The Legend of the Go Dragon
+- Date: 2026-09-12
+- Author(s): Carlos Mello Jr
+- Deciders: Carlos Mello Jr
 - Related Issues: #35
 
 ## 1. Contexto e Fundamentação Histórica
