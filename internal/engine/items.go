@@ -1,6 +1,10 @@
 package engine
 
-import "lotgd/internal/i18n"
+import (
+	"math/rand"
+
+	"lotgd/internal/i18n"
+)
 
 // ItemType categoriza os tipos de equipamentos e consumíveis no RPG.
 //
@@ -156,6 +160,23 @@ func FindWeapon(id i18n.ItemID) (Item, bool) {
 		}
 	}
 	return Item{}, false
+}
+
+// CalculateTradeInQuote calcula uma oferta de recompra flutuante para um equipamento
+// baseando-se em uma faixa percentual de 40% a 80% do valor de catálogo (ADR-0007 Opção D).
+//
+// Didática Go: O parâmetro `rng` permite injeção de dependência do gerador aleatório (`*rand.Rand`),
+// viabilizando testes unitários determinísticos com seed estática.
+func CalculateTradeInQuote(item Item, rng *rand.Rand) int {
+	if item.Value <= 0 {
+		return 0
+	}
+	percent := 40 + rng.Intn(41)
+	quote := (item.Value * percent) / 100
+	if quote < 1 {
+		return 1
+	}
+	return quote
 }
 
 // FindArmor busca uma armadura no catálogo pelo seu identificador único.

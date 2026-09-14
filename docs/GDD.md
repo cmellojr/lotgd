@@ -72,7 +72,7 @@ A progressão do herói do Nível 1 ao Nível 12 ocorre através de desafios de 
 | **Login / Criação** | `ScreenLogin` | Digitar nome/senha, `[Enter]` confirma, `[Tab]` alterna |
 | **Praça do Vilarejo** | `ScreenTown` | `[F]` Floresta, `[T]` Taverna, `[C]` Capela, `[M]` Ferraria, `[G]` Guilda, `[D]` Dragão, `[S]` Status, `[Q]` Sair |
 | **Floresta Sombria** | `ScreenForest` | `[P]` Procurar monstro, `[A]` Atacar, `[F]` Fugir, `[V]` Voltar à vila |
-| **Ferraria (Torin)** | `ScreenSmith` | `[1..12]` Comprar Armas, `[1..12]` Comprar Armaduras |
+| **Ferraria (Torin)** | `ScreenSmith` | `[1..3/Tab]` Categorias, `[Enter]` Comprar/Trocar, `[V]`ender |
 | **Capela (Anselmo)** | `ScreenChapel` | `[C]` Curar ferimentos, `[B]` Pedir bênção |
 | **Taverna (Rosalinda)**| `ScreenTavern` | `[O]` Ouvir fofocas, `[F]` Flertar com Cassandra |
 | **Guilda (Turgon)** | `ScreenGuild` | `[D]` Desafiar Mestre de Nível (*Turgon's Warrior Training*) |

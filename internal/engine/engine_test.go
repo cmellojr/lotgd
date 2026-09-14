@@ -476,6 +476,26 @@ func TestTurnManager_RejectsExhaustedFights(t *testing.T) {
 	}
 }
 
+func TestCalculateTradeInQuote(t *testing.T) {
+	// Item sem valor de compra (ex: Pedaço de Pau ou Roupas Simples)
+	zeroItem := engine.Item{Value: 0}
+	rng := rand.New(rand.NewSource(42))
+	if quote := engine.CalculateTradeInQuote(zeroItem, rng); quote != 0 {
+		t.Fatalf("esperado 0 para item sem valor de catálogo, obtido %d", quote)
+	}
+
+	// Item com valor de 1000 moedas
+	valuableItem := engine.Item{Value: 1000}
+	for i := 0; i < 100; i++ {
+		quote := engine.CalculateTradeInQuote(valuableItem, rng)
+		minVal := 400 // 40%
+		maxVal := 800 // 80%
+		if quote < minVal || quote > maxVal {
+			t.Fatalf("oferta %d fora da faixa [%d, %d] (40%% a 80%%)", quote, minVal, maxVal)
+		}
+	}
+}
+
 func TestPlayerStorageConversion(t *testing.T) {
 	sp := storage.Player{
 		ID:           1,
