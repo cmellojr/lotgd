@@ -52,7 +52,7 @@
   - `forest.go`: Exploração da Floresta Sombria e interface de combate por turnos.
   - `tavern.go`: Taverna da Dona Rosalinda (fofocas, flerte com Cassandra; duelos PvP assíncronos e Hall da Fama: Não implementado).
   - `chapel.go`: Capela do Frei Anselmo (cura de HP e bênçãos).
-  - `smith.go`: Ferraria do Mestre Torin (compra de equipamentos com 12 Tiers de armas e armaduras).
+  - `smith.go`: Ferraria do Mestre Torin (compra, troca com crédito e venda de equipamentos).
   - `guild.go`: Guilda & *Turgon's Warrior Training* (desafio de combate contra Mestre de Nível, limite de 1 tentativa/dia).
   - `dragon.go`: Covil do Dragão (o grande confronto final, requer Nível 12).
   - `game_over.go`: Tela de morte com penalidades e ressurreição na capela.

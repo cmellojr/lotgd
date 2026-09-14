@@ -2,7 +2,9 @@ package screens
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
+	"time"
 
 	"lotgd/internal/engine"
 	"lotgd/internal/i18n"
@@ -27,6 +29,7 @@ const (
 type SmithScreen struct {
 	db      *storage.DB
 	player  *engine.Player
+	rng     *rand.Rand
 	tab     smithTab
 	cursor  int
 	infoMsg string
@@ -39,10 +42,16 @@ func NewSmithScreen(db *storage.DB, player *engine.Player) *SmithScreen {
 	return &SmithScreen{
 		db:      db,
 		player:  player,
+		rng:     rand.New(rand.NewSource(time.Now().UnixNano())),
 		tab:     smithTabWeapons,
 		cursor:  0,
 		infoMsg: "Mestre Torin martela uma lâmina incandescente: 'Procurando aço de qualidade, forasteiro?'",
 	}
+}
+
+// SetRNG possibilita a injeção de dependência de gerador aleatório determinístico nos testes.
+func (s *SmithScreen) SetRNG(rng *rand.Rand) {
+	s.rng = rng
 }
 
 // Init inicializa a tela do ferreiro.
@@ -94,11 +103,13 @@ func (s *SmithScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		k := strings.ToUpper(msg.String())
 
 		switch k {
-		case "V", "ESC":
+		case "ESC", "S":
 			SavePlayer(s.db, s.player)
 			return s, func() tea.Msg {
 				return ui.ChangeScreenMsg{Screen: ui.ScreenTown}
 			}
+		case "V":
+			return s.handleSale()
 		case "TAB", "RIGHT":
 			s.tab = (s.tab + 1) % 3
 			s.cursor = 0
@@ -131,6 +142,39 @@ func (s *SmithScreen) getCurrentCatalogLen() int {
 	return 0
 }
 
+func (s *SmithScreen) handleSale() (tea.Model, tea.Cmd) {
+	switch s.tab {
+	case smithTabWeapons:
+		if s.player.Weapon.Value <= 0 {
+			s.infoMsg = i18n.GetUIText(i18n.UISmithNoItemToSell)
+			return s, nil
+		}
+		quote := engine.CalculateTradeInQuote(s.player.Weapon, s.rng)
+		weaponName := i18n.GetItemName(s.player.Weapon.ID)
+		s.player.Gold += quote
+		s.player.Weapon = engine.WeaponsCatalog[0]
+		SavePlayer(s.db, s.player)
+		s.infoMsg = fmt.Sprintf("Mestre Torin avaliou e comprou sua %s por %d moedas de ouro!", weaponName, quote)
+
+	case smithTabArmors:
+		if s.player.Armor.Value <= 0 {
+			s.infoMsg = i18n.GetUIText(i18n.UISmithNoItemToSell)
+			return s, nil
+		}
+		quote := engine.CalculateTradeInQuote(s.player.Armor, s.rng)
+		armorName := i18n.GetItemName(s.player.Armor.ID)
+		s.player.Gold += quote
+		s.player.Armor = engine.ArmorsCatalog[0]
+		SavePlayer(s.db, s.player)
+		s.infoMsg = fmt.Sprintf("Mestre Torin avaliou e comprou sua %s por %d moedas de ouro!", armorName, quote)
+
+	case smithTabPotions:
+		s.infoMsg = "Mestre Torin não aceita a devolução de poções abertas ou consumidas."
+	}
+
+	return s, nil
+}
+
 func (s *SmithScreen) handlePurchase() (tea.Model, tea.Cmd) {
 	switch s.tab {
 	case smithTabWeapons:
@@ -139,15 +183,37 @@ func (s *SmithScreen) handlePurchase() (tea.Model, tea.Cmd) {
 			s.infoMsg = "Você já está empunhando esta arma."
 			return s, nil
 		}
-		if s.player.Gold < weapon.Value {
-			s.infoMsg = fmt.Sprintf("Ouro insuficiente! %s custa %d moedas.", i18n.GetItemName(weapon.ID), weapon.Value)
+
+		tradeInCredit := 0
+		equippedName := ""
+		if s.player.Weapon.Value > 0 {
+			tradeInCredit = engine.CalculateTradeInQuote(s.player.Weapon, s.rng)
+			equippedName = i18n.GetItemName(s.player.Weapon.ID)
+		}
+
+		netCost := weapon.Value - tradeInCredit
+		if netCost < 0 {
+			netCost = 0
+		}
+
+		if s.player.Gold < netCost {
+			if tradeInCredit > 0 {
+				s.infoMsg = fmt.Sprintf("Ouro insuficiente! Mesmo com o crédito de %d moedas pela sua %s, %s custa %d moedas líquidas.", tradeInCredit, equippedName, i18n.GetItemName(weapon.ID), netCost)
+			} else {
+				s.infoMsg = fmt.Sprintf("Ouro insuficiente! %s custa %d moedas.", i18n.GetItemName(weapon.ID), weapon.Value)
+			}
 			return s, nil
 		}
 
-		s.player.Gold -= weapon.Value
+		s.player.Gold -= netCost
 		s.player.Weapon = weapon
 		SavePlayer(s.db, s.player)
-		s.infoMsg = fmt.Sprintf("Você comprou e equipou: %s (+%d ATK)!", i18n.GetItemName(weapon.ID), weapon.PowerBonus)
+
+		if tradeInCredit > 0 {
+			s.infoMsg = fmt.Sprintf("Mestre Torin deu %d moedas de crédito pela sua %s! Você comprou e equipou: %s (+%d ATK) por %d moedas líquidas.", tradeInCredit, equippedName, i18n.GetItemName(weapon.ID), weapon.PowerBonus, netCost)
+		} else {
+			s.infoMsg = fmt.Sprintf("Você comprou e equipou: %s (+%d ATK)!", i18n.GetItemName(weapon.ID), weapon.PowerBonus)
+		}
 
 	case smithTabArmors:
 		armor := engine.ArmorsCatalog[s.cursor]
@@ -155,15 +221,37 @@ func (s *SmithScreen) handlePurchase() (tea.Model, tea.Cmd) {
 			s.infoMsg = "Você já está vestindo esta armadura."
 			return s, nil
 		}
-		if s.player.Gold < armor.Value {
-			s.infoMsg = fmt.Sprintf("Ouro insuficiente! %s custa %d moedas.", i18n.GetItemName(armor.ID), armor.Value)
+
+		tradeInCredit := 0
+		equippedName := ""
+		if s.player.Armor.Value > 0 {
+			tradeInCredit = engine.CalculateTradeInQuote(s.player.Armor, s.rng)
+			equippedName = i18n.GetItemName(s.player.Armor.ID)
+		}
+
+		netCost := armor.Value - tradeInCredit
+		if netCost < 0 {
+			netCost = 0
+		}
+
+		if s.player.Gold < netCost {
+			if tradeInCredit > 0 {
+				s.infoMsg = fmt.Sprintf("Ouro insuficiente! Mesmo com o crédito de %d moedas pela sua %s, %s custa %d moedas líquidas.", tradeInCredit, equippedName, i18n.GetItemName(armor.ID), netCost)
+			} else {
+				s.infoMsg = fmt.Sprintf("Ouro insuficiente! %s custa %d moedas.", i18n.GetItemName(armor.ID), armor.Value)
+			}
 			return s, nil
 		}
 
-		s.player.Gold -= armor.Value
+		s.player.Gold -= netCost
 		s.player.Armor = armor
 		SavePlayer(s.db, s.player)
-		s.infoMsg = fmt.Sprintf("Você comprou e equipou: %s (+%d DEF)!", i18n.GetItemName(armor.ID), armor.PowerBonus)
+
+		if tradeInCredit > 0 {
+			s.infoMsg = fmt.Sprintf("Mestre Torin deu %d moedas de crédito pela sua %s! Você comprou e equipou: %s (+%d DEF) por %d moedas líquidas.", tradeInCredit, equippedName, i18n.GetItemName(armor.ID), armor.PowerBonus, netCost)
+		} else {
+			s.infoMsg = fmt.Sprintf("Você comprou e equipou: %s (+%d DEF)!", i18n.GetItemName(armor.ID), armor.PowerBonus)
+		}
 
 	case smithTabPotions:
 		potion := engine.PotionsCatalog[s.cursor]
@@ -263,7 +351,7 @@ func (s *SmithScreen) View() string {
 	}
 
 	b.WriteString(ui.ContentBoxStyle.Width(76).Render(content.String()))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render("[1-3/Tab] Categorias • [↑/↓] Selecionar • [Enter] Comprar • [V] Voltar"))
+	b.WriteString("\n" + ui.HelpFooterStyle.Render("[1-3/Tab] Categorias • [↑/↓] Selecionar • [Enter] Comprar/Trocar • [V]ender • [ESC] Sair"))
 
 	return ui.AppStyle.Render(b.String())
 }

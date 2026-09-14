@@ -69,7 +69,8 @@ var DragonTitlesPTBR = []string{
 
 // UITextsPTBR mapeia as chaves de interface genéricas para suas traduções em PT-BR.
 var UITextsPTBR = map[UIKey]string{
-	UIMaxLevel: "(máx)",
+	UIMaxLevel:          "(máx)",
+	UISmithNoItemToSell: "Você não possui nenhum equipamento equipado nesta categoria para vender.",
 }
 
 // ItemNamesPTBR mapeia os IDs de itens e equipamentos para seus nomes formatados em PT-BR.

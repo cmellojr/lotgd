@@ -92,5 +92,6 @@ const (
 type UIKey string
 
 const (
-	UIMaxLevel UIKey = "max_level"
+	UIMaxLevel          UIKey = "max_level"
+	UISmithNoItemToSell UIKey = "smith_no_item_to_sell"
 )
