@@ -1,6 +1,6 @@
 # ADR-0007: Add Equipment Sale and Trade-In Credit at the Smith
 
-- Status: Proposed
+- Status: Approved
 - Date: 2026-09-14
 - Author(s): Carlos Mello Jr.
 - Deciders: Carlos Mello Jr.
@@ -26,7 +26,7 @@ A adição desses mecanismos trata-se de um ajuste de fidelidade às regras do j
 
 ## 2. Decision
 
-Esta decisão avalia quatro alternativas para o modelo de venda e crédito de troca na Ferraria. O status desta ADR permanece como **Proposed**, pois a decisão final entre as opções cabe ao mantenedor.
+Esta decisão avalia quatro alternativas para o modelo de venda e crédito de troca na Ferraria, tendo sido aprovada a **Opção D** (Recompra com valor aleatório e opção de recusa).
 
 ### Alternativas Consideradas
 

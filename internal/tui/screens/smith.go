@@ -27,14 +27,17 @@ const (
 // Didática TEA: O `SmithScreen` alterna entre abas (`smithTabWeapons`, `smithTabArmors`, `smithTabPotions`),
 // exibindo os catálogos estáticos do pacote `engine`, validando moedas do jogador e equipando novos itens.
 type SmithScreen struct {
-	db      *storage.DB
-	player  *engine.Player
-	rng     *rand.Rand
-	tab     smithTab
-	cursor  int
-	infoMsg string
-	width   int
-	height  int
+	db             *storage.DB
+	player         *engine.Player
+	rng            *rand.Rand
+	tab            smithTab
+	cursor         int
+	infoMsg        string
+	confirmingSale bool
+	pendingQuote   int
+	pendingItem    engine.Item
+	width          int
+	height         int
 }
 
 // NewSmithScreen inicializa a loja da ferraria com mensagens e aba padrão.
@@ -74,6 +77,21 @@ func (s *SmithScreen) SetSize(w, h int) {
 func (s *SmithScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		k := strings.ToUpper(msg.String())
+
+		if s.confirmingSale {
+			switch k {
+			case "S", "Y", "A", "ENTER", "C":
+				return s.handleConfirmSale(true)
+			case "N", "R", "ESC":
+				return s.handleConfirmSale(false)
+			case "V":
+				return s.handleSale()
+			default:
+				return s.handleConfirmSale(false)
+			}
+		}
+
 		switch msg.String() {
 		case "1":
 			s.tab = smithTabWeapons
@@ -99,8 +117,6 @@ func (s *SmithScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return s, nil
 		}
-
-		k := strings.ToUpper(msg.String())
 
 		switch k {
 		case "ESC", "S":
@@ -143,35 +159,54 @@ func (s *SmithScreen) getCurrentCatalogLen() int {
 }
 
 func (s *SmithScreen) handleSale() (tea.Model, tea.Cmd) {
+	var item engine.Item
 	switch s.tab {
 	case smithTabWeapons:
-		if s.player.Weapon.Value <= 0 {
-			s.infoMsg = i18n.GetUIText(i18n.UISmithNoItemToSell)
-			return s, nil
-		}
-		quote := engine.CalculateTradeInQuote(s.player.Weapon, s.rng)
-		weaponName := i18n.GetItemName(s.player.Weapon.ID)
-		s.player.Gold += quote
-		s.player.Weapon = engine.WeaponsCatalog[0]
-		SavePlayer(s.db, s.player)
-		s.infoMsg = fmt.Sprintf("Mestre Torin avaliou e comprou sua %s por %d moedas de ouro!", weaponName, quote)
-
+		item = s.player.Weapon
 	case smithTabArmors:
-		if s.player.Armor.Value <= 0 {
-			s.infoMsg = i18n.GetUIText(i18n.UISmithNoItemToSell)
-			return s, nil
-		}
-		quote := engine.CalculateTradeInQuote(s.player.Armor, s.rng)
-		armorName := i18n.GetItemName(s.player.Armor.ID)
-		s.player.Gold += quote
-		s.player.Armor = engine.ArmorsCatalog[0]
-		SavePlayer(s.db, s.player)
-		s.infoMsg = fmt.Sprintf("Mestre Torin avaliou e comprou sua %s por %d moedas de ouro!", armorName, quote)
-
+		item = s.player.Armor
 	case smithTabPotions:
 		s.infoMsg = "Mestre Torin não aceita a devolução de poções abertas ou consumidas."
+		s.confirmingSale = false
+		return s, nil
 	}
 
+	if item.Value <= 0 {
+		s.infoMsg = i18n.GetUIText(i18n.UISmithNoItemToSell)
+		s.confirmingSale = false
+		return s, nil
+	}
+
+	quote := engine.CalculateTradeInQuote(item, s.rng)
+	s.pendingItem = item
+	s.pendingQuote = quote
+	s.confirmingSale = true
+
+	itemName := i18n.GetItemName(item.ID)
+	s.infoMsg = i18n.GetMessage(i18n.MsgSmithSellOfferPrompt, itemName, quote)
+	return s, nil
+}
+
+func (s *SmithScreen) handleConfirmSale(accept bool) (tea.Model, tea.Cmd) {
+	if !s.confirmingSale {
+		return s, nil
+	}
+	s.confirmingSale = false
+	itemName := i18n.GetItemName(s.pendingItem.ID)
+
+	if !accept {
+		s.infoMsg = i18n.GetMessage(i18n.MsgSmithSellOfferRejected, itemName)
+		return s, nil
+	}
+
+	s.player.Gold += s.pendingQuote
+	if s.pendingItem.Type == engine.ItemTypeWeapon {
+		s.player.Weapon = engine.WeaponsCatalog[0]
+	} else if s.pendingItem.Type == engine.ItemTypeArmor {
+		s.player.Armor = engine.ArmorsCatalog[0]
+	}
+	SavePlayer(s.db, s.player)
+	s.infoMsg = i18n.GetMessage(i18n.MsgSmithSellSuccess, itemName, s.pendingQuote)
 	return s, nil
 }
 
@@ -351,7 +386,11 @@ func (s *SmithScreen) View() string {
 	}
 
 	b.WriteString(ui.ContentBoxStyle.Width(76).Render(content.String()))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render(i18n.GetUIText(i18n.UIFooterSmith)))
+	if s.confirmingSale {
+		b.WriteString("\n" + ui.HelpFooterStyle.Render(i18n.GetUIText(i18n.UISmithFooterConfirm)))
+	} else {
+		b.WriteString("\n" + ui.HelpFooterStyle.Render(i18n.GetUIText(i18n.UIFooterSmith)))
+	}
 
 	return ui.AppStyle.Render(b.String())
 }
