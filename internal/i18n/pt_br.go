@@ -99,12 +99,12 @@ var UITextsPTBR = map[UIKey]string{
 	UIMaxLevel:    "(máx)",
 
 	// Rodapés e Dicas de Atalho
-	UIFooterNav:           "[↑/↓] Navegar  [Enter] Selecionar",
-	UIFooterNavBack:       "[↑/↓] Navegar  [Enter] Selecionar  [ESC] Voltar",
-	UIFooterCombat:        "[A] Atacar  [P] Usar Poção  [F] Fugir",
-	UIFooterLogin:         "[Tab] Alternar Campo  [Enter] Confirmar  [Ctrl+C] Sair",
-	UIFooterGameOver:      "[Enter/Espaço] Renascer na Capela",
-	UIFooterSmith:         "[1/2/3] Abas  [↑/↓] Navegar  [Enter] Comprar/Vender  [ESC] Voltar",
+	UIFooterNav:      "[↑/↓] Navegar  [Enter] Selecionar",
+	UIFooterNavBack:  "[↑/↓] Navegar  [Enter] Selecionar  [ESC] Voltar",
+	UIFooterCombat:   "[A] Atacar  [P] Usar Poção  [F] Fugir",
+	UIFooterLogin:    "[Tab] Alternar Campo  [Enter] Confirmar  [Ctrl+C] Sair",
+	UIFooterGameOver: "[Enter/Espaço] Renascer na Capela",
+	UIFooterSmith:    "[1/2/3] Abas  [↑/↓] Navegar  [Enter] Comprar/Vender  [ESC] Voltar",
 
 	// Títulos e Subtítulos
 	UITownTitle:        "Praça do Vilarejo",
@@ -203,10 +203,10 @@ var MessageTemplatesPTBR = map[MessageKey]string{
 	MsgCombatFullHealth:      "Sua vida já está cheia.",
 
 	// Ferraria
-	MsgSmithBuyPrompt:          "Comprar %s (%d Ouro)",
-	MsgSmithSellPrompt:         "Vender %s (%d Ouro - Recompra)",
-	MsgSmithBuySuccess:         "Você comprou %s por %d moedas de ouro!",
-	MsgSmithSellSuccess:        "Você vendeu %s por %d moedas de ouro!",
+	MsgSmithBuyPrompt:         "Comprar %s (%d Ouro)",
+	MsgSmithSellPrompt:        "Vender %s (%d Ouro - Recompra)",
+	MsgSmithBuySuccess:        "Você comprou %s por %d moedas de ouro!",
+	MsgSmithSellSuccess:       "Você vendeu %s por %d moedas de ouro!",
 	MsgSmithSellOfferPrompt:   "Mestre Torin examina sua %s: 'Te dou %d moedas de ouro por ela. Aceita?' [S]im / [N]ão",
 	MsgSmithSellOfferRejected: "Você recusou a oferta de Mestre Torin. A %s permanece equipada.",
 
