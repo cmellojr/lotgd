@@ -173,6 +173,7 @@ const (
 	UISmithAlreadyEquipped UIKey = "smith_already_equipped"
 	UISmithNotEnoughGold  UIKey = "smith_not_enough_gold"
 	UISmithNoItemToSell   UIKey = "smith_no_item_to_sell"
+	UISmithFooterConfirm  UIKey = "smith_footer_confirm"
 
 	// Covil do Dragão
 	UIDragonAlreadySlain UIKey = "dragon_already_slain"
@@ -227,10 +228,12 @@ const (
 	MsgCombatFullHealth      MessageKey = "combat_full_health"
 
 	// Ferraria
-	MsgSmithBuyPrompt  MessageKey = "smith_buy_prompt"
-	MsgSmithSellPrompt MessageKey = "smith_sell_prompt"
-	MsgSmithBuySuccess MessageKey = "smith_buy_success"
-	MsgSmithSellSuccess MessageKey = "smith_sell_success"
+	MsgSmithBuyPrompt          MessageKey = "smith_buy_prompt"
+	MsgSmithSellPrompt         MessageKey = "smith_sell_prompt"
+	MsgSmithBuySuccess        MessageKey = "smith_buy_success"
+	MsgSmithSellSuccess       MessageKey = "smith_sell_success"
+	MsgSmithSellOfferPrompt   MessageKey = "smith_sell_offer_prompt"
+	MsgSmithSellOfferRejected MessageKey = "smith_sell_offer_rejected"
 
 	// Dragão
 	MsgDragonReqNotMet MessageKey = "dragon_req_not_met"

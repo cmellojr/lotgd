@@ -73,20 +73,97 @@ func TestSmithScreen_SellEquippedItem(t *testing.T) {
 		t.Fatalf("esperado aviso de que não possui item para vender, obtido: %s", smith.infoMsg)
 	}
 
-	// 2. Equipar Montante de Aço (Value 600) e vender com 'V'
+	// 2. Equipar Montante de Aço (Value 600) e solicitar oferta com 'V'
 	player.Weapon = engine.WeaponsCatalog[3]
 	player.Gold = 100
 	goldBefore := player.Gold
 
 	smith.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'v'}})
 
+	// Deve apresentar oferta e solicitar confirmação sem alterar arma/ouro imediatamente
+	if !smith.confirmingSale {
+		t.Fatalf("esperado estado confirmingSale = true após pressionar V")
+	}
+	if !strings.Contains(smith.infoMsg, "Te dou") || !strings.Contains(smith.infoMsg, "Aceita?") {
+		t.Fatalf("mensagem de oferta esperada, obtido: %s", smith.infoMsg)
+	}
+
+	// Confirmar venda com 'S'
+	smith.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'s'}})
+
 	if player.Weapon.ID != engine.WeaponsCatalog[0].ID {
-		t.Fatalf("após a venda a arma deve retornar ao item inicial (Stick), obtido: %s", player.Weapon.ID)
+		t.Fatalf("após aceitar a venda a arma deve retornar ao item inicial (Stick), obtido: %s", player.Weapon.ID)
 	}
 	if player.Gold <= goldBefore {
 		t.Fatalf("ouro deveria ter aumentado após a venda, obtido: %d (antes: %d)", player.Gold, goldBefore)
 	}
-	if !strings.Contains(smith.infoMsg, "avaliou e comprou") {
+	if !strings.Contains(smith.infoMsg, "Você vendeu") {
 		t.Fatalf("mensagem de confirmação de venda esperada, obtido: %s", smith.infoMsg)
+	}
+}
+
+func TestSmithScreen_RejectSaleOffer(t *testing.T) {
+	db, player := createTestDBAndPlayer(t)
+	defer db.Close()
+
+	smith := NewSmithScreen(db, player)
+	smith.SetPlayer(player)
+	rng := rand.New(rand.NewSource(123))
+	smith.SetRNG(rng)
+
+	// Equipar Cota de Malha (Armaduras Index 2, Value 180) e ir para aba de armaduras
+	smith.tab = smithTabArmors
+	player.Armor = engine.ArmorsCatalog[2]
+	player.Gold = 50
+	initialGold := player.Gold
+
+	// Solicitar cotação de venda com 'V'
+	smith.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'v'}})
+
+	if !smith.confirmingSale {
+		t.Fatalf("esperado estado de confirmação ativo após V")
+	}
+
+	// Recusar oferta com 'N'
+	smith.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'n'}})
+
+	if smith.confirmingSale {
+		t.Fatalf("estado de confirmação deveria ter sido cancelado após N")
+	}
+	if player.Armor.ID != engine.ArmorsCatalog[2].ID {
+		t.Fatalf("armadura não deveria ter mudado após recusa, obtido: %s", player.Armor.ID)
+	}
+	if player.Gold != initialGold {
+		t.Fatalf("ouro não deveria mudar após recusa, esperado: %d, obtido: %d", initialGold, player.Gold)
+	}
+	if !strings.Contains(smith.infoMsg, "recusou a oferta") {
+		t.Fatalf("mensagem de recusa esperada, obtido: %s", smith.infoMsg)
+	}
+}
+
+func TestSmithScreen_RenegotiateSaleOffer(t *testing.T) {
+	db, player := createTestDBAndPlayer(t)
+	defer db.Close()
+
+	smith := NewSmithScreen(db, player)
+	smith.SetPlayer(player)
+	smith.SetRNG(rand.New(rand.NewSource(1)))
+
+	player.Weapon = engine.WeaponsCatalog[3] // Montante de Aço (Value 600)
+	smith.tab = smithTabWeapons
+
+	// Primeira oferta com V
+	smith.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'v'}})
+	firstQuote := smith.pendingQuote
+
+	// Pressionar V novamente para pedir nova cotação
+	smith.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'v'}})
+	secondQuote := smith.pendingQuote
+
+	if !smith.confirmingSale {
+		t.Fatalf("esperado continuar no estado confirmingSale")
+	}
+	if firstQuote == secondQuote {
+		t.Logf("Aviso: cotação consecutiva foi idêntica (%d), mas o fluxo executou sem erros", firstQuote)
 	}
 }

@@ -150,6 +150,7 @@ var UITextsPTBR = map[UIKey]string{
 	UISmithAlreadyEquipped: "Você já possui este equipamento equipado!",
 	UISmithNotEnoughGold:   "Você não possui ouro suficiente para esta compra!",
 	UISmithNoItemToSell:    "Você não possui nenhum equipamento equipado nesta categoria para vender.",
+	UISmithFooterConfirm:   "[S] Aceitar Oferta  [N] Recusar Oferta",
 
 	// Covil do Dragão
 	UIDragonAlreadySlain: "O Dragão do Dia já foi derrotado por outro herói! Volte amanhã para o novo surgimento da fera.",
@@ -202,10 +203,12 @@ var MessageTemplatesPTBR = map[MessageKey]string{
 	MsgCombatFullHealth:      "Sua vida já está cheia.",
 
 	// Ferraria
-	MsgSmithBuyPrompt:   "Comprar %s (%d Ouro)",
-	MsgSmithSellPrompt:  "Vender %s (%d Ouro - Recompra)",
-	MsgSmithBuySuccess:  "Você comprou %s por %d moedas de ouro!",
-	MsgSmithSellSuccess: "Você vendeu %s por %d moedas de ouro!",
+	MsgSmithBuyPrompt:          "Comprar %s (%d Ouro)",
+	MsgSmithSellPrompt:         "Vender %s (%d Ouro - Recompra)",
+	MsgSmithBuySuccess:         "Você comprou %s por %d moedas de ouro!",
+	MsgSmithSellSuccess:        "Você vendeu %s por %d moedas de ouro!",
+	MsgSmithSellOfferPrompt:   "Mestre Torin examina sua %s: 'Te dou %d moedas de ouro por ela. Aceita?' [S]im / [N]ão",
+	MsgSmithSellOfferRejected: "Você recusou a oferta de Mestre Torin. A %s permanece equipada.",
 
 	// Dragão
 	MsgDragonReqNotMet: "Sua coragem é grande, mas você precisa ter pelo menos Nível %d para entrar no Covil do Dragão!",
