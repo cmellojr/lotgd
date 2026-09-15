@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"lotgd/internal/engine"
+	"lotgd/internal/i18n"
 	"lotgd/internal/storage"
 	"lotgd/internal/ui"
 
@@ -72,7 +73,7 @@ func (s *GameOverScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (s *GameOverScreen) View() string {
 	var b strings.Builder
 
-	title := ui.TitleStyle.Render("☠  O DESTINO DE UM HERÓI CAÍDO  ☠")
+	title := ui.TitleStyle.Render("☠  " + i18n.GetUIText(i18n.UIGameOverTitle) + "  ☠")
 	b.WriteString(title + "\n\n")
 
 	var content strings.Builder
@@ -80,17 +81,17 @@ func (s *GameOverScreen) View() string {
 	content.WriteString("Salteadores e criaturas da floresta vasculharam seus pertences...\n\n")
 
 	content.WriteString("Penalidades da Derrota:\n")
-	content.WriteString(fmt.Sprintf(" • Ouro perdido na bolsa: %s moedas\n", ui.ErrorNoticeStyle.Render(fmt.Sprintf("%d", s.lostGold))))
-	content.WriteString(fmt.Sprintf(" • Experiência perdida: %s XP\n", ui.ErrorNoticeStyle.Render(fmt.Sprintf("%d", s.lostXP))))
+	content.WriteString(" • " + ui.ErrorNoticeStyle.Render(i18n.GetMessage(i18n.MsgGameOverLostGold, s.lostGold)) + "\n")
+	content.WriteString(" • " + ui.ErrorNoticeStyle.Render(i18n.GetMessage(i18n.MsgGameOverLostXP, s.lostXP)) + "\n")
 	if s.player != nil {
 		content.WriteString(fmt.Sprintf(" • Ouro protegido no cofre do banco: %s moedas\n\n", ui.StatusGold.Render(fmt.Sprintf("%d", s.player.BankGold))))
 	}
 
-	content.WriteString("O Frei Anselmo encontrou seu corpo à beira da estrada e o ressuscitou na Capela com 1 HP.\n\n")
+	content.WriteString(i18n.GetUIText(i18n.UIGameOverRespawnInfo) + "\n\n")
 	content.WriteString(ui.SelectedMenuItemStyle.Render("> Pressione [Enter] para despertar na Capela..."))
 
 	b.WriteString(ui.CombatBoxStyle.Width(76).Render(content.String()))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render("[Enter] Despertar na Capela"))
+	b.WriteString("\n" + ui.HelpFooterStyle.Render(i18n.GetUIText(i18n.UIFooterGameOver)))
 
 	return ui.AppStyle.Render(b.String())
 }

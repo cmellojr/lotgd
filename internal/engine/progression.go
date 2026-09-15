@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"lotgd/internal/i18n"
 )
 
 // LevelRequirement define os pré-requisitos (XP e Ouro) e as recompensas de atributos ao atingir um novo nível.
@@ -93,23 +94,23 @@ func NextLevelRequirement(currentLevel int) (LevelRequirement, bool) {
 func CanLevelUp(p *Player) (bool, string) {
 	req, ok := NextLevelRequirement(p.Level)
 	if !ok {
-		return false, "Você já alcançou o nível máximo de maestria!"
+		return false, i18n.GetUIText(i18n.UIGuildMaxLevelReached)
 	}
 
 	master, hasMaster := GetMasterForTargetLevel(req.Level)
 	if !hasMaster {
-		return false, "Mestre de Treinamento não encontrado para este nível."
+		return false, i18n.GetUIText(i18n.UIGuildMaxLevelReached)
 	}
 
 	if p.Experience < req.RequiredXP {
-		return false, fmt.Sprintf("Experiência insuficiente. Necessário: %d XP (Você tem: %d XP)", req.RequiredXP, p.Experience)
+		return false, i18n.GetMessage(i18n.MsgGuildNotEnoughXP, req.RequiredXP, p.Experience)
 	}
 
 	if p.MasterFoughtToday {
-		return false, fmt.Sprintf("Você já desafiou %s hoje! Apenas 1 tentativa por dia é permitida. Retorne no próximo alvorecer.", master.Name)
+		return false, i18n.GetMessage(i18n.MsgGuildAlreadyFoughtToday, master.Name)
 	}
 
-	return true, fmt.Sprintf("Pronto para desafiar %s pelo Nível %d!", master.Name, req.Level)
+	return true, i18n.GetMessage(i18n.MsgGuildChallengePrompt, master.Name, req.Level)
 }
 
 // LevelUp executa a promoção de nível na Guilda dos Aventureiros após vencer o combate contra o Mestre.

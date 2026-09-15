@@ -130,7 +130,7 @@ func (s *ForestScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (s *ForestScreen) startExploration() (tea.Model, tea.Cmd) {
 	if s.player.ForestFights <= 0 {
-		s.appendLog("Você está exausto e não possui mais turnos de luta hoje. Retorne à cidade!")
+		s.appendLog(i18n.GetUIText(i18n.UIForestNoFightsLeft))
 		return s, nil
 	}
 
@@ -232,8 +232,8 @@ func (s *ForestScreen) View() string {
 		content.WriteString("As árvores antigas sussurram enquanto a névoa fria cobre o chão de folhas.\n")
 		content.WriteString("Criaturas perigosas espreitam nas sombras à espera de aventureiros desavisados.\n\n")
 		content.WriteString(fmt.Sprintf("Lutas restantes hoje: %s\n\n", ui.StatusFights.Render(fmt.Sprintf("%d", s.player.ForestFights))))
-		content.WriteString(ui.SelectedMenuItemStyle.Render("> [P]rocurar Monstros na Mata") + "\n")
-		content.WriteString(ui.MenuItemStyle.Render("  [V]oltar para a Praça Central") + "\n")
+		content.WriteString(ui.SelectedMenuItemStyle.Render("> [P] "+i18n.GetUIText(i18n.UIForestMenuLookForFight)) + "\n")
+		content.WriteString(ui.MenuItemStyle.Render("  [V] "+i18n.GetUIText(i18n.UIForestMenuReturnTown)) + "\n")
 	} else {
 		if s.monster != nil {
 			mHPPercent := float64(s.monster.Health) / float64(s.monster.MaxHealth)
@@ -268,7 +268,7 @@ func (s *ForestScreen) View() string {
 	}
 
 	b.WriteString(ui.ContentBoxStyle.Width(76).Render(content.String()))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render("[A] Atacar • [F] Fugir • [P] Poção/Procurar • [V] Voltar à Praça"))
+	b.WriteString("\n" + ui.HelpFooterStyle.Render(i18n.GetUIText(i18n.UIFooterCombat)))
 
 	return ui.AppStyle.Render(b.String())
 }

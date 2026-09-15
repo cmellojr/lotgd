@@ -144,24 +144,23 @@ func (s *GuildScreen) selectCurrent() (tea.Model, tea.Cmd) {
 	case 0: // Desafiar Mestre de Nível
 		req, ok := engine.NextLevelRequirement(s.player.Level)
 		if !ok {
-			s.infoMsg = "Você já alcançou o nível máximo de maestria!"
+			s.infoMsg = i18n.GetUIText(i18n.UIGuildMaxLevelReached)
 			return s, nil
 		}
 
 		master, hasMaster := engine.GetMasterForTargetLevel(req.Level)
 		if !hasMaster {
-			s.infoMsg = "Mestre de Treinamento não encontrado para este nível."
+			s.infoMsg = i18n.GetUIText(i18n.UIGuildMaxLevelReached)
 			return s, nil
 		}
 
 		if s.player.Experience < req.RequiredXP {
-			s.infoMsg = fmt.Sprintf("Experiência insuficiente para desafiar %s. Necessário: %d XP (Você tem: %d XP)",
-				master.Name, req.RequiredXP, s.player.Experience)
+			s.infoMsg = i18n.GetMessage(i18n.MsgGuildNotEnoughXP, req.RequiredXP, s.player.Experience)
 			return s, nil
 		}
 
 		if s.player.MasterFoughtToday {
-			s.infoMsg = "Você já desafiou seu Mestre hoje! Apenas 1 tentativa por dia é permitida. Retorne amanhã para tentar novamente."
+			s.infoMsg = i18n.GetMessage(i18n.MsgGuildAlreadyFoughtToday, master.Name)
 			return s, nil
 		}
 
@@ -214,7 +213,7 @@ func (s *GuildScreen) handleAttack() (tea.Model, tea.Cmd) {
 		s.state = guildStateVictory
 		_ = engine.LevelUp(s.player)
 		SavePlayer(s.db, s.player)
-		s.appendLog(fmt.Sprintf("🏆 VITÓRIA! Você derrotou %s e foi promovido ao NÍVEL %d!", s.masterMonster.Name, s.player.Level))
+		s.appendLog(i18n.GetMessage(i18n.MsgGuildVictory, s.masterMonster.Name, s.player.Level))
 		s.appendLog("Pressione [Enter] para retornar ao hall da Guilda!")
 	} else if res.PlayerDefeated {
 		s.state = guildStateDefeat
@@ -331,7 +330,7 @@ func (s *GuildScreen) View() string {
 	}
 
 	b.WriteString(ui.ContentBoxStyle.Width(76).Render(content.String()))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render("[↑/↓] Selecionar • [Enter] Confirmar • [V] Voltar"))
+	b.WriteString("\n" + ui.HelpFooterStyle.Render(i18n.GetUIText(i18n.UIFooterNav)))
 
 	return ui.AppStyle.Render(b.String())
 }

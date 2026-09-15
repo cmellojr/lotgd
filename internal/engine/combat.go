@@ -94,9 +94,9 @@ func (ce *CombatEngine) Attack(player *Player, monster *Monster) TurnResult {
 
 		if monster.IsDragon {
 			player.DragonKills++
-			res.Message = fmt.Sprintf("VITÓRIA LENDÁRIA! Você desferiu o golpe fatal e derrotou %s!", monster.Name)
+			res.Message = i18n.GetMessage(i18n.MsgCombatPlayerWinDragon, monster.Name)
 		} else {
-			res.Message = fmt.Sprintf("Você derrotou %s e ganhou %d XP e %d moedas de ouro!", monster.Name, monster.XPReward, monster.GoldReward)
+			res.Message = i18n.GetMessage(i18n.MsgCombatPlayerWin, monster.Name, monster.XPReward, monster.GoldReward)
 		}
 		return res
 	}
@@ -110,7 +110,7 @@ func (ce *CombatEngine) Attack(player *Player, monster *Monster) TurnResult {
 	if player.Health <= 0 {
 		player.Health = 0
 		res.PlayerDefeated = true
-		res.Message = fmt.Sprintf("%s desferiu um golpe mortal! Você sucumbiu na escuridão...", monster.Name)
+		res.Message = i18n.GetMessage(i18n.MsgCombatPlayerDefeat, monster.Name)
 		return res
 	}
 
@@ -118,7 +118,7 @@ func (ce *CombatEngine) Attack(player *Player, monster *Monster) TurnResult {
 	if pCrit {
 		critMsg = " [GOLPE CRÍTICO!]"
 	}
-	res.Message = fmt.Sprintf("Você causou %d de dano%s. %s contra-atacou causando %d de dano.", pDmg, critMsg, monster.Name, mDmg)
+	res.Message = i18n.GetMessage(i18n.MsgCombatTurnRound, pDmg, critMsg, monster.Name, mDmg)
 	return res
 }
 
@@ -134,7 +134,7 @@ func (ce *CombatEngine) AttemptFlee(player *Player, monster *Monster) TurnResult
 
 	// Modificadores de chance de fuga de acordo com o tipo/afixo do monstro
 	fleeChance := 0.50
-	if monster.Prefix == "Covarde" {
+	if monster.Prefix == i18n.GetAffixName(i18n.AffixCowardly) {
 		fleeChance = 0.80
 	}
 
@@ -144,7 +144,7 @@ func (ce *CombatEngine) AttemptFlee(player *Player, monster *Monster) TurnResult
 
 	if ce.rng.Float64() < fleeChance {
 		res.FledSuccessfully = true
-		res.Message = fmt.Sprintf("Você conseguiu recuar estrategicamente para as sombras e escapar de %s!", monster.Name)
+		res.Message = i18n.GetMessage(i18n.MsgCombatFleeSuccess, monster.Name)
 		return res
 	}
 
@@ -157,11 +157,11 @@ func (ce *CombatEngine) AttemptFlee(player *Player, monster *Monster) TurnResult
 	if player.Health <= 0 {
 		player.Health = 0
 		res.PlayerDefeated = true
-		res.Message = fmt.Sprintf("Você tropeçou ao tentar fugir! %s aproveitou e desferiu um golpe letal!", monster.Name)
+		res.Message = i18n.GetMessage(i18n.MsgCombatFleeFailDefeat, monster.Name)
 		return res
 	}
 
-	res.Message = fmt.Sprintf("Falha ao fugir! %s bloqueou seu caminho e te atingiu causando %d de dano.", monster.Name, mDmg)
+	res.Message = i18n.GetMessage(i18n.MsgCombatFleeFail, monster.Name, mDmg)
 	return res
 }
 
@@ -171,11 +171,11 @@ func (ce *CombatEngine) AttemptFlee(player *Player, monster *Monster) TurnResult
 // (ex: sem poções na bolsa ou vida máxima já atingida), seguindo o padrão idiomático de Go.
 func (ce *CombatEngine) UsePotion(player *Player) (int, error) {
 	if player.PotionsCount <= 0 {
-		return 0, fmt.Errorf("você não possui poções na bolsa")
+		return 0, fmt.Errorf("%s", i18n.GetMessage(i18n.MsgCombatNoPotions))
 	}
 
 	if player.Health >= player.MaxHealth {
-		return 0, fmt.Errorf("sua vida já está cheia")
+		return 0, fmt.Errorf("%s", i18n.GetMessage(i18n.MsgCombatFullHealth))
 	}
 
 	potion, found := FindPotion(i18n.PotionHealth)

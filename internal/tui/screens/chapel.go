@@ -105,7 +105,7 @@ func (s *ChapelScreen) selectCurrent() (tea.Model, tea.Cmd) {
 	switch s.cursor {
 	case 0: // Cura completa
 		if s.player.Health >= s.player.MaxHealth {
-			s.infoMsg = "Frei Anselmo sorri: 'Você já goza de plena saúde, meu filho. Guarde seu ouro.'"
+			s.infoMsg = i18n.GetUIText(i18n.UIChapelFullHP)
 			return s, nil
 		}
 
@@ -116,14 +116,14 @@ func (s *ChapelScreen) selectCurrent() (tea.Model, tea.Cmd) {
 		}
 
 		if s.player.Gold < cost {
-			s.infoMsg = fmt.Sprintf("Você não tem ouro suficiente para o bálsamo sagrado. Custo: %d moedas (Você tem: %d)", cost, s.player.Gold)
+			s.infoMsg = i18n.GetUIText(i18n.UIChapelNotEnoughGold)
 			return s, nil
 		}
 
 		s.player.Gold -= cost
 		s.player.Health = s.player.MaxHealth
 		SavePlayer(s.db, s.player)
-		s.infoMsg = fmt.Sprintf("Frei Anselmo unge seus ferimentos com óleos sagrados. Vida restaurada completamente por %d moedas de ouro!", cost)
+		s.infoMsg = i18n.GetMessage(i18n.MsgHealSuccess, cost)
 
 	case 1: // Doação
 		if s.player.Gold < 10 {
@@ -177,7 +177,7 @@ func (s *ChapelScreen) View() string {
 	}
 
 	b.WriteString(ui.ContentBoxStyle.Width(76).Render(content.String()))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render("[↑/↓] Selecionar • [Enter] Confirmar • [V] Voltar à Praça"))
+	b.WriteString("\n" + ui.HelpFooterStyle.Render(i18n.GetUIText(i18n.UIFooterNav)))
 
 	return ui.AppStyle.Render(b.String())
 }

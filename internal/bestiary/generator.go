@@ -92,7 +92,7 @@ func (mg *MonsterGenerator) GenerateByTier(tier int) engine.Monster {
 
 	if mg.rng.Float64() < 0.50 {
 		affix := AvailableAffixes[mg.rng.Intn(len(AvailableAffixes))]
-		prefix = affix.NamePTBR
+		prefix = i18n.GetAffixName(affix.ID)
 		hp = int(float64(hp) * affix.HPMult)
 		atk = int(float64(atk) * affix.ATKMult)
 		def = int(float64(def) * affix.DEFMult)
