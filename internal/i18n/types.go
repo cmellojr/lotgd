@@ -122,32 +122,32 @@ const (
 	UIMaxLevel    UIKey = "max_level"
 
 	// Rodapés e Dicas de Atalho
-	UIFooterNav           UIKey = "footer_nav"
-	UIFooterNavBack       UIKey = "footer_nav_back"
-	UIFooterCombat        UIKey = "footer_combat"
-	UIFooterLogin         UIKey = "footer_login"
-	UIFooterGameOver      UIKey = "footer_game_over"
-	UIFooterSmith         UIKey = "footer_smith"
+	UIFooterNav      UIKey = "footer_nav"
+	UIFooterNavBack  UIKey = "footer_nav_back"
+	UIFooterCombat   UIKey = "footer_combat"
+	UIFooterLogin    UIKey = "footer_login"
+	UIFooterGameOver UIKey = "footer_game_over"
+	UIFooterSmith    UIKey = "footer_smith"
 
 	// Títulos e Subtítulos de Telas
-	UITownTitle       UIKey = "town_title"
-	UITownSubtitle    UIKey = "town_subtitle"
-	UIForestTitle     UIKey = "forest_title"
-	UIForestSubtitle  UIKey = "forest_subtitle"
-	UISmithTitle      UIKey = "smith_title"
-	UISmithSubtitle   UIKey = "smith_subtitle"
-	UIDragonTitle     UIKey = "dragon_title"
-	UIDragonSubtitle  UIKey = "dragon_subtitle"
-	UITavernTitle     UIKey = "tavern_title"
-	UITavernSubtitle  UIKey = "tavern_subtitle"
-	UIChapelTitle     UIKey = "chapel_title"
-	UIChapelSubtitle  UIKey = "chapel_subtitle"
-	UIGuildTitle      UIKey = "guild_title"
-	UIGuildSubtitle   UIKey = "guild_subtitle"
-	UIGameOverTitle   UIKey = "game_over_title"
+	UITownTitle        UIKey = "town_title"
+	UITownSubtitle     UIKey = "town_subtitle"
+	UIForestTitle      UIKey = "forest_title"
+	UIForestSubtitle   UIKey = "forest_subtitle"
+	UISmithTitle       UIKey = "smith_title"
+	UISmithSubtitle    UIKey = "smith_subtitle"
+	UIDragonTitle      UIKey = "dragon_title"
+	UIDragonSubtitle   UIKey = "dragon_subtitle"
+	UITavernTitle      UIKey = "tavern_title"
+	UITavernSubtitle   UIKey = "tavern_subtitle"
+	UIChapelTitle      UIKey = "chapel_title"
+	UIChapelSubtitle   UIKey = "chapel_subtitle"
+	UIGuildTitle       UIKey = "guild_title"
+	UIGuildSubtitle    UIKey = "guild_subtitle"
+	UIGameOverTitle    UIKey = "game_over_title"
 	UIGameOverSubtitle UIKey = "game_over_subtitle"
-	UILoginTitle      UIKey = "login_title"
-	UILoginSubtitle   UIKey = "login_subtitle"
+	UILoginTitle       UIKey = "login_title"
+	UILoginSubtitle    UIKey = "login_subtitle"
 
 	// Menus da Praça
 	UITownMenuForest       UIKey = "town_menu_forest"
@@ -167,29 +167,29 @@ const (
 	UIForestNoFightsLeft     UIKey = "forest_no_fights_left"
 
 	// Ferraria
-	UISmithTabWeapons     UIKey = "smith_tab_weapons"
-	UISmithTabArmors      UIKey = "smith_tab_armors"
-	UISmithTabPotions     UIKey = "smith_tab_potions"
+	UISmithTabWeapons      UIKey = "smith_tab_weapons"
+	UISmithTabArmors       UIKey = "smith_tab_armors"
+	UISmithTabPotions      UIKey = "smith_tab_potions"
 	UISmithAlreadyEquipped UIKey = "smith_already_equipped"
-	UISmithNotEnoughGold  UIKey = "smith_not_enough_gold"
-	UISmithNoItemToSell   UIKey = "smith_no_item_to_sell"
-	UISmithFooterConfirm  UIKey = "smith_footer_confirm"
+	UISmithNotEnoughGold   UIKey = "smith_not_enough_gold"
+	UISmithNoItemToSell    UIKey = "smith_no_item_to_sell"
+	UISmithFooterConfirm   UIKey = "smith_footer_confirm"
 
 	// Covil do Dragão
 	UIDragonAlreadySlain UIKey = "dragon_already_slain"
 
 	// Taverna
-	UITavernFlirt          UIKey = "tavern_flirt"
-	UITavernTalkRedKnight  UIKey = "tavern_talk_red_knight"
-	UITavernReturnTown     UIKey = "tavern_return_town"
-	UITavernFlirtLimit     UIKey = "tavern_flirt_limit"
-	UITavernFlirtSuccess   UIKey = "tavern_flirt_success"
-	UITavernRedKnightMsg   UIKey = "tavern_red_knight_msg"
+	UITavernFlirt         UIKey = "tavern_flirt"
+	UITavernTalkRedKnight UIKey = "tavern_talk_red_knight"
+	UITavernReturnTown    UIKey = "tavern_return_town"
+	UITavernFlirtLimit    UIKey = "tavern_flirt_limit"
+	UITavernFlirtSuccess  UIKey = "tavern_flirt_success"
+	UITavernRedKnightMsg  UIKey = "tavern_red_knight_msg"
 
 	// Capela
-	UIChapelFullHP         UIKey = "chapel_full_hp"
-	UIChapelNotEnoughGold  UIKey = "chapel_not_enough_gold"
-	UIChapelHealSuccess    UIKey = "chapel_heal_success"
+	UIChapelFullHP        UIKey = "chapel_full_hp"
+	UIChapelNotEnoughGold UIKey = "chapel_not_enough_gold"
+	UIChapelHealSuccess   UIKey = "chapel_heal_success"
 
 	// Guilda
 	UIGuildMaxLevelReached UIKey = "guild_max_level_reached"
@@ -198,10 +198,10 @@ const (
 	UIGameOverRespawnInfo UIKey = "game_over_respawn_info"
 
 	// Login
-	UILoginUsernameLabel   UIKey = "login_username_label"
-	UILoginPasswordLabel   UIKey = "login_password_label"
-	UILoginErrInvalidPass  UIKey = "login_err_invalid_pass"
-	UILoginErrUserExists   UIKey = "login_err_user_exists"
+	UILoginUsernameLabel  UIKey = "login_username_label"
+	UILoginPasswordLabel  UIKey = "login_password_label"
+	UILoginErrInvalidPass UIKey = "login_err_invalid_pass"
+	UILoginErrUserExists  UIKey = "login_err_user_exists"
 )
 
 // MessageKey representa chaves de mensagens parametrizadas e dinâmicas.
@@ -228,8 +228,8 @@ const (
 	MsgCombatFullHealth      MessageKey = "combat_full_health"
 
 	// Ferraria
-	MsgSmithBuyPrompt          MessageKey = "smith_buy_prompt"
-	MsgSmithSellPrompt         MessageKey = "smith_sell_prompt"
+	MsgSmithBuyPrompt         MessageKey = "smith_buy_prompt"
+	MsgSmithSellPrompt        MessageKey = "smith_sell_prompt"
 	MsgSmithBuySuccess        MessageKey = "smith_buy_success"
 	MsgSmithSellSuccess       MessageKey = "smith_sell_success"
 	MsgSmithSellOfferPrompt   MessageKey = "smith_sell_offer_prompt"
