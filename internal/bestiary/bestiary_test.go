@@ -91,22 +91,23 @@ func TestLevelOneWinRateVsFerozMonsters(t *testing.T) {
 		tpl := bestiary.CanonicalTemplates[chosenID]
 
 		ferozAffix := bestiary.AffixModifier{
-			NamePTBR: "Feroz", HPMult: 1.1, ATKMult: 1.15, DEFMult: 1.0, XPMult: 1.3, GoldMult: 1.2,
+			ID: i18n.AffixFerocious, HPMult: 1.1, ATKMult: 1.15, DEFMult: 1.0, XPMult: 1.3, GoldMult: 1.2,
 		}
 
 		hp := int(float64(tpl.BaseHP) * ferozAffix.HPMult)
 		atk := int(float64(tpl.BaseATK) * ferozAffix.ATKMult)
 		def := int(float64(tpl.BaseDEF) * ferozAffix.DEFMult)
 
+		prefixName := i18n.GetAffixName(ferozAffix.ID)
 		m := &engine.Monster{
 			ID:        chosenID,
-			Name:      "Feroz " + i18n.GetMonsterName(chosenID),
+			Name:      prefixName + " " + i18n.GetMonsterName(chosenID),
 			Tier:      1,
 			Health:    hp,
 			MaxHealth: hp,
 			Attack:    atk,
 			Defense:   def,
-			Prefix:    "Feroz",
+			Prefix:    prefixName,
 		}
 
 		// Simula o combate até a vitória ou derrota

@@ -23,24 +23,24 @@ type MonsterTemplate struct {
 // Didática Go: Os multiplicadores de ponto flutuante (`float64`) aplicam variações percentuais
 // sobre os atributos base da criatura no momento da geração estocástica.
 type AffixModifier struct {
-	NamePTBR string  `json:"name_pt_br"`
-	HPMult   float64 `json:"hp_mult"`
-	ATKMult  float64 `json:"atk_mult"`
-	DEFMult  float64 `json:"def_mult"`
-	XPMult   float64 `json:"xp_mult"`
-	GoldMult float64 `json:"gold_mult"`
+	ID       i18n.AffixID `json:"id"`
+	HPMult   float64      `json:"hp_mult"`
+	ATKMult  float64      `json:"atk_mult"`
+	DEFMult  float64      `json:"def_mult"`
+	XPMult   float64      `json:"xp_mult"`
+	GoldMult float64      `json:"gold_mult"`
 }
 
 // AvailableAffixes contém a lista de afixos procedurais que podem ser sorteados aleatoriamente ao gerar um monstro.
 var AvailableAffixes = []AffixModifier{
-	{NamePTBR: "Feroz", HPMult: 1.1, ATKMult: 1.15, DEFMult: 1.0, XPMult: 1.3, GoldMult: 1.2},
-	{NamePTBR: "Covarde", HPMult: 0.8, ATKMult: 0.8, DEFMult: 0.9, XPMult: 0.8, GoldMult: 1.1},
-	{NamePTBR: "Enfurecido", HPMult: 1.2, ATKMult: 1.25, DEFMult: 0.8, XPMult: 1.4, GoldMult: 1.2},
-	{NamePTBR: "Sortudo", HPMult: 1.0, ATKMult: 1.0, DEFMult: 1.0, XPMult: 1.1, GoldMult: 2.5},
-	{NamePTBR: "Faminto", HPMult: 1.1, ATKMult: 1.2, DEFMult: 1.0, XPMult: 1.2, GoldMult: 1.0},
-	{NamePTBR: "Preguiçoso", HPMult: 1.2, ATKMult: 0.7, DEFMult: 1.2, XPMult: 0.9, GoldMult: 0.9},
-	{NamePTBR: "Astuto", HPMult: 1.0, ATKMult: 1.2, DEFMult: 1.3, XPMult: 1.3, GoldMult: 1.4},
-	{NamePTBR: "Gigantesco", HPMult: 1.6, ATKMult: 1.3, DEFMult: 1.2, XPMult: 1.6, GoldMult: 1.5},
+	{ID: i18n.AffixFerocious, HPMult: 1.1, ATKMult: 1.15, DEFMult: 1.0, XPMult: 1.3, GoldMult: 1.2},
+	{ID: i18n.AffixCowardly, HPMult: 0.8, ATKMult: 0.8, DEFMult: 0.9, XPMult: 0.8, GoldMult: 1.1},
+	{ID: i18n.AffixEnraged, HPMult: 1.2, ATKMult: 1.25, DEFMult: 0.8, XPMult: 1.4, GoldMult: 1.2},
+	{ID: i18n.AffixLucky, HPMult: 1.0, ATKMult: 1.0, DEFMult: 1.0, XPMult: 1.1, GoldMult: 2.5},
+	{ID: i18n.AffixHungry, HPMult: 1.1, ATKMult: 1.2, DEFMult: 1.0, XPMult: 1.2, GoldMult: 1.0},
+	{ID: i18n.AffixLazy, HPMult: 1.2, ATKMult: 0.7, DEFMult: 1.2, XPMult: 0.9, GoldMult: 0.9},
+	{ID: i18n.AffixShrewd, HPMult: 1.0, ATKMult: 1.2, DEFMult: 1.3, XPMult: 1.3, GoldMult: 1.4},
+	{ID: i18n.AffixGigantic, HPMult: 1.6, ATKMult: 1.3, DEFMult: 1.2, XPMult: 1.6, GoldMult: 1.5},
 }
 
 // CanonicalTemplates mapeia cada `MonsterID` para o seu modelo canônico contendo atributos base.

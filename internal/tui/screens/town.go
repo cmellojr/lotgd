@@ -37,12 +37,12 @@ type TownScreen struct {
 // NewTownScreen instancia e configura o Hub da Praça Central do Vilarejo.
 func NewTownScreen(db *storage.DB, player *engine.Player) *TownScreen {
 	items := []townMenuItem{
-		{key: "F", label: "Floresta Sombria", target: ui.ScreenForest, description: "Procure monstros, lute por ouro e experiência."},
-		{key: "T", label: "Taverna da Dona Rosalinda", target: ui.ScreenTavern, description: "Ouça fofocas, converse com aventureiros e veja notícias."},
-		{key: "C", label: "Capela do Frei Anselmo", target: ui.ScreenChapel, description: "Cure seus ferimentos com o curandeiro do vilarejo."},
-		{key: "M", label: "Ferraria do Mestre Torin", target: ui.ScreenSmith, description: "Compre armas melhores, armaduras e poções de cura."},
-		{key: "G", label: "Guilda dos Aventureiros", target: ui.ScreenGuild, description: "Treine com o Mestre Tobias para subir de nível."},
-		{key: "D", label: "Covil do Dragão Ancestral", target: ui.ScreenDragon, description: "O confronto final! Requer nível 5 e coragem."},
+		{key: "F", label: i18n.GetLocationName(i18n.LocationForest), target: ui.ScreenForest, description: "Procure monstros, lute por ouro e experiência."},
+		{key: "T", label: i18n.GetLocationName(i18n.LocationTavern), target: ui.ScreenTavern, description: "Ouça fofocas, converse com aventureiros e veja notícias."},
+		{key: "C", label: i18n.GetLocationName(i18n.LocationChapel), target: ui.ScreenChapel, description: "Cure seus ferimentos com o curandeiro do vilarejo."},
+		{key: "M", label: i18n.GetLocationName(i18n.LocationSmith), target: ui.ScreenSmith, description: "Compre armas melhores, armaduras e poções de cura."},
+		{key: "G", label: i18n.GetLocationName(i18n.LocationGuild), target: ui.ScreenGuild, description: "Treine com os mestres para subir de nível."},
+		{key: "D", label: i18n.GetLocationName(i18n.LocationDragon), target: ui.ScreenDragon, description: "O confronto final! Requer nível 5 e coragem."},
 		{key: "B", label: "Banco do Vilarejo", target: "", description: "Deposite seu ouro para não perder ao morrer na floresta."},
 		{key: "S", label: "Salvar e Sair (Logout)", target: ui.ScreenLogin, description: "Encerra a sessão e guarda o progresso no templo."},
 	}
@@ -52,7 +52,7 @@ func NewTownScreen(db *storage.DB, player *engine.Player) *TownScreen {
 		player:  player,
 		cursor:  0,
 		items:   items,
-		infoMsg: "Bem-vindo à Praça Central. Escolha para onde deseja ir.",
+		infoMsg: i18n.GetUIText(i18n.UITownSubtitle),
 	}
 }
 
@@ -83,7 +83,7 @@ func (s *TownScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch k {
 			case "D": // Depositar tudo
 				if s.player.Gold <= 0 {
-					s.infoMsg = "Você não possui moedas de ouro na bolsa para depositar."
+					s.infoMsg = i18n.GetMessage(i18n.MsgBankDepositNoGold, 0)
 				} else {
 					econ := engine.NewEconomyService()
 					deposited := s.player.Gold
@@ -91,14 +91,14 @@ func (s *TownScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						s.infoMsg = fmt.Sprintf("⚠ %v", err)
 					} else {
 						SavePlayer(s.db, s.player)
-						s.infoMsg = fmt.Sprintf("Você depositou %d moedas de ouro no cofre com segurança!", deposited)
+						s.infoMsg = i18n.GetMessage(i18n.MsgBankDepositSuccess, deposited)
 					}
 				}
 				s.bankMode = false
 				return s, nil
 			case "R", "W": // Retirar tudo
 				if s.player.BankGold <= 0 {
-					s.infoMsg = "Seu cofre no banco está vazio."
+					s.infoMsg = i18n.GetMessage(i18n.MsgBankWithdrawNoGold, 0)
 				} else {
 					econ := engine.NewEconomyService()
 					withdrawn := s.player.BankGold
@@ -106,14 +106,14 @@ func (s *TownScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						s.infoMsg = fmt.Sprintf("⚠ %v", err)
 					} else {
 						SavePlayer(s.db, s.player)
-						s.infoMsg = fmt.Sprintf("Você retirou %d moedas de ouro do seu cofre.", withdrawn)
+						s.infoMsg = i18n.GetMessage(i18n.MsgBankWithdrawSuccess, withdrawn)
 					}
 				}
 				s.bankMode = false
 				return s, nil
 			case "ESC", "V", "B":
 				s.bankMode = false
-				s.infoMsg = "Você retornou para o centro da praça."
+				s.infoMsg = i18n.GetUIText(i18n.UITownSubtitle)
 				return s, nil
 			}
 			return s, nil
@@ -199,7 +199,7 @@ func (s *TownScreen) View() string {
 	}
 
 	b.WriteString(ui.ContentBoxStyle.Width(76).Render(menuContent.String()))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render("[↑/↓] Selecionar • [Enter] Entrar • [Letras] Atalho Rápido • [Ctrl+C] Sair"))
+	b.WriteString("\n" + ui.HelpFooterStyle.Render(i18n.GetUIText(i18n.UIFooterNav)))
 
 	return ui.AppStyle.Render(b.String())
 }

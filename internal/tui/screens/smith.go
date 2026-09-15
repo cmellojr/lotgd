@@ -309,7 +309,7 @@ func (s *SmithScreen) View() string {
 
 			if i == s.cursor {
 				content.WriteString(ui.SelectedMenuItemStyle.Render("> "+line) + "\n")
-				content.WriteString(ui.HelpFooterStyle.Render("    └ "+w.Description) + "\n")
+				content.WriteString(ui.HelpFooterStyle.Render("    └ "+w.Description()) + "\n")
 			} else {
 				content.WriteString(ui.MenuItemStyle.Render("  "+line) + "\n")
 			}
@@ -326,7 +326,7 @@ func (s *SmithScreen) View() string {
 
 			if i == s.cursor {
 				content.WriteString(ui.SelectedMenuItemStyle.Render("> "+line) + "\n")
-				content.WriteString(ui.HelpFooterStyle.Render("    └ "+a.Description) + "\n")
+				content.WriteString(ui.HelpFooterStyle.Render("    └ "+a.Description()) + "\n")
 			} else {
 				content.WriteString(ui.MenuItemStyle.Render("  "+line) + "\n")
 			}
@@ -339,7 +339,7 @@ func (s *SmithScreen) View() string {
 
 			if i == s.cursor {
 				content.WriteString(ui.SelectedMenuItemStyle.Render("> "+line) + "\n")
-				content.WriteString(ui.HelpFooterStyle.Render("    └ "+p.Description) + "\n")
+				content.WriteString(ui.HelpFooterStyle.Render("    └ "+p.Description()) + "\n")
 			} else {
 				content.WriteString(ui.MenuItemStyle.Render("  "+line) + "\n")
 			}
@@ -351,7 +351,7 @@ func (s *SmithScreen) View() string {
 	}
 
 	b.WriteString(ui.ContentBoxStyle.Width(76).Render(content.String()))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render("[1-3/Tab] Categorias • [↑/↓] Selecionar • [Enter] Comprar/Trocar • [V]ender • [ESC] Sair"))
+	b.WriteString("\n" + ui.HelpFooterStyle.Render(i18n.GetUIText(i18n.UIFooterSmith)))
 
 	return ui.AppStyle.Render(b.String())
 }
