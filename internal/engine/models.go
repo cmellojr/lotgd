@@ -13,19 +13,19 @@ import (
 // Essa separação arquitetural isola as regras de negócio de detalhes de persistência e serialização SQL,
 // permitindo que o modelo de domínio possua referências ricas (como as structs `Item` em vez de apenas IDs em string).
 type Player struct {
-	ID           int64     `json:"id"`
-	Username     string    `json:"username"`
-	Level        int       `json:"level"`
-	Experience   int       `json:"experience"`
-	Gold         int       `json:"gold"`
-	BankGold     int       `json:"bank_gold"`
-	Health       int       `json:"health"`
-	MaxHealth    int       `json:"max_health"`
-	BaseAttack   int       `json:"base_attack"`
-	BaseDefense  int       `json:"base_defense"`
-	Weapon       Item      `json:"weapon"`
-	Armor        Item      `json:"armor"`
-	PotionsCount int       `json:"potions_count"`
+	ID                int64     `json:"id"`
+	Username          string    `json:"username"`
+	Level             int       `json:"level"`
+	Experience        int       `json:"experience"`
+	Gold              int       `json:"gold"`
+	BankGold          int       `json:"bank_gold"`
+	Health            int       `json:"health"`
+	MaxHealth         int       `json:"max_health"`
+	BaseAttack        int       `json:"base_attack"`
+	BaseDefense       int       `json:"base_defense"`
+	Weapon            Item      `json:"weapon"`
+	Armor             Item      `json:"armor"`
+	PotionsCount      int       `json:"potions_count"`
 	ForestFights      int       `json:"forest_fights"`
 	DragonKills       int       `json:"dragon_kills"`
 	MasterFoughtToday bool      `json:"master_fought_today"`
