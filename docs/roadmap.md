@@ -68,6 +68,32 @@
 
 ---
 
+## 🧭 Releases Planeadas
+
+### `0.0.3` — Reformulação visual ANSI
+
+Objetivo: transformar o design system ANSI existente numa experiência visual mais expressiva e consistente, sem alterar o núcleo das regras de jogo.
+
+- [ ] Redesenhar a composição visual de todas as telas TUI.
+- [ ] Criar componentes ANSI reutilizáveis para painéis, cabeçalhos, listas, indicadores, ícones e estados de combate.
+- [ ] Adicionar gráficos ANSI para status do jogador, combate, progresso e estado do vilarejo.
+- [ ] Garantir layout estável em terminais estreitos, largos e redimensionados via SSH.
+- [ ] Cobrir renderização e regressões visuais com testes focados no pacote `internal/ui`.
+- [ ] Atualizar screenshots, documentação de controles e critérios de compatibilidade do terminal.
+
+**Fora do escopo:** novas regras de PvP, clãs, ranking persistente e novos idiomas.
+
+### `0.0.4` — Comunidade e multiplayer assíncrono
+
+Objetivo: expandir a camada social do vilarejo depois que a base visual estiver consolidada.
+
+- [ ] PvP assíncrono e mecânica do Cavaleiro Vermelho na taverna.
+- [ ] Sistema de clãs persistente no banco compartilhado.
+- [ ] Ranking persistente e telas de classificação.
+- [ ] Internacionalização para idiomas adicionais além de PT-BR.
+
+As funcionalidades da `0.0.4` devem receber especificações próprias antes da implementação, especialmente para concorrência, privacidade dos dados e migrações do SQLite.
+
 ## 📈 Critérios de Aceite e Validação Final
 
 | Critério | Método de Verificação |
