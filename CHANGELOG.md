@@ -20,7 +20,7 @@ e este projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 ## [0.0.2] - 2026-09-18
 
 ### Adicionado
-- Framework formal de registros de decisão de arquitetura em `design/adr/` com índice `README.md` e cinco registros iniciais seguindo o padrão `adr-template`:
+- Framework formal de registros de decisão de arquitetura em `design/adr/` com índice `README.md` e seis registros iniciais seguindo o padrão `adr-template`:
   - **ADR-0001**: Adoção de Architecture Decision Records (ADRs) imutáveis.
   - **ADR-0002**: Arquitetura em camadas canônicas e identificadores 100% em inglês idiomático.
   - **ADR-0003**: Persistência com SQLite puro em Go (CGO-free), modo WAL e transações ACID.

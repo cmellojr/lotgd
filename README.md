@@ -29,7 +29,7 @@ Os aventureiros devem explorar a floresta, enfrentar bestas bizarras, aprimorar 
 ## 🚀 Início Rápido
 
 ### Requisitos
-- **Go 1.22+**
+- **Go 1.25.4+**
 - Terminal com suporte a cores ANSI
 - Cliente `ssh` (para conexões ao servidor BBS)
 
