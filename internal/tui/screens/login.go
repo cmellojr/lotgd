@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"lotgd/internal/engine"
+	"lotgd/internal/i18n"
 	"lotgd/internal/storage"
 	"lotgd/internal/ui"
 
@@ -157,22 +158,22 @@ func (s *LoginScreen) handleLogin() (tea.Model, tea.Cmd) {
 	if err != nil {
 		switch {
 		case errors.Is(err, storage.ErrInvalidPass):
-			s.errMsg = "Senha incorreta para o aventureiro."
+			s.errMsg = i18n.GetUIText(i18n.UILoginErrInvalidPass)
 			return s, nil
 		case errors.Is(err, storage.ErrPlayerNotFound):
 			// Se não existe, cria a conta automaticamente
 			newSP, createErr := s.db.CreatePlayer(user, pass)
 			if createErr != nil {
 				if errors.Is(createErr, storage.ErrUserExists) {
-					s.errMsg = "Este nome de aventureiro já está registrado."
+					s.errMsg = i18n.GetUIText(i18n.UILoginErrUserExists)
 				} else {
-					s.errMsg = fmt.Sprintf("Erro ao criar conta: %v", createErr)
+					s.errMsg = i18n.GetMessage(i18n.MsgLoginErrCreateAccount, createErr)
 				}
 				return s, nil
 			}
 			sp = newSP
 		default:
-			s.errMsg = fmt.Sprintf("Erro ao autenticar: %v", err)
+			s.errMsg = i18n.GetMessage(i18n.MsgLoginErrAuth, err)
 			return s, nil
 		}
 	}
@@ -194,7 +195,7 @@ func (s *LoginScreen) handleLogin() (tea.Model, tea.Cmd) {
 
 // View renderiza a caixa de login estilizada no terminal.
 func (s *LoginScreen) View() string {
-	title := ui.TitleStyle.Render("🏰 THE LEGEND OF THE GO DRAGON 🐉")
+	title := ui.TitleStyle.Render("🏰 " + i18n.GetUIText(i18n.UILoginTitle) + " 🐉")
 	subtitle := ui.SubtitleStyle.Render("Uma aventura épica no terminal (BBS RPG Clássico)")
 
 	var b strings.Builder
@@ -202,8 +203,10 @@ func (s *LoginScreen) View() string {
 	b.WriteString(subtitle + "\n\n")
 
 	content := fmt.Sprintf(
-		"Nome de Aventureiro:\n%s\n\nSenha Secreta:\n%s\n\n",
+		"%s\n%s\n\n%s\n%s\n\n",
+		i18n.GetUIText(i18n.UILoginUsernameLabel),
 		s.usernameIn.View(),
+		i18n.GetUIText(i18n.UILoginPasswordLabel),
 		s.passwordIn.View(),
 	)
 
@@ -224,7 +227,7 @@ func (s *LoginScreen) View() string {
 	}
 
 	b.WriteString(ui.ContentBoxStyle.Width(60).Render(content))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render("[Tab/Shift+Tab] Navegar • [Enter] Confirmar • [Ctrl+C] Sair"))
+	b.WriteString("\n" + ui.HelpFooterStyle.Render(i18n.GetUIText(i18n.UIFooterLogin)))
 
 	return ui.AppStyle.Render(b.String())
 }

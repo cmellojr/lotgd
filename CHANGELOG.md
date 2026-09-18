@@ -7,17 +7,29 @@ e este projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Planejado
+- **0.0.3 — Reformulação visual ANSI**:
+  - Redesign visual das telas TUI com gráficos ANSI, hierarquia visual e componentes reutilizáveis.
+  - Melhorias de layout responsivo para redimensionamento de terminal e sessões SSH.
+  - Testes de renderização e compatibilidade para os componentes visuais do design system.
+- **0.0.4 — Comunidade e multiplayer assíncrono**:
+  - PvP assíncrono e mecânica do Cavaleiro Vermelho na taverna.
+  - Sistema de clãs e ranking persistente no banco compartilhado.
+  - Suporte a múltiplos idiomas adicionais além de PT-BR.
+
+## [0.0.2] - 2026-09-18
+
 ### Adicionado
-- Framework formal de registros de decisão de arquitetura em `design/adr/` com índice `README.md` e cinco registros iniciais seguindo o padrão `adr-template`:
+- Framework formal de registros de decisão de arquitetura em `design/adr/` com índice `README.md` e seis registros iniciais seguindo o padrão `adr-template`:
   - **ADR-0001**: Adoção de Architecture Decision Records (ADRs) imutáveis.
   - **ADR-0002**: Arquitetura em camadas canônicas e identificadores 100% em inglês idiomático.
   - **ADR-0003**: Persistência com SQLite puro em Go (CGO-free), modo WAL e transações ACID.
   - **ADR-0004**: Terminal UI com Bubble Tea e servidor SSH multi-usuário com Wish.
   - **ADR-0005**: Camada centralizada de localização (i18n) em PT-BR.
+  - **ADR-0006**: Modelo de Balanceamento Econômico e Progressão por Combate com Mestres (LORD 1989), estabelecendo a curva de 12 níveis de experiência, combate de promoção por turnos na Guilda sem penalidade de morte e dissociação entre ouro e avanço de nível (#35).
 - Suíte de testes unitários para a barra de status e estilos ANSI em `internal/ui`.
 - Mecanismo de auto-save do estado do jogador no encerramento do programa e ao desconectar da sessão SSH (`b14be93`).
 - Suporte a navegação Vim (`j`/`k`) e atalhos por abas na Ferraria (`ScreenSmith`) (`c6a6334`).
-- Documento `docs/plano-fixes-auditoria.md` rastreando a resolução dos 27 achados do relatório de auditoria de código.
 
 ### Alterado
 - Consolidação do design system ANSI em `internal/ui`: remoção de estilos duplicados em `internal/tui` e centralização da paleta e componentes.
@@ -32,12 +44,6 @@ e este projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Segurança de Armazenamento**: Configurados `busy_timeout` e `foreign_keys` no DSN de conexão SQLite, transação em `RecordDragonSlayed` e tratamento adequado de erros de gravação (`e7765e4`).
 - **Autenticação**: Diferenciação clara na tela de login entre senha inválida e conta inexistente (`e3c5e50`, `fe97252`).
 - **Taverna**: Implementado limite diário para flerte com Cassandra e atualização das mensagens do Cavaleiro Vermelho (`d43db26`).
-
-### Planejado
-- Módulo de interface TUI completo para todas as telas do vilarejo (Fase 3 do roadmap).
-- PvP assíncrono e mecânica do Cavaleiro Vermelho na taverna.
-- Sistema de clãs e ranking persistente no banco compartilhado.
-- Internacionalização: suporte a múltiplos idiomas adicionais além de PT-BR.
 
 ## [0.0.1] - 2026-08-31
 

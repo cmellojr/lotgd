@@ -38,6 +38,7 @@ func (tm *TurnManager) CheckAndApplyNewDay(p *Player, today string) bool {
 		p.LastLoginDay = today
 		p.ForestFights = DailyForestFights
 		p.Health = p.MaxHealth
+		p.MasterFoughtToday = false
 		return true // Novo dia aplicado com sucesso!
 	}
 	return false

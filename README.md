@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.0.1-blue.svg" alt="Versão 0.0.1"/></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.0.2-blue.svg" alt="Versão 0.0.2"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg" alt="Licença GPL-3.0"/></a>
   <a href="https://goreportcard.com/report/github.com/cmellojr/lotgd"><img src="https://goreportcard.com/badge/github.com/cmellojr/lotgd" alt="Go Report Card"/></a>
 </p>
@@ -29,7 +29,7 @@ Os aventureiros devem explorar a floresta, enfrentar bestas bizarras, aprimorar 
 ## 🚀 Início Rápido
 
 ### Requisitos
-- **Go 1.22+**
+- **Go 1.25.4+**
 - Terminal com suporte a cores ANSI
 - Cliente `ssh` (para conexões ao servidor BBS)
 

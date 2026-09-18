@@ -181,12 +181,12 @@ func (s *DragonScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (s *DragonScreen) startDragonFight() (tea.Model, tea.Cmd) {
 	if !s.isAlive {
-		s.appendLog(fmt.Sprintf("O Dragão já foi derrotado hoje pelo lendário herói %s! Aguarde o próximo alvorecer.", s.slayer))
+		s.appendLog(i18n.GetUIText(i18n.UIDragonAlreadySlain))
 		return s, nil
 	}
 
-	if s.player.Level < 5 {
-		s.appendLog("Seu nível é muito baixo! Treine na guilda até pelo menos o Nível 5 antes de desafiar o Dragão.")
+	if s.player.Level < 12 {
+		s.appendLog(i18n.GetMessage(i18n.MsgDragonReqNotMet, 12))
 		return s, nil
 	}
 
@@ -326,7 +326,7 @@ func (s *DragonScreen) View() string {
 	}
 
 	b.WriteString(ui.ContentBoxStyle.Width(76).Render(content.String()))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render("[A] Atacar • [P] Poção • [F] Fugir • [V] Voltar"))
+	b.WriteString("\n" + ui.HelpFooterStyle.Render(i18n.GetUIText(i18n.UIFooterCombat)))
 
 	return ui.AppStyle.Render(b.String())
 }

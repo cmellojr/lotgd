@@ -122,17 +122,17 @@ func (s *TavernScreen) selectCurrent() (tea.Model, tea.Cmd) {
 		s.infoMsg = "Dona Rosalinda enxuga uma caneca: 'Ouvi dizer que o Mestre Torin forjou armas novas na ferraria, e que o Dragão anda mais agitado nos picos!'"
 	case 1: // Cassandra
 		if s.player.ForestFights > engine.DailyForestFights {
-			s.infoMsg = "Cassandra já te inspirou hoje. Volte amanhã para nova dose de coragem!"
+			s.infoMsg = i18n.GetUIText(i18n.UITavernFlirtLimit)
 		} else if s.player.Gold >= 10 {
 			s.player.Gold -= 10
 			s.player.ForestFights++ // Ganha 1 turno de inspiração
 			SavePlayer(s.db, s.player)
-			s.infoMsg = "Você oferece uma bebida a Cassandra. Ela sorri graciosamente e sua determinação é renovada! (+1 Luta na Floresta!)"
+			s.infoMsg = i18n.GetUIText(i18n.UITavernFlirtSuccess)
 		} else {
 			s.infoMsg = "Cassandra te olha com desdém: 'Volte quando tiver pelo menos 10 moedas de ouro para pagar uma rodada, aventureiro.'"
 		}
 	case 2: // Cavaleiro Vermelho
-		s.infoMsg = "O Cavaleiro Vermelho ergue a viseira: 'Você ainda não possui a tempera necessária para cruzar lâminas comigo. Volte quando estiver mais experiente!'"
+		s.infoMsg = i18n.GetUIText(i18n.UITavernRedKnightMsg)
 	case 3: // Mural de Notícias
 		s.loadNews()
 		if len(s.news) == 0 {
@@ -184,7 +184,7 @@ func (s *TavernScreen) View() string {
 	}
 
 	b.WriteString(ui.ContentBoxStyle.Width(76).Render(content.String()))
-	b.WriteString("\n" + ui.HelpFooterStyle.Render("[↑/↓] Navegar • [Enter] Conversar/Ação • [V] Voltar à Praça"))
+	b.WriteString("\n" + ui.HelpFooterStyle.Render(i18n.GetUIText(i18n.UIFooterNav)))
 
 	return ui.AppStyle.Render(b.String())
 }

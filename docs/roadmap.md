@@ -2,7 +2,7 @@
 
 > **Documento Estratégico de Fases & Entregas**  
 > **Status:** Aprovado
-> **Alinhamento:** [GDD.md](GDD.md) · [universo-e-lore.md](universo-e-lore.md) · [architecture.md](architecture.md)
+> **Alinhamento:** [GDD.md](GDD.md) · [universo-e-lore.md](universo-e-lore.md) · [architecture.md](architecture.md) · [ADR-0006](../design/adr/0006-economic-balancing-and-master-combat-progression.md)
 
 ---
 
@@ -12,6 +12,7 @@
 2. **Mecânica de "Novo Dia"**: Verificação automática sob demanda (ao fazer login, se a data do servidor mudou, o sistema restaura os 15 turnos diários e regenera o Dragão do Dia com novas estatísticas).
 3. **PvP & Rival Cavaleiro Vermelho**: Modelo clássico assíncrono de BBS — você pode desafiar clones/fantasmas de outros aventureiros e do Cavaleiro Vermelho na taverna. *(Não implementado)*
 4. **Navegação na Interface (TUI)**: Modo híbrido no **Bubble Tea** (navegação fluida por setas `[↑/↓/Enter]` combinada com teclas de atalho rápido estilo BBS `[F]loresta`, `[T]averna`, `[C]apela`, `[M]estre Torin`, etc.).
+5. **Progressão LORD 1989 (ADR-0006)**: Progressão de 12 níveis destravada por XP + combate contra Mestre em *Turgon's Warrior Training* (1 tentativa/dia sem pena de morte em derrota). Ouro reservado exclusivamente para equipamentos na Ferraria (12 Tiers), Capela e Banco. Trava do Dragão no Nível 12.
 
 ---
 
@@ -36,7 +37,7 @@
 - [x] **Módulo `internal/engine`**:
   - Modelos puros em Go (`Player`, `Monster`, `Weapon`, `Armor`, `Item`).
   - Motor de combate por turnos determinístico (`CombatEngine`), com cálculo de dano, chance de fuga e poções.
-  - Sistema de economia (ouro na bolsa vs ouro no banco), experiência e avanço de nível.
+  - Sistema de experiência (12 níveis), catálogo expandido de 12 tiers de equipamentos e regras de combate contra Mestres em *Turgon's Warrior Training*.
   - Gerenciamento de turnos diários (*15 Forest Fights*).
 - [x] Testes unitários com cobertura para todas as regras de negócio de combate e progressão.
 
@@ -51,9 +52,9 @@
   - `forest.go`: Exploração da Floresta Sombria e interface de combate por turnos.
   - `tavern.go`: Taverna da Dona Rosalinda (fofocas, flerte com Cassandra; duelos PvP assíncronos e Hall da Fama: Não implementado).
   - `chapel.go`: Capela do Frei Anselmo (cura de HP e bênçãos).
-  - `smith.go`: Ferraria do Mestre Torin (compra e venda de armas e armaduras).
-  - `guild.go`: Guilda & Biblioteca do Mestre Tobias (promoção de nível e lore).
-  - `dragon.go`: Covil do Dragão (o grande confronto final do dia).
+  - `smith.go`: Ferraria do Mestre Torin (compra, troca com crédito e venda de equipamentos).
+  - `guild.go`: Guilda & *Turgon's Warrior Training* (desafio de combate contra Mestre de Nível, limite de 1 tentativa/dia).
+  - `dragon.go`: Covil do Dragão (o grande confronto final, requer Nível 12).
   - `game_over.go`: Tela de morte com penalidades e ressurreição na capela.
 
 ---
@@ -66,6 +67,32 @@
 - [x] Documentação de execução e comandos no `README.md` de `lotgd/`.
 
 ---
+
+## 🧭 Releases Planeadas
+
+### `0.0.3` — Reformulação visual ANSI
+
+Objetivo: transformar o design system ANSI existente numa experiência visual mais expressiva e consistente, sem alterar o núcleo das regras de jogo.
+
+- [ ] Redesenhar a composição visual de todas as telas TUI.
+- [ ] Criar componentes ANSI reutilizáveis para painéis, cabeçalhos, listas, indicadores, ícones e estados de combate.
+- [ ] Adicionar gráficos ANSI para status do jogador, combate, progresso e estado do vilarejo.
+- [ ] Garantir layout estável em terminais estreitos, largos e redimensionados via SSH.
+- [ ] Cobrir renderização e regressões visuais com testes focados no pacote `internal/ui`.
+- [ ] Atualizar screenshots, documentação de controles e critérios de compatibilidade do terminal.
+
+**Fora do escopo:** novas regras de PvP, clãs, ranking persistente e novos idiomas.
+
+### `0.0.4` — Comunidade e multiplayer assíncrono
+
+Objetivo: expandir a camada social do vilarejo depois que a base visual estiver consolidada.
+
+- [ ] PvP assíncrono e mecânica do Cavaleiro Vermelho na taverna.
+- [ ] Sistema de clãs persistente no banco compartilhado.
+- [ ] Ranking persistente e telas de classificação.
+- [ ] Internacionalização para idiomas adicionais além de PT-BR.
+
+As funcionalidades da `0.0.4` devem receber especificações próprias antes da implementação, especialmente para concorrência, privacidade dos dados e migrações do SQLite.
 
 ## 📈 Critérios de Aceite e Validação Final
 

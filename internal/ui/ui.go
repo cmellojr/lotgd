@@ -175,43 +175,61 @@ func RenderStatusBar(p *engine.Player, width int) string {
 	hpBar := renderHPBar(hpPercent, 10)
 
 	heroInfo := fmt.Sprintf("%s %s | %s %s",
-		StatusLabel.Render("Herói:"),
+		StatusLabel.Render(i18n.GetUIText(i18n.UIHero)),
 		StatusValue.Render(p.Username),
-		StatusLabel.Render("Nível:"),
+		StatusLabel.Render(i18n.GetUIText(i18n.UILevel)),
 		StatusValue.Render(fmt.Sprintf("%d", p.Level)),
 	)
 
 	healthInfo := fmt.Sprintf("%s %s %s/%s",
-		StatusLabel.Render("HP:"),
+		StatusLabel.Render(i18n.GetUIText(i18n.UIHealth)),
 		hpBar,
 		StatusHP.Render(fmt.Sprintf("%d", p.Health)),
 		StatusValue.Render(fmt.Sprintf("%d", p.MaxHealth)),
 	)
 
+	bankText := fmt.Sprintf("(%s %d)", i18n.GetUIText(i18n.UIBank), p.BankGold)
 	goldInfo := fmt.Sprintf("%s %s %s",
-		StatusLabel.Render("Ouro:"),
+		StatusLabel.Render(i18n.GetUIText(i18n.UIGold)),
 		StatusGold.Render(fmt.Sprintf("%d", p.Gold)),
-		StatusValue.Render(fmt.Sprintf("(Banco: %d)", p.BankGold)),
+		StatusValue.Render(bankText),
 	)
 
 	fightsInfo := fmt.Sprintf("%s %s",
-		StatusLabel.Render("Lutas Diárias:"),
+		StatusLabel.Render(i18n.GetUIText(i18n.UIDailyFights)),
 		StatusFights.Render(fmt.Sprintf("%d", p.ForestFights)),
 	)
 
 	weaponName := i18n.GetItemName(p.Weapon.ID)
 	armorName := i18n.GetItemName(p.Armor.ID)
 	equipInfo := fmt.Sprintf("%s %s | %s %s | %s %s",
-		StatusLabel.Render("Arma:"),
+		StatusLabel.Render(i18n.GetUIText(i18n.UIWeapon)),
 		StatusValue.Render(weaponName),
-		StatusLabel.Render("Armadura:"),
+		StatusLabel.Render(i18n.GetUIText(i18n.UIArmor)),
 		StatusValue.Render(armorName),
-		StatusLabel.Render("Poções:"),
+		StatusLabel.Render(i18n.GetUIText(i18n.UIPotions)),
 		StatusValue.Render(fmt.Sprintf("%d", p.PotionsCount)),
 	)
 
+	// Atributos de combate e progresso de experiência.
+	// No nível máximo não existe requisito seguinte, e o XP é exibido com o
+	// marcador de nível máximo em vez da fração atual/necessário.
+	xpText := fmt.Sprintf("%d %s", p.Experience, i18n.GetUIText(i18n.UIMaxLevel))
+	if req, ok := engine.NextLevelRequirement(p.Level); ok {
+		xpText = fmt.Sprintf("%d/%d", p.Experience, req.RequiredXP)
+	}
+
+	combatInfo := fmt.Sprintf("%s %s | %s %s | %s %s",
+		StatusLabel.Render(i18n.GetUIText(i18n.UIAttack)),
+		StatusValue.Render(fmt.Sprintf("%d", p.TotalAttack())),
+		StatusLabel.Render(i18n.GetUIText(i18n.UIDefense)),
+		StatusValue.Render(fmt.Sprintf("%d", p.TotalDefense())),
+		StatusLabel.Render(i18n.GetUIText(i18n.UIExperience)),
+		StatusValue.Render(xpText),
+	)
+
 	line1 := fmt.Sprintf("%s    %s    %s    %s", heroInfo, healthInfo, goldInfo, fightsInfo)
-	line2 := equipInfo
+	line2 := fmt.Sprintf("%s | %s", equipInfo, combatInfo)
 
 	return StatusBarContainer.Width(width).Render(line1 + "\n" + line2)
 }

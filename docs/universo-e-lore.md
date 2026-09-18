@@ -48,7 +48,7 @@ o Dragão — ou todos falham e o ciclo recomeça amanhã.
 |---|---|---|
 | Taverneira | **Dona Rosalinda** | Fofocas do dia, rumores sobre o Dragão, ponto de encontro social |
 | Curandeiro | **Frei Anselmo** | Cura HP mediante oferenda; diálogos de sabedoria/humor |
-| Ferreiro | **Mestre Torin** | Compra/venda e melhoria de armas e armaduras |
+| Ferreiro | **Mestre Torin** | Compra, venda e crédito de troca em armas e armaduras |
 | Mercadora ambulante | **Yolanda, a Cigana** | Poções, itens raros, "sorte do dia" |
 | Interesse romântico | **Cassandra** | Mecânica de cortejo — vários heróis competem por sua atenção |
 | Rival recorrente | **Cavaleiro Vermelho** | Duelos PvP amistosos, zomba do jogador no ranking |

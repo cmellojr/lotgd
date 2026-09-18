@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"lotgd/internal/i18n"
 )
 
 // EconomyService centraliza as operações financeiras e bancárias do jogo.
@@ -23,11 +24,11 @@ func NewEconomyService() *EconomyService {
 // - O jogador deve possuir saldo suficiente na bolsa (`Gold >= amount`).
 func (e *EconomyService) Deposit(p *Player, amount int) error {
 	if amount <= 0 {
-		return fmt.Errorf("a quantia de depósito deve ser positiva")
+		return fmt.Errorf("%s", i18n.GetMessage(i18n.MsgBankDepositInvalid))
 	}
 
 	if p.Gold < amount {
-		return fmt.Errorf("ouro insuficiente na bolsa para depósito (disponível: %d)", p.Gold)
+		return fmt.Errorf("%s", i18n.GetMessage(i18n.MsgBankDepositNoGold, p.Gold))
 	}
 
 	p.Gold -= amount
@@ -42,11 +43,11 @@ func (e *EconomyService) Deposit(p *Player, amount int) error {
 // - O saldo bancário deve ser suficiente (`BankGold >= amount`).
 func (e *EconomyService) Withdraw(p *Player, amount int) error {
 	if amount <= 0 {
-		return fmt.Errorf("a quantia de saque deve ser positiva")
+		return fmt.Errorf("%s", i18n.GetMessage(i18n.MsgBankWithdrawInvalid))
 	}
 
 	if p.BankGold < amount {
-		return fmt.Errorf("saldo bancário insuficiente para saque (disponível: %d)", p.BankGold)
+		return fmt.Errorf("%s", i18n.GetMessage(i18n.MsgBankWithdrawNoGold, p.BankGold))
 	}
 
 	p.BankGold -= amount
