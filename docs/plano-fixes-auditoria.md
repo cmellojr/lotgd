@@ -374,6 +374,8 @@ Fase 6 depende de Fase 4 (já que grava na DB).
 
 ## Achados que permanecem abertos (27)
 
+> ⚠️ **Nota**: Tabela desatualizada, ver `CHANGELOG.md` para o status real das correções.
+
 | Severidade | IDs |
 |---|---|
 | Crítico | C1, C2 |
