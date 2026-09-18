@@ -70,7 +70,7 @@ A progressão do herói do Nível 1 ao Nível 12 ocorre através de desafios de 
 | Tela | Rota TUI | Comandos / Atalhos Principais |
 |---|---|---|
 | **Login / Criação** | `ScreenLogin` | Digitar nome/senha, `[Enter]` confirma, `[Tab]` alterna |
-| **Praça do Vilarejo** | `ScreenTown` | `[F]` Floresta, `[T]` Taverna, `[C]` Capela, `[M]` Ferraria, `[G]` Guilda, `[D]` Dragão, `[S]` Status, `[Q]` Sair |
+| **Praça do Vilarejo** | `ScreenTown` | `[F]` Floresta, `[T]` Taverna, `[C]` Capela, `[M]` Ferraria, `[G]` Guilda, `[D]` Dragão, `[S]` Salvar e Sair (Logout) |
 | **Floresta Sombria** | `ScreenForest` | `[P]` Procurar monstro, `[A]` Atacar, `[F]` Fugir, `[V]` Voltar à vila |
 | **Ferraria (Torin)** | `ScreenSmith` | `[1..3/Tab]` Categorias, `[Enter]` Comprar/Trocar, `[V]`ender |
 | **Capela (Anselmo)** | `ScreenChapel` | `[C]` Curar ferimentos, `[B]` Pedir bênção |
