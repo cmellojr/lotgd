@@ -1,7 +1,7 @@
-# ADR-0008: Adopt Period-Accurate ANSI Design System
+# ADR-0008: Adotar Sistema de Design ANSI Fiel à Época
 
 - Status: Proposed
-- Date: 2026-09-15
+- Date: 2026-09-22
 - Author(s): Carlos Mello Jr.
 - Deciders: Carlos Mello Jr.
 
