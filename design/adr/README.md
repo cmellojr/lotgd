@@ -14,3 +14,5 @@ Este diretório contém o registro histórico e imutável de decisões de arquit
 | [ADR-0004](0004-tui-with-bubble-tea-and-wish-ssh.md) | Terminal UI com Bubble Tea e Servidor Multi-usuário Wish SSH | Approved | 2026-09-05 |
 | [ADR-0005](0005-i18n-localization-layer.md) | Camada Centralizada de Localização (i18n) PT-BR | Approved | 2026-09-05 |
 | [ADR-0006](0006-economic-balancing-and-master-combat-progression.md) | Modelo de Balanceamento Econômico e Progressão por Combate com Mestres | Approved | 2026-09-12 |
+| [ADR-0007](0007-equipment-sale-and-trade-in-credit.md) | Venda de Equipamento e Crédito de Troca na Ferraria | Approved | 2026-09-14 |
+| [ADR-0008](0008-ansi-design-system-v2.md) | Adotar Sistema de Design ANSI Fiel à Época | Proposed | 2026-09-22 |
