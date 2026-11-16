@@ -65,21 +65,35 @@ ssh localhost -p 2222
 
 ---
 
-## 🗺️ Estrutura do Projeto
+## 🗺️ Estrutura do Projeto & Blueprints
 
-```text
-cmd/
-├── lotgd/                 # Executável CLI offline
-└── server/                # Servidor SSH BBS
-docs/                      # Documentação de Design, Arquitetura e Lore
-internal/
-├── bestiary/              # Gerador de monstros e Dragão do Dia
-├── engine/                # Regras de jogo, combate por turnos e progressão
-├── i18n/                  # Dicionário de localização (PT-BR)
-├── storage/               # Persistência SQLite CGO-free (modernc.org/sqlite)
-├── tui/                   # Interface TUI e telas em Bubble Tea
-└── ui/                    # Design System ANSI em Lip Gloss
-```
+- [cmd](./cmd/README.md) - Executáveis e pontos de entrada (CLI offline e servidor SSH Wish).
+  - [cmd/lotgd](./cmd/lotgd/README.md) - Cliente terminal local single-player.
+  - [cmd/server](./cmd/server/README.md) - Servidor BBS multi-player sobre SSH.
+- [internal](./internal/README.md) - Pacotes internos de lógica de domínio, interface e persistência.
+  - [internal/bestiary](./internal/bestiary/README.md) - Gerador procedural de monstros e Dragão do Dia.
+  - [internal/engine](./internal/engine/README.md) - Mecânicas centrais: combate, economia bancária, ciclos de dias e progressão.
+  - [internal/i18n](./internal/i18n/README.md) - Catálogos de localização em português (pt-BR).
+  - [internal/storage](./internal/storage/README.md) - Camada de persistência SQLite (CGO-free), migrações e repositórios.
+  - [internal/tui](./internal/tui/README.md) - Orquestrador Bubble Tea e roteamento de navegação.
+    - [internal/tui/screens](./internal/tui/screens/README.md) - Telas modulares do jogo (Vila, Floresta, Taverna, Ferraria, etc.).
+  - [internal/ui](./internal/ui/README.md) - Componentes visuais compartilhados e barra de status HUD.
+- docs/ - Documentação de Design, Arquitetura e Lore.
+- [design/adr](./design/adr/README.md) - Architecture Decision Records (ADRs).
+
+## Global Invariants
+- 100% Go idiomático seguindo os padrões canônicos da comunidade e Google Go Style Guide.
+- Interface com o jogador estritamente em Português do Brasil (pt-BR) gerenciada pela camada de i18n (`internal/i18n`), sem strings hardcoded em telas ou domínio.
+- Persistência sem CGO (`modernc.org/sqlite`) garantindo portabilidade multiplataforma sem dependências externas de toolchain C.
+
+## Global Side Effects
+- Leitura e gravação no banco de dados SQLite local (`lotgd.db`).
+- Captura de buffer alternativo de terminal e modo raw para sessões interativas Bubble Tea.
+- Abertura de porta de rede TCP (`:2222`) quando operando em modo servidor SSH Wish.
+
+## System Verification
+- Run: `go test ./...`
+- Lint: `go vet ./...`
 
 ---
 
